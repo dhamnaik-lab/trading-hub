@@ -85,7 +85,7 @@ public sealed class AccountCenter
             foreach (var a in session.Accounts)
             {
                 bool real = !session.IsPractice;
-                list.Add(new AccountEntry(AppServices.RithmicAccountId(p, a.AccountId), $"{a.AccountId} · {p.Name}{(real ? " — REAL" : " (práctica)")}",
+                list.Add(new AccountEntry(AppServices.RithmicAccountId(p, a.AccountId), $"{a.AccountId} · {p.Name}{(real ? " — REAL" : " (practice)")}",
                     AccountKind.Rithmic, real, !real || p.AllowRealOrders, p, a.AccountId));
             }
         }
@@ -188,7 +188,7 @@ public sealed class AccountCenter
         var session = _svc.RithmicSessionFor(s.Account.Profile!);
         string acc = s.Account.RithmicAccount;
         s.Connected = session.IsConnected;
-        s.Status = session.IsConnected ? $"Conectada a Rithmic ({session.System})" : session.StatusText;
+        s.Status = session.IsConnected ? $"Connected to Rithmic ({session.System})" : session.StatusText;
         foreach (var (sym, ex, p) in session.PositionsOf(acc))
             s.Positions.Add(new PositionLine(sym + "|" + ex, sym, p.Net, p.AvgPrice, p.OpenPnl, p.ClosedPnl, (sym, ex)));
 
@@ -220,7 +220,7 @@ public sealed class AccountCenter
         var session = _svc.TradovateSessionFor(s.Account.Profile!);
         long acc = TradovateIdOf(s.Account);
         s.Connected = session.IsConnected;
-        s.Status = session.IsConnected ? $"Conectada a Tradovate ({(session.IsDemo ? "demo" : "real")})" : session.StatusText;
+        s.Status = session.IsConnected ? $"Connected to Tradovate ({(session.IsDemo ? "demo" : "real")})" : session.StatusText;
         foreach (var p in session.PositionsOf(acc))
         {
             decimal pv = PointValueOf(p.Symbol);
