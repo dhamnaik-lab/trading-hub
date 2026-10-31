@@ -457,14 +457,14 @@ internal static class LabServer
         try { tz = TimeZoneInfo.FindSystemTimeZoneById(tzId); }
         catch { tz = TimeZoneInfo.Local; }
         string periodCode = Str(a, "period", "M5");
-        if (!ChartPeriod.TryParse(periodCode, out var period)) throw new ArgumentException($"Período inválido: {periodCode}");
+        if (!ChartPeriod.TryParse(periodCode, out var period)) throw new ArgumentException($"Invalid period: {periodCode}");
         var fromUtc = LocalArg(a, "from", tz, false);
         var toUtc = LocalArg(a, "to", tz, true);
         if (toUtc <= fromUtc) throw new ArgumentException("«to» tiene que ser posterior a «from».");
         double warmDays = Num(a, "warmup_days", period.IsTimeBased && period.ApproxDuration >= TimeSpan.FromHours(1) ? 15 : 3);
         var inst = await ResolveInstrumentAsync(Str(a, "feed"), Str(a, "symbol").ToUpperInvariant());
         var ticks = await Task.Run(() => TickData.Load(AppPaths.Ticks, inst, fromUtc.AddDays(-warmDays), toUtc, null, CancellationToken.None));
-        if (ticks.Count == 0) throw new ArgumentException($"No hay ticks guardados de {inst.Symbol} ({inst.FeedId}) en ese rango. Mirá list_data o bajá días con download_data.");
+        if (ticks.Count == 0) throw new ArgumentException($"No saved ticks for {inst.Symbol} ({inst.FeedId}) in this range. Check list_data or retrieve days with download_data.");
 
         // la estrategia sobre todo lo cargado (como en el gráfico: sin costos y sin cerrar al final)
         var strategy = file.Create();
@@ -475,7 +475,7 @@ internal static class LabServer
             CommissionPercent = 0, SlippageTicks = 0, TimeZoneId = tz.Id, CloseAtEnd = false, InitialCapital = 10_000,
         };
         var result = await Task.Run(() => new BacktestEngine(strategy, ticks, settings) { ContextHistory = MarketConditions.HourlyBefore(inst.FeedId, inst.Symbol, ticks.FirstTime) }.Run(CancellationToken.None));
-        if (!result.Ok) throw new InvalidOperationException("La estrategia falló: " + result.Error);
+        if (!result.Ok) throw new InvalidOperationException("Strategy failed: " + result.Error);
 
         // el gráfico, igual que en la app
         var data = new InstrumentData(inst, new TradingHub.Feeds.SimulatedFeed());
@@ -557,7 +557,7 @@ internal static class LabServer
         {
             ["image"] = path,
             ["timezone"] = tz.Id,
-            ["note"] = "Mirá la imagen con Read (es un PNG). Las velas tienen la hora de apertura; una orden a mercado que se manda al cerrar una vela se llena en la siguiente.",
+            ["note"] = "Open the PNG using Read. Bars show their opening time; market orders sent on a bar close are filled on the following bar in simulation.",
             ["bars"] = bars,
             ["trades"] = trades,
             ["open_position"] = result.OpenPosition is { } op ? new JsonObject { ["side"] = op.IsLong ? "largo" : "corto", ["since"] = L(op.EntryTime), ["price"] = op.AveragePrice, ["quantity"] = op.Quantity } : null,
@@ -641,18 +641,18 @@ internal static class LabServer
         return new JsonObject
         {
             ["instruments"] = arr,
-            ["note"] = "Días con ticks guardados. Si faltan días seguidos, el rango igual se puede usar pero esos días quedan sin operaciones. Para Binance/Bybit podés bajar más con download_data. " +
-                       "Futuros con historia de Databento: «rithmic» es la combinada (Rithmic y, donde le falta, Databento; usá esa salvo que te pidan otra), «rithmic-solo» solo Rithmic y «databento» solo Databento.",
+            ["note"] = "Days with saved ticks. Missing days can remain empty in the selected range. Use download_data to retrieve more Binance/Bybit days. " +
+                       "For futures with Databento history: 'rithmic' combines Rithmic with Databento to fill missing coverage, 'rithmic-solo' uses Rithmic only, and 'databento' uses Databento only.",
         };
     }
 
     private static async Task<JsonNode> DownloadDataAsync(JsonObject a)
     {
         string feed = Str(a, "feed"), symbol = Str(a, "symbol").ToUpperInvariant();
-        if (!PublicArchives.Supports(feed)) throw new ArgumentException("Solo hay archivos públicos para binance-futures, binance-spot y bybit-linear.");
+        if (!PublicArchives.Supports(feed)) throw new ArgumentException("Public archives are available only for binance-futures, binance-spot and bybit-linear.");
         var from = DateOnly.FromDateTime(Date(a, "from", false));
         var to = DateOnly.FromDateTime(Date(a, "to", false));
-        if (to.DayNumber - from.DayNumber > 61) throw new ArgumentException("Máximo 62 días por llamada.");
+        if (to.DayNumber - from.DayNumber > 61) throw new ArgumentException("Maximum of 62 days per request.");
         var inst = await ResolveInstrumentAsync(feed, symbol, preferExchange: true);
         int ok = 0, skipped = 0, missing = 0;
         long trades = 0;
@@ -739,7 +739,7 @@ internal static class LabServer
             TimeZoneId = a["timezone"] is { } tz ? tz.GetValue<string>() : null,
             SessionStart = TimeSpan.FromHours(Num(a, "session_start_hour", 0)),
         };
-        if (!ChartPeriod.TryParse(settings.Period, out _)) throw new ArgumentException($"Período inválido: {settings.Period}");
+        if (!ChartPeriod.TryParse(settings.Period, out _)) throw new ArgumentException($"Invalid period: {settings.Period}");
         if (settings.ToUtc <= settings.FromUtc) throw new ArgumentException("«to» tiene que ser posterior a «from».");
 
         // comprimidos (ticks repetidos juntados) para optimizar y validar: la misma historia con muchos menos eventos
@@ -751,7 +751,7 @@ internal static class LabServer
             var inst = await ResolveInstrumentAsync(settings.FeedId, settings.Symbol);
             var data = await Task.Run(() => TickData.Load(AppPaths.Ticks, inst, settings.FromUtc, settings.ToUtc, null, CancellationToken.None, compress));
             if (data.Count == 0)
-                throw new ArgumentException($"No hay ticks guardados de {settings.Symbol} ({settings.FeedId}) en ese rango. Mirá list_data o bajá días con download_data.");
+                throw new ArgumentException($"No saved ticks for {settings.Symbol} ({settings.FeedId}) in this range. Check list_data or retrieve days with download_data.");
             _ticks = data;
             _ticksKey = key;
         }
@@ -834,7 +834,7 @@ internal static class LabServer
         strategy.SetParameters(ParamsFor(a, file));
         // el contexto de mercado arranca con el mes anterior, como en vivo
         var res = await Task.Run(() => new BacktestEngine(strategy, data, settings) { ContextHistory = MarketConditions.HourlyBefore(settings.FeedId, settings.Symbol, settings.FromUtc) }.Run(CancellationToken.None));
-        if (!res.Ok) throw new InvalidOperationException("La estrategia falló: " + res.Error);
+        if (!res.Ok) throw new InvalidOperationException("Strategy failed: " + res.Error);
         var run = new StrategyRun
         {
             StrategyId = file.Id,
@@ -897,7 +897,7 @@ internal static class LabServer
             foreach (var (name, v) in custom)
             {
                 var r = ranges.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                        ?? throw new ArgumentException($"«{name}» no es un parámetro numérico de la estrategia.");
+                        ?? throw new ArgumentException($"'{name}' is not a numeric strategy parameter.");
                 if (v is not JsonObject spec) continue;
                 r.Enabled = true;
                 r.Min = Num(spec, "min", r.Min);
@@ -1025,7 +1025,7 @@ internal static class LabServer
             ["windows"] = windows,
             ["seconds_per_combination"] = Math.Round(one, 2),
             ["estimated_seconds"] = Math.Round(estimate),
-            ["note"] = "Cada combinación se corre una sola vez sobre todo el rango. Si tarda demasiado, achicá la grilla o el budget, o usá un rango más corto.",
+            ["note"] = "Each combination is evaluated once over the entire range. For long runs, reduce the grid, evaluation budget, or date range.",
         };
     }
 
@@ -1085,8 +1085,8 @@ internal static class LabServer
                 ["pbo"] = Math.Round(pbo, 3),
                 ["best_loses_out_of_sample"] = res.PboLoss is { } l ? Math.Round(l, 3) : null,
                 ["splits"] = res.PboSplits,
-                ["note"] = "Con la mitad de la historia se elige la mejor combinación y se mira la otra mitad, de todas las formas posibles. best_loses_out_of_sample = en qué proporción perdió plata " +
-                           "(< 0,2 bien, ≥ 0,5 sobreoptimizada); pbo = en qué proporción quedó en la mitad de abajo de las demás (alta con todas ganando es una meseta, no un problema).",
+                ["note"] = "The best combination is selected using half the history and evaluated on the other half, across supported partitions. best_loses_out_of_sample = fraction of partitions losing out of sample " +
+                           "(below 0.2 generally favorable, at least 0.5 suggests overfitting); pbo = fraction of partitions where the selected combination ranked in the lower half (may be high even when all combinations profit).",
             } : null,
             ["cpcv_paths"] = res.CpcvPaths.Count > 0 ? new JsonArray(res.CpcvPaths.Select(p => (JsonNode)new JsonObject
             {
@@ -1129,7 +1129,7 @@ internal static class LabServer
     private static StrategyRun? LoadRun(StrategyFile file, string? runId, RunKind kind)
     {
         if (!string.IsNullOrWhiteSpace(runId))
-            return StrategyStore.Load(file.Id, runId) ?? throw new ArgumentException($"No existe la corrida {runId} de {file.FileName}. Usá list_runs.");
+            return StrategyStore.Load(file.Id, runId) ?? throw new ArgumentException($"Run {runId} for {file.FileName} does not exist. Use list_runs.");
         var latest = StrategyStore.List(file.Id).Where(r => r.Kind == kind).OrderByDescending(r => r.CreatedUtc).FirstOrDefault();
         return latest == null ? null : StrategyStore.Load(file.Id, latest.Id);
     }
@@ -1141,12 +1141,12 @@ internal static class LabServer
         {
             var file = FileOf(Str(item, "file"));
             var run = LoadRun(file, item["run_id"]?.GetValue<string>(), RunKind.Backtest)
-                      ?? throw new ArgumentException($"{file.FileName} no tiene backtests guardados: corré run_backtest primero.");
+                      ?? throw new ArgumentException($"{file.FileName} has no saved backtests. Run run_backtest first.");
             if (run.Trades is not { Count: > 0 }) throw new ArgumentException($"La corrida {run.Id} de {file.FileName} no tiene operaciones.");
             res.Add(PortfolioComponent.FromRun(run, (decimal)Num(item, "weight", 1)));
         }
 
-        if (res.Count == 0) throw new ArgumentException("Pasá al menos una estrategia en «components».");
+        if (res.Count == 0) throw new ArgumentException("Pass at least one strategy in 'components'.");
         return res;
     }
 
@@ -1186,7 +1186,7 @@ internal static class LabServer
 
     private static JsonNode AnalyzePortfolio(JsonObject a)
     {
-        var list = a["components"] as JsonArray ?? throw new ArgumentException("Falta «components».");
+        var list = a["components"] as JsonArray ?? throw new ArgumentException("Missing 'components'.");
         var comps = Components(list);
         return PortfolioJson(PortfolioAnalyzer.Analyze(comps, (decimal)Num(a, "capital", 10_000)));
     }
@@ -1207,9 +1207,9 @@ internal static class LabServer
             }
         }
 
-        if (candidates.Count < 2) throw new ArgumentException("Hacen falta backtests de al menos dos estrategias (o instrumentos) para armar un portafolio.");
+        if (candidates.Count < 2) throw new ArgumentException("Backtests from at least two strategies or instruments are required for a portfolio.");
         var chosen = PortfolioAnalyzer.SuggestUncorrelated(candidates, capital, (int)Num(a, "max_components", 5), Num(a, "max_correlation", 0.5));
-        if (chosen.Count == 0) throw new ArgumentException("Ninguna estrategia tiene resultado positivo con al menos 5 operaciones.");
+        if (chosen.Count == 0) throw new ArgumentException("No strategy has a positive result with at least five trades.");
         var result = PortfolioAnalyzer.Analyze(chosen.Select(i => candidates[i]).ToList(), capital);
         var o = PortfolioJson(result);
         o["candidates_considered"] = candidates.Count;
@@ -1288,13 +1288,13 @@ internal static class LabServer
                 ["last_trades"] = LiveTrades(s.Info, recent),
             }).ToArray()),
             ["pending_proposals"] = LiveStore.LoadProposals().Count(p => p.IsPending),
-            ["note"] = "Los tamaños son multiplicadores de la cantidad que pide cada estrategia (1 = normal, 0 = pausa). Para cambiarlos usá propose_sizing: el usuario aprueba cada cambio. " +
-                       "Horas en UTC. entry_price y exit_price son el último precio de mercado cuando la estrategia registró cada llenado (no el precio que informa el broker), " +
-                       "así que no sirven para medir el deslizamiento exacto. El resultado en vivo sale de esos precios y no descuenta comisiones (la contabilidad de cada estrategia no las registra): " +
-                       "para compararlo con un backtest, correlo sin comisión o sumásela vos. " +
-                       "position, quantity y pnl son del contrato en que se ejecutó (exec_symbol en cada estrategia, contract en cada operación: por ejemplo MNQ para una estrategia del NQ) " +
-                       "y ya incluyen el multiplicador de size. instrument_quantity es esa cantidad pasada al instrumento de la estrategia (5 MNQ = 0,5 NQ; exec_ratio dice cuántos contratos de ejecución son 1 del instrumento) " +
-                       "y pnl es lo que dio esa cantidad: para compararlo con un backtest en el instrumento, escalalo (pnl × cantidad del backtest / instrument_quantity).",
+            ["note"] = "Size multipliers scale each strategy's requested quantity (1 = normal, 0 = pause new entries). Use propose_sizing to request changes; the user approves each proposal. " +
+                       "Timestamps are UTC. entry_price and exit_price are the last market prices when the strategy recorded each fill (not broker-reported execution prices), " +
+                       "so they cannot measure exact slippage. Live P&L uses these prices without commissions (the strategy ledger does not capture them): " +
+                       "compare against a backtest without commissions or account for charges separately. " +
+                       "position, quantity and pnl refer to the execution contract (exec_symbol for each strategy, contract for each trade, e.g. MNQ for an NQ strategy) " +
+                       "and include the size multiplier. instrument_quantity converts quantity to the strategy's instrument (5 MNQ = 0.5 NQ; exec_ratio gives execution contracts per strategy-instrument contract), " +
+                       "and pnl is measured for that quantity. To compare with a backtest on the strategy instrument, scale pnl by backtest quantity / instrument_quantity.",
         };
     }
 
@@ -1302,12 +1302,12 @@ internal static class LabServer
     {
         LiveStore.Root = LiveRoot;
         var runners = LiveStore.LoadRunners();
-        var list = a["items"] as JsonArray ?? throw new ArgumentException("Falta «items».");
+        var list = a["items"] as JsonArray ?? throw new ArgumentException("Missing 'items'.");
         var proposal = new SizingProposal { Source = "claude", Summary = Str(a, "summary", "") };
         foreach (var item in list.OfType<JsonObject>())
         {
             string key = Str(item, "key");
-            var info = runners.FirstOrDefault(r => r.Key == key) ?? throw new ArgumentException($"No existe la estrategia «{key}» en la cartera. Usá las keys de live_portfolio.");
+            var info = runners.FirstOrDefault(r => r.Key == key) ?? throw new ArgumentException($"Strategy '{key}' does not exist in the portfolio. Use keys returned by live_portfolio.");
             decimal size = Math.Clamp((decimal)Num(item, "proposed_size", (double)info.Size), 0, LiveSizing.MaxSize);
             if (size == info.Size) continue;
             proposal.Items.Add(new SizingItem
@@ -1320,14 +1320,14 @@ internal static class LabServer
             });
         }
 
-        if (proposal.Items.Count == 0) return new JsonObject { ["created"] = false, ["note"] = "No hay cambios respecto de los tamaños actuales." };
+        if (proposal.Items.Count == 0) return new JsonObject { ["created"] = false, ["note"] = "No changes from current size multipliers." };
         LiveStore.AddProposal(proposal);
         return new JsonObject
         {
             ["created"] = true,
             ["proposal_id"] = proposal.Id,
             ["items"] = proposal.Items.Count,
-            ["note"] = "Quedó pendiente: el usuario la ve en En vivo → Propuestas y aprueba o rechaza cada cambio. No se aplicó nada todavía.",
+            ["note"] = "Proposal pending: the user reviews and approves/rejects each change in Live → Proposals. No changes were applied.",
         };
     }
 
@@ -1359,7 +1359,7 @@ internal static class LabServer
 
         if (a["portfolio"] is JsonArray pl && pl.Count > 0) input.Portfolio = PortfolioAnalyzer.Analyze(Components(pl), input.PortfolioCapital);
         if (input.Backtest == null && input.Portfolio == null && input.WalkForward == null)
-            throw new ArgumentException("No hay corridas para el informe: corré run_backtest (o pasá un portafolio) antes de save_report.");
+            throw new ArgumentException("No saved runs for the report. Run run_backtest (or provide a portfolio) before save_report.");
         var (markdown, images) = ReportBuilder.Build(input);
         var report = ReportStore.Save(title, markdown, file?.FileName, input.Verdict, images);
         return new JsonObject { ["saved"] = report.Path, ["verdict"] = report.Verdict, ["charts"] = images.Count };
