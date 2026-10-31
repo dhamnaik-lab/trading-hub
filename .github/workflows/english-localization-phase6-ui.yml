@@ -1,0 +1,44 @@
+name: English localization phase 6 UI verification
+
+on:
+  pull_request:
+    paths:
+      - "src/**/*.cs"
+      - "tools/TradingHub.UiSnapshot/**"
+      - ".github/workflows/english-localization-phase6-ui.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  footprint-and-dom:
+    name: Verify English footprint and DOM settings
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      TRADINGHUB_SLEEP_GUARD: off
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Capture and verify simulated UI scenes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $out = Join-Path $env:RUNNER_TEMP 'tradinghub-phase6-ui'
+          New-Item -ItemType Directory -Path $out -Force | Out-Null
+          dotnet run --project tools/TradingHub.UiSnapshot --configuration Release -- $out 3 trading footprint trading+domsettings --size 1600x950
+          if ($LASTEXITCODE -ne 0) { throw "UI snapshot runner failed (exit $LASTEXITCODE)" }
+          $files = @(Get-ChildItem -LiteralPath $out -Filter '*.png' -File)
+          $files | Select-Object Name, Length | Format-Table
+          if ($files.Count -lt 6) { throw "Only $($files.Count) PNGs captured; expected 6+" }
+      - name: Upload screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: english-phase6-footprint-dom
+          path: ${{ runner.temp }}/tradinghub-phase6-ui/*.png
+          if-no-files-found: warn
+          retention-days: 14
