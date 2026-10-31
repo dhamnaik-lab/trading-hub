@@ -1,62 +1,55 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Indicadores
+# Indicators
 
-Los indicadores del gráfico se agregan desde la ventana **Indicadores** (botón **Indicadores** de la barra del gráfico,
-o **Gráfico → Indicadores…**, ⌘I). A la izquierda está la **Biblioteca**, con un buscador por nombre o categoría;
-**Agregar al gráfico** (o doble clic) lo suma, y al elegir uno de los que ya están en el gráfico se editan sus
-propiedades a la derecha. **Plantillas** guarda los ajustes de un indicador, aplica uno guardado o elige con cuál
-arrancan los nuevos. El resto del manejo del gráfico está en [Gráficos](graficos.md#indicadores).
+Add chart indicators from the **Indicators** dialog (toolbar button or **Chart → Indicators**, Ctrl/⌘+I). The left-hand **Library** supports searching by name or category. Select an indicator and choose **Add to chart**, or double-click it. Select an existing indicator to edit its parameters.
 
-Los indicadores de las estrategias (`Sma`, `Ema`, `Rsi`…) son otra API, más simple: ver [Estrategias](estrategias.md).
+**Templates** lets you save parameter presets, apply a saved preset, or set defaults for newly added indicators. See [Charts](graficos.md#indicators).
 
-## Incluidos
+Strategy indicators such as `Sma`, `Ema`, and `Rsi` use a separate, simplified API. See [C# strategies](estrategias.md).
 
-| Indicador | Categoría | Opciones principales |
+## Built-in indicators
+
+| Indicator | Category | Main options |
 |---|---|---|
-| Media móvil | Tendencia | Período, tipo (simple, exponencial o ponderada) y fuente |
-| Bandas de Bollinger | Tendencia | Período y cantidad de desvíos |
-| VWAP con desvíos | Volumen / Order flow | Se reinicia cada sesión, semana o mes; hasta tres bandas de desvío ponderado por volumen |
-| Volumen | Volumen / Order flow | Colores; se colorea por delta o por vela |
-| Delta | Volumen / Order flow | Histograma o velas con el máximo y el mínimo del delta |
-| Delta acumulado (CVD) | Volumen / Order flow | En velas; se reinicia o no en cada sesión |
-| Big Trades (grandes operaciones) | Volumen / Order flow | Burbujas en las órdenes agresivas grandes (suma las ejecuciones de una misma orden aunque barra varios niveles). Umbral fijo o adaptativo (percentil de las órdenes recientes), dónde se ubica en el precio, colores y tamaños |
-| Perfil de volumen por sesión | Volumen / Order flow | Por sesión, semana o toda la historia visible; volumen, delta o bid/ask; área de valor (%), POC, VAH y VAL |
-| RSI | Osciladores | Período |
-| MACD | Osciladores | Medias rápida y lenta, y señal |
+| Moving Average | Trend | Period, simple/exponential/weighted calculation, source |
+| Bollinger Bands | Trend | Period and standard-deviation multiplier |
+| VWAP with deviation bands | Volume / order flow | Reset by session, week or month; up to three volume-weighted deviation bands |
+| Volume | Volume / order flow | Color by price candle or delta |
+| Delta | Volume / order flow | Histogram or candles, including delta extrema |
+| Cumulative Delta (CVD) | Volume / order flow | Candle display, optional session reset |
+| Big Trades | Volume / order flow | Bubbles for large aggressive orders; aggregate fills spanning multiple price levels; fixed/adaptive size threshold, colors and placement |
+| Session Volume Profile | Volume / order flow | Session, weekly or visible-history profiles; volume/delta/Bid–Ask; value area, POC, VAH and VAL |
+| RSI | Oscillator | Period |
+| MACD | Oscillator | Fast, slow, and signal periods |
 
-Vienen en el proyecto `TradingHub.Indicators.Native` y en la biblioteca aparecen agrupados por categoría.
+These live in `TradingHub.Indicators.Native` and are grouped by category in the library.
 
-### Indicadores técnicos
+### Technical indicator collection
 
-El proyecto `TradingHub.Indicators.Technical` está pensado para la colección de indicadores técnicos de ATAS (unos
-250). Su código es público pero no tiene una licencia abierta, así que **no se publica** en este repositorio: el proyecto
-solo trae lo mínimo para compilarlos (los tipos de editores que usan). Los sumás vos en un minuto, como se explica en
-[Sumar los indicadores de ATAS](#sumar-los-indicadores-de-atas), y Trading Hub los carga solo: aparecen en la
-biblioteca con los demás, por categoría.
+`TradingHub.Indicators.Technical` supports the public source collection from ATAS (around 250 indicators in the upstream description). That third-party source is **not redistributed** here because its licensing does not grant unrestricted redistribution. This repository contains compatibility infrastructure for optionally building compatible indicators locally.
 
-## Indicadores propios
+See [Adding ATAS indicators](#adding-atas-indicators).
 
-Escribís los tuyos en C# y Trading Hub los compila solo.
+## Custom indicators
 
-- Van en `~/Documents/Trading Hub/Indicadores` (se pueden usar subcarpetas; se ignoran `bin` y `obj`). Con la carpeta
-  vacía, Trading Hub deja un ejemplo: `EjemploDeltaPorcentual.cs` («Ejemplo: delta % por vela»).
-- Trading Hub vigila la carpeta: cuando guardás, creás, borrás o renombrás un archivo, recompila todo apenas pasan 0,6
-  segundos sin cambios. También podés forzarlo con **Código → Recompilar indicadores**.
-- Todos los archivos se compilan juntos. Si hay un error, siguen disponibles los de la última compilación buena y la
-  barra de estado muestra el primer error; si compila, avisa «Indicadores propios compilados en N ms».
-- Aparecen arriba de todo en la biblioteca, en el grupo «Mis indicadores» (con una estrella) y con la etiqueta
-  «propio». Si cambiaste el código de uno que ya está en un gráfico, quitalo y volvelo a agregar para usar la versión
-  nueva.
+Trading Hub compiles custom C# indicators from your user indicators folder.
 
-### El editor
+- macOS: `~/Documents/Trading Hub/Indicadores`.
+- Windows: The corresponding `Documents\Trading Hub\Indicadores` folder.
+- Subfolders are accepted; `bin` and `obj` are ignored.
+- The empty folder is initialized with an example, `EjemploDeltaPorcentual.cs` (the filename is retained for compatibility).
+- Saving, adding, deleting or renaming files triggers compilation after approximately 0.6 seconds without edits. **Code → Recompile indicators** can force it.
+- All custom files are compiled together. If an error occurs, the last successful compiled indicators remain available and the status bar reports the failure.
+- Custom indicators appear under **My indicators** in the library and are marked with a star. Remove/re-add an already-open indicator to load a changed compiled version.
 
-**Código → Editor de indicadores…** (⇧⌘E), o el botón de código de la ventana Indicadores, abre un editor con la lista
-de archivos a la izquierda. **Nuevo** crea un indicador desde una plantilla (te pide el nombre de la clase) y **Guardar y
-compilar** (⌘S o ⌘B) lo guarda y recompila; los errores se listan abajo y tocando uno vas a la línea. El botón de la
-carpeta la abre en el Finder.
+### The editor
 
-### Ejemplo
+Open **Code → Indicator editor** (Shift+Ctrl/⌘+E) or the code icon in the Indicators dialog. **New** creates a C# class from a template. **Save and compile** saves and compiles; diagnostics below the editor navigate to the affected line. The folder button opens Explorer or Finder.
+
+### Example: average candle range
+
+The following example retains C# symbol names but uses English displayed labels:
 
 ```csharp
 using System.ComponentModel;
@@ -64,78 +57,62 @@ using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using TradingHub.Indicators;
 
-[DisplayName("Rango promedio")]
-[Category("Mis indicadores")]
-public class RangoPromedio : Indicator
+[DisplayName("Average Range")]
+[Category("My indicators")]
+public class AverageRangeIndicator : Indicator
 {
-    private readonly ValueDataSeries _serie = new("Rango", "Rango promedio") { Color = Color.Orange, Width = 2 };
-    private int _periodo = 14;
+    private readonly ValueDataSeries _series = new("Range", "Average range") { Color = Color.Orange, Width = 2 };
+    private int _period = 14;
 
-    [Display(Name = "Período", GroupName = "Configuración")]
+    [Display(Name = "Period", GroupName = "Settings")]
     [Range(1, 1000)]
-    public int Periodo
+    public int Period
     {
-        get => _periodo;
-        set { _periodo = value; RecalculateValues(); }
+        get => _period;
+        set { _period = value; RecalculateValues(); }
     }
 
-    public RangoPromedio()
+    public AverageRangeIndicator()
     {
-        Panel = IndicatorDataProvider.NewPanel; // en un panel propio, debajo del precio
-        DataSeries[0] = _serie;
+        Panel = IndicatorDataProvider.NewPanel;
+        DataSeries[0] = _series;
     }
 
     protected override void OnCalculate(int bar, decimal value)
     {
-        if (bar < Periodo - 1) return; // al principio no hay velas suficientes
-        decimal suma = 0;
-        for (int i = 0; i < Periodo; i++)
+        if (bar < Period - 1) return;
+        decimal sum = 0;
+        for (int i = 0; i < Period; i++)
         {
-            var vela = GetCandle(bar - i);
-            suma += vela.High - vela.Low;
+            var candle = GetCandle(bar - i);
+            sum += candle.High - candle.Low;
         }
-
-        _serie[bar] = suma / Periodo;
+        _series[bar] = sum / Period;
     }
 }
 ```
 
-### La API, en corto
+### Indicator API overview
 
-- Una clase pública que hereda de `Indicator`, con constructor sin parámetros, `[DisplayName("…")]` y `[Category("…")]`.
-  `System`, `System.Linq` y `System.Collections.Generic` ya están; sumá `System.ComponentModel`,
-  `System.ComponentModel.DataAnnotations`, `System.Drawing` y `TradingHub.Indicators` (y `TradingHub.Indicators.Drawing`,
-  `TradingHub.Rendering.Context` o `TradingHub.Rendering.Tools` si dibujás vos).
-- **Series**: `ValueDataSeries` (línea o histograma con `VisualType = VisualMode.Histogram`), `RangeDataSeries`
-  (bandas, con `new RangeValue { Upper = a, Lower = b }`) y `PaintbarsDataSeries` (pinta las velas). La principal va en
-  `DataSeries[0]` y las demás con `DataSeries.Add(…)`.
-- **Panel**: por defecto sobre el precio; `Panel = IndicatorDataProvider.NewPanel` lo pone en uno propio.
-- **Parámetros**: propiedades públicas con `[Display(Name = "…", GroupName = "…")]` y, si querés, `[Range(mín, máx)]`;
-  en el `set`, guardá el valor y llamá a `RecalculateValues()`.
-- **Cálculo**: `OnCalculate(int bar, decimal value)` se llama para cada vela (`bar` desde 0, `value` el cierre).
-  `GetCandle(bar)` da `Open`, `High`, `Low`, `Close`, `Volume`, `Ask`, `Bid`, `Delta`, `MaxDelta`, `MinDelta` y `Time`;
-  `CurrentBar` es la cantidad de velas. Cuidá los índices negativos al principio.
-- **Dibujo propio** (opcional): en el constructor, `EnableCustomDrawing = true;` y
-  `SubscribeToDrawingEvents(DrawingLayouts.Final);`, y sobrescribí `OnRender(RenderContext context, DrawingLayouts layout)`
-  usando `ChartInfo.GetXByBar(bar)`, `ChartInfo.GetYByPrice(precio)` y los métodos de `context` (`DrawLine`,
-  `FillRectangle`, `DrawString`…). Las velas visibles van de `FirstVisibleBarNumber` a `LastVisibleBarNumber`.
+- A public class extending `Indicator` with a parameterless constructor, `[DisplayName]`, and `[Category]`. Useful namespaces include `System.ComponentModel`, `System.ComponentModel.DataAnnotations`, `System.Drawing`, and `TradingHub.Indicators`.
+- **Data series:** `ValueDataSeries` for lines and histograms (`VisualType = VisualMode.Histogram`), `RangeDataSeries` for bands (`RangeValue { Upper, Lower }`), and `PaintbarsDataSeries` for candle coloring.
+- **Series registration:** The main data series is `DataSeries[0]`; add others with `DataSeries.Add(…)`.
+- **Panel placement:** Default overlay is the price panel; `Panel = IndicatorDataProvider.NewPanel` requests a dedicated indicator pane.
+- **Parameters:** Public properties decorated with `[Display]` and optionally `[Range]`. Call `RecalculateValues()` after changing inputs.
+- **Calculation:** `OnCalculate(int bar, decimal value)` receives bar indexes from zero and the closing price. `GetCandle(bar)` exposes Open, High, Low, Close, Volume, Ask, Bid, Delta, MaxDelta, MinDelta and Time. Handle warm-up indexes carefully.
+- **Optional drawing:** Enable custom drawing and subscribe to `DrawingLayouts.Final`; override `OnRender(RenderContext context, DrawingLayouts layout)`. Use `ChartInfo.GetXByBar`, `ChartInfo.GetYByPrice`, `context.DrawLine`, `FillRectangle`, `DrawString`, and the visible-bar range.
 
-Claude también escribe indicadores: pedíselo en el panel de Backtesting y los deja en esta carpeta (ver
-[Claude](asistente-claude.md)).
+Claude Code can help write indicator files using the assistant in Backtesting. See [Claude integration](asistente-claude.md).
 
-## DLLs extra
+## Additional indicator DLLs
 
-Si tenés indicadores ya compilados en una DLL (clases que heredan de `TradingHub.Indicators.Indicator`), copiala en
-`~/Library/Application Support/Trading Hub/Indicators` o en una carpeta `Indicators` al lado del ejecutable de la app.
-Se cargan al abrir Trading Hub y aparecen en su categoría (la de su `[Category]`, u «Otros») con la etiqueta «extra».
-Una que no se puede cargar deja un aviso y no frena al resto.
+Compiled assemblies containing classes extending `TradingHub.Indicators.Indicator` can be placed in the application's data directory under `Indicators` or in an `Indicators` folder alongside the executable. They are loaded at startup. Assemblies that fail to load are reported without preventing other indicators from loading.
 
-## Sumar los indicadores de ATAS
+## Adding ATAS indicators
 
-ATAS publica el código de sus indicadores en [AtasPlatform/Indicators](https://github.com/AtasPlatform/Indicators).
-Hay dos formas de usarlos en Trading Hub.
+ATAS publishes indicator sources at [AtasPlatform/Indicators](https://github.com/AtasPlatform/Indicators). Observe the original authors' licenses and redistribution restrictions.
 
-**Todos de una vez**, dentro de la app (desde la carpeta del repositorio):
+To add the collection locally on a supported development machine:
 
 ```bash
 git clone https://github.com/AtasPlatform/Indicators.git third_party/ATAS-Indicators
@@ -143,11 +120,9 @@ python3 tools/port_atas.py
 ./build-app.sh --install
 ```
 
-`tools/port_atas.py` copia los indicadores de la carpeta `Technical` a `src/TradingHub.Indicators.Technical/Atas`,
-cambia los namespaces de ATAS por los de Trading Hub (la tabla de abajo) sin tocar la lógica y aplica unos pocos
-arreglos para que compilen y no dividan por cero. Deja afuera lo que depende de partes internas de ATAS (sus editores
-de ventanas, el heatmap y el DOM v3). Si querés excluir otros, pasalos separados por coma en
-`TRADINGHUB_PORT_EXCLUDE=Archivo1.cs,Archivo2.cs`. Para actualizarlos cuando ATAS publique cambios:
+The script copies selected `Technical` sources into `src/TradingHub.Indicators.Technical/Atas`, remaps namespaces for Trading Hub, and applies compatibility fixes. Indicators relying on unavailable ATAS internals are excluded. `TRADINGHUB_PORT_EXCLUDE=File1.cs,File2.cs` can exclude other files.
+
+To refresh the third-party sources:
 
 ```bash
 git -C third_party/ATAS-Indicators pull
@@ -155,32 +130,24 @@ python3 tools/port_atas.py
 ./build-app.sh --install
 ```
 
-`third_party/` y `src/TradingHub.Indicators.Technical/Atas/` están en el `.gitignore`: el código de ATAS queda en tu
-copia y no se sube si hacés un fork.
+The `third_party/` and generated local `Atas/` folders are excluded from Git to avoid redistributing third-party code.
 
-**Uno por uno**, sin compilar la app: copiá el `.cs` en `~/Documents/Trading Hub/Indicadores` y se compila como un
-indicador propio (con la misma adaptación de namespaces). Los que usan otros indicadores de ATAS necesitan que copies
-también esos: por ejemplo, el `CCI.cs` y el `Momentum.cs` de ATAS usan su `SMA.cs`. Lo mismo vale para indicadores en C#
-de cualquier otra fuente de código público escritos para la API de ATAS.
+Alternatively, copy an individual compatible C# file into the user indicator directory. Some ATAS indicator classes depend on other indicators (for example CCI/Momentum on SMA), so include their dependencies.
 
-Esos indicadores son de sus autores: usalos respetando la licencia de cada fuente.
+On Windows, use the appropriate local .NET build workflow rather than the macOS `build-app.sh` install command.
 
-## Compatibilidad con la API de ATAS
+## ATAS API compatibility
 
-La API de indicadores de Trading Hub tiene la misma forma que la de ATAS (`Indicator`, `OnCalculate`, `DataSeries`,
-`OnRender`, `GetCandle`, `ChartInfo`…), así que podés pegar indicadores escritos para ATAS. Antes de compilar, Trading Hub
-cambia solo los namespaces:
+Trading Hub exposes familiar indicator methods and types such as `Indicator`, `OnCalculate`, `DataSeries`, `OnRender`, `GetCandle`, and `ChartInfo`.
 
-| En el código de ATAS | Se compila como |
+At compilation time it maps several namespaces:
+
+| ATAS source namespace | Trading Hub target |
 |---|---|
-| `ATAS.Indicators` · `ATAS.Indicators.Drawing` · `ATAS.Indicators.Technical` | `TradingHub.Indicators` · `TradingHub.Indicators.Drawing` · `TradingHub.Indicators.Technical` |
+| `ATAS.Indicators`, `ATAS.Indicators.Drawing`, `ATAS.Indicators.Technical` | `TradingHub.Indicators`, `TradingHub.Indicators.Drawing`, `TradingHub.Indicators.Technical` |
 | `ATAS.DataFeedsCore` | `TradingHub.Trading` |
-| `OFT.Rendering` y sus `Context`, `Context.GDIPlus`, `Settings`, `Tools`, `Control` | `TradingHub.Rendering` y los equivalentes |
-| `OFT.Attributes` · `OFT.Attributes.Editors` · `OFT.Localization` | `TradingHub.Attributes` · `TradingHub.Attributes.Editors` · `TradingHub.Localization` |
-| `Utils.Common` · `Utils.Common.Logging` · `Utils.Common.Collections` | `TradingHub.Common` y los equivalentes |
+| `OFT.Rendering` and rendering subnamespaces | `TradingHub.Rendering` and related equivalents |
+| `OFT.Attributes`, `OFT.Attributes.Editors`, `OFT.Localization` | `TradingHub.Attributes`, `TradingHub.Attributes.Editors`, `TradingHub.Localization` |
+| `Utils.Common` and related logging/collection subnamespaces | `TradingHub.Common` equivalents |
 
-Además están definidos los alias `CrossColor` y `CrossColors` (= `System.Drawing.Color`), `CrossPen`, `CrossPens`,
-`CrossSolidBrush`, `CrossKey` y `CrossKeyEventArgs`, y los símbolos de preprocesador `TRADINGHUB` y `CROSS_PLATFORM`.
-Con `#if TRADINGHUB … #else … #endif` un mismo archivo puede tener lo que solo compila acá y lo que solo compila en ATAS.
-La adaptación vale también para las estrategias. No todo lo de ATAS tiene equivalente: si algo no compila, el error
-dice qué falta.
+Additional compatibility types include `CrossColor`, `CrossColors`, `CrossPen`, `CrossPens`, `CrossSolidBrush`, `CrossKey`, and `CrossKeyEventArgs`. The source symbols `TRADINGHUB` and `CROSS_PLATFORM` can be used with conditional compilation. Not every ATAS API is supported: compile diagnostics identify unavailable features.
