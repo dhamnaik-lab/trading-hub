@@ -18,7 +18,7 @@ Original project created by [**@ralphtradesz**](https://x.com/ralphtradesz). Thi
 
 </div>
 
-> **Fork status:** The main navigation and Settings have been translated into English. Other application screens, some reports, the documentation, and the screenshots are being translated in stages. A complete English release has **not** been verified. The original project's [Windows installers](https://github.com/ralphtradesz/trading-hub/releases) are **upstream builds**, not builds of this English fork.
+> **Fork status:** The Markdown documentation is available in English, while application UI localization, report text and screenshot replacement remain in progress. A fully English, runtime-verified application release has **not** been published or confirmed. The original project's [Windows installers](https://github.com/ralphtradesz/trading-hub/releases) are **upstream builds**, not builds of this English fork.
 
 ## Overview
 
@@ -155,7 +155,7 @@ Alternatively, place a compatible indicator `.cs` file in the user indicators di
 | Development | [docs/desarrollo.md](docs/desarrollo.md) |
 | Windows porting notes | [PORTAR_A_WINDOWS.md](PORTAR_A_WINDOWS.md) |
 
-The filenames are intentionally unchanged to preserve existing links while the remaining documents are translated.
+The documentation filenames are intentionally unchanged for backward-compatible links. All 19 Markdown guides have been translated, but their technical instructions still require cross-platform build and runtime verification.
 
 ## Acknowledgments and support
 
