@@ -471,7 +471,7 @@ public sealed class ClaudeCodeBridge
         var cli = FindCli();
         if (cli == null)
         {
-            Post(() => Finished?.Invoke(new ClaudeResult(true, $"No encontré Claude Code en esta {Os.Device}. Instalalo desde claude.com/claude-code y volvé a intentar.", 0, 0, false)));
+            Post(() => Finished?.Invoke(new ClaudeResult(true, $"Claude Code was not found on this {Os.Device}. Install it from claude.com/claude-code and retry.", 0, 0, false)));
             return;
         }
 
@@ -582,13 +582,13 @@ public sealed class ClaudeCodeBridge
             if (!gotResult)
             {
                 isError = true;
-                finalText.Append(stderr.Length > 0 ? stderr.ToString().Trim() : $"Claude Code terminó sin respuesta (código {_proc.ExitCode}).");
+                finalText.Append(stderr.Length > 0 ? stderr.ToString().Trim() : $"Claude Code finished without a response (exit code {_proc.ExitCode}).");
             }
         }
         catch (Exception ex)
         {
             isError = true;
-            finalText.Append("No se pudo ejecutar Claude Code: " + ex.Message);
+            finalText.Append("Unable to run Claude Code: " + ex.Message);
         }
         finally
         {
@@ -730,7 +730,7 @@ public sealed class ClaudeCodeBridge
           principal) y `DataSeries.Add(_otra);` para las demás.
         - Panel: por defecto sobre el precio; para uno propio abajo (osciladores) `Panel = IndicatorDataProvider.NewPanel;`
           en el constructor.
-        - Parámetros: propiedades públicas con `[Display(Name = "Período", GroupName = "Configuración")]` y `[Range(1, 1000)]`;
+        - Parámetros: propiedades públicas con `[Display(Name = "Period", GroupName = "Settings")]` y `[Range(1, 1000)]`;
           en el set guardá el valor y llamá `RecalculateValues();`.
         - Cálculo: `protected override void OnCalculate(int bar, decimal value)` se llama para cada vela (bar = índice desde 0,
           value = cierre). `GetCandle(bar)` → Open, High, Low, Close, Volume, Ask, Bid, Delta, MaxDelta, MinDelta, Time.
