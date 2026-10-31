@@ -42,7 +42,7 @@ internal sealed class SettingsView : UserControl, IPage
         // zona horaria: las habituales primero
         var tz = new ComboBox { MinWidth = 320 };
         var common = new[] { "America/Argentina/Buenos_Aires", "America/New_York", "America/Chicago", "Europe/London", "Europe/Madrid", "UTC" };
-        tz.Items.Add(new ComboBoxItem { Content = $"Hora de esta {Os.Device} ({TimeZoneInfo.Local.Id})", Tag = "" });
+        tz.Items.Add(new ComboBoxItem { Content = $"This {Os.Device}'s time ({TimeZoneInfo.Local.Id})", Tag = "" });
         foreach (var id in common)
             if (TimeZoneInfo.TryFindSystemTimeZoneById(id, out var z)) tz.Items.Add(new ComboBoxItem { Content = Label(z), Tag = z.Id });
         tz.Items.Add(new Separator());
@@ -64,7 +64,7 @@ internal sealed class SettingsView : UserControl, IPage
                 }
             }
 
-            _status("Zona horaria actualizada");
+            _status("Time zone updated");
         };
 
         var confirm = Switch(s.ConfirmRealOrders, v => s.ConfirmRealOrders = v);
@@ -75,7 +75,7 @@ internal sealed class SettingsView : UserControl, IPage
             _svc.Hub.RecordLive = v;
         });
 
-        var appearance = new Ui.Segmented<string>(new[] { (AppTheme.Dark, "Oscuro", (string?)"Negro"), (AppTheme.Light, "Claro", "Blanco") });
+        var appearance = new Ui.Segmented<string>(new[] { (AppTheme.Dark, "Dark", (string?)"Black"), (AppTheme.Light, "Light", "White") });
         appearance.Select(AppTheme.IsLight ? AppTheme.Light : AppTheme.Dark);
         appearance.SelectionChanged += mode =>
         {
@@ -84,20 +84,20 @@ internal sealed class SettingsView : UserControl, IPage
             AppTheme.Apply(mode);
         };
         var general = Section("General", MaterialIconKind.TuneVariant,
-            Setting("Apariencia", "Negro o blanco en toda la plataforma (también con el botón de sol/luna arriba). Los colores propios de cada gráfico se mantienen.", appearance),
-            Setting("Zona horaria de los gráficos", "Horas del eje de tiempo, la cinta y las sesiones.", tz),
-            Setting("Sonidos de alerta", "Alertas de precio, Big Trades y avisos de indicadores.", sounds)
+            Setting("Appearance", "Choose dark or light appearance for the entire app (also available from the sun/moon button). Individual chart colors are preserved.", appearance),
+            Setting("Chart time zone", "Time axis, time and sales, and session times.", tz),
+            Setting("Alert sounds", "Price alerts, large trades, and indicator notifications.", sounds)
             );
 
-        var trading = Section("Operar", MaterialIconKind.SwapVertical,
-            Setting("Confirmar órdenes reales", "Pide confirmación antes de enviar órdenes a cuentas reales (además de lo configurado en cada conexión).", confirm),
-            Setting("Cuenta simulada", $"Saldo inicial {_svc.Portfolio.BeginBalance:N2}. Las órdenes del simulador se llenan con la cola del libro y el tape real.", new TextBlock()));
+        var trading = Section("Trading", MaterialIconKind.SwapVertical,
+            Setting("Confirm live orders", "Ask for confirmation before sending orders to live accounts (in addition to each connection's settings).", confirm),
+            Setting("Simulated account", $"Starting balance {_svc.Portfolio.BeginBalance:N2}. Simulated orders use the order book queue and actual trade tape for fills.", new TextBlock()));
 
-        var data = Section("Datos", MaterialIconKind.DatabaseOutline,
-            Setting("Grabar lo que llega en vivo", "Guarda cada operación recibida para reabrir gráficos al instante, hacer replay y backtests.", record),
-            Setting("Carpeta de datos", AppPaths.Root, Ui.Button("Abrir", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.Root))),
-            Setting("Indicadores propios (C#)", AppPaths.UserIndicators, Ui.Button("Abrir", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.UserIndicators))),
-            Setting("Estrategias (C#)", AppPaths.Strategies, Ui.Button("Abrir", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.Strategies))));
+        var data = Section("Data", MaterialIconKind.DatabaseOutline,
+            Setting("Record live data", "Store incoming trades for instant chart loading, replay, and backtesting.", record),
+            Setting("Data folder", AppPaths.Root, Ui.Button("Open", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.Root))),
+            Setting("Custom indicators (C#)", AppPaths.UserIndicators, Ui.Button("Open", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.UserIndicators))),
+            Setting("Strategies (C#)", AppPaths.Strategies, Ui.Button("Open", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.Strategies))));
 
         var sleep = BuildSleep();
         var liveStart = BuildLiveStart();
@@ -106,8 +106,8 @@ internal sealed class SettingsView : UserControl, IPage
         var logo = new Image { Source = AppIcon.Bitmap, Width = 56, Height = 56 };
         var about = Ui.Card(Ui.H(16, logo, Ui.V(4,
             new TextBlock { Text = TradingHub.Common.Product.Name, Classes = { "h1" } },
-            Ui.Muted($"Versión {typeof(App).Assembly.GetName().Version?.ToString(3)} · .NET {Environment.Version} · Avalonia + SkiaSharp"),
-            Ui.Faint("Plataforma personal de order flow: footprint, DOM, cinta, indicadores en C#, estrategias y backtesting."),
+            Ui.Muted($"Version {typeof(App).Assembly.GetName().Version?.ToString(3)} · .NET {Environment.Version} · Avalonia + SkiaSharp"),
+            Ui.Faint("Personal order-flow platform: footprint charts, DOM, time and sales, C# indicators, strategies, and backtesting."),
             Creator())));
 
         return new StackPanel
@@ -115,7 +115,7 @@ internal sealed class SettingsView : UserControl, IPage
             Spacing = 18,
             MaxWidth = 860,
             HorizontalAlignment = HorizontalAlignment.Left,
-            Children = { Ui.V(4, Ui.H1("Ajustes"), Ui.Muted("Preferencias generales de Trading Hub")), general, trading, liveStart, sleep, hotkeys, data, about },
+            Children = { Ui.V(4, Ui.H1("Settings"), Ui.Muted("General Trading Hub preferences")), general, trading, liveStart, sleep, hotkeys, data, about },
         };
     }
 
@@ -135,13 +135,13 @@ internal sealed class SettingsView : UserControl, IPage
             Services.MenuBar.Current?.Refresh();
         });
         var stay = Os.IsWindows
-            ? Setting("Seguir en la bandeja del sistema al cerrar la ventana", "Cerrar la ventana no cierra Trading Hub: queda abajo a la derecha, en la bandeja del sistema (junto al reloj; si no lo ves, tocá la flechita ^), con las estrategias en vivo trabajando. Tocando su ícono se abre un panel con las estrategias y las posiciones en tiempo real; con clic derecho, un menú. Para cerrarla del todo: Alt+F4 o «Salir de Trading Hub» en ese panel.", menuBar)
-            : Setting("Seguir en la barra de menú al cerrar la ventana", "Cerrar la ventana no cierra Trading Hub: queda arriba a la derecha, en la barra de menú, con las estrategias en vivo trabajando. Tocando su ícono se abre un panel con las estrategias y las posiciones en tiempo real. Para cerrarla del todo: ⌘Q o «Salir de Trading Hub» en ese panel.", menuBar);
-        return Section("Estrategias en vivo", MaterialIconKind.PlayCircleOutline,
+            ? Setting("Keep running in the system tray when the window closes", "Closing the window leaves Trading Hub running in the system tray near the clock (use the ^ arrow if hidden), with live strategies still active. Click its icon to view strategies and positions; right-click for the menu. To quit completely, press Alt+F4 or choose 'Quit Trading Hub' in that panel.", menuBar)
+            : Setting("Keep running in the menu bar when the window closes", "Closing the window leaves Trading Hub running in the macOS menu bar, with live strategies still active. Click its icon to view strategies and positions. To quit completely, press ⌘Q or choose 'Quit Trading Hub' in that panel.", menuBar);
+        return Section("Live strategies", MaterialIconKind.PlayCircleOutline,
             stay,
-            Setting("Reanudarlas solas al abrir Trading Hub", $"Las que estaban corriendo cuando se cerró Trading Hub (o se apagó la {Os.Device}) vuelven a arrancar solas unos segundos después de abrir, con sus mismos parámetros, tamaño y límites; las pausadas vuelven pausadas. Apagado: esperan que las reanudes desde En vivo.", auto),
-            Setting("También las de cuentas reales", "Apagado (recomendado): las que operan dinero real esperan que las reanudes vos. Encendido: arrancan solas como las demás.", real),
-            Setting("Elegir el contrato solo (minis o micros)", "Si el tamaño de una estrategia de futuros pide una fracción del mini (por ejemplo 1 NQ × 0,5), las órdenes van al micro con la misma exposición (5 MNQ), mirando el mismo gráfico. Con minis enteros usa el mini. Con una posición abierta sigue en el mismo contrato y cambia cuando queda plana.", smart));
+            Setting("Automatically resume when Trading Hub opens", $"Strategies that were running when Trading Hub closed (or this {Os.Device} shut down) automatically resume after startup with the same parameters, size, and limits; paused strategies remain paused. When off, resume them manually from Live.", auto),
+            Setting("Include live accounts", "Off (recommended): real-money strategies wait for you to resume them. On: they restart automatically.", real),
+            Setting("Automatically select mini or micro contracts", "If a futures strategy needs a fractional mini contract (for example 1 NQ × 0.5), orders use the equivalent micro exposure (5 MNQ) while using the same chart. Whole minis use the mini contract. Open positions stay on their current contract until flat.", smart));
     }
 
     // ===================================================================== modo sin dormir
@@ -161,7 +161,7 @@ internal sealed class SettingsView : UserControl, IPage
         };
         handle.PointerPressed += (_, _) => Shell.OpenUrl("https://x.com/ralphtradesz");
         ToolTip.SetTip(handle, "x.com/ralphtradesz");
-        return Ui.H(6, new TextBlock { Text = "Creado por", Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center }, handle);
+        return Ui.H(6, new TextBlock { Text = "Created by", Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center }, handle);
     }
 
     private Control BuildSleep()
@@ -171,11 +171,11 @@ internal sealed class SettingsView : UserControl, IPage
         if (!SleepGuard.SupportsLidClosed)
         {
             // Windows: la tapa cerrada la maneja la configuración de energía (Trading Hub no la puede evitar): se explica cómo
-            var powerOptions = Ui.Button("Opciones de energía", MaterialIconKind.Power, Shell.OpenWindowsPowerOptions);
+            var powerOptions = Ui.Button("Power options", MaterialIconKind.Power, Shell.OpenWindowsPowerOptions);
             RefreshSleep();
-            return Section("Modo sin dormir", MaterialIconKind.SleepOff,
-                Setting("Mantener la PC despierta", "Mientras haya estrategias en vivo o agentes de Claude trabajando, la PC no se suspende por inactividad (la pantalla sí se puede apagar). Sin contraseña.", awake),
-                Setting("Con la tapa cerrada", "Al cerrar la tapa de una notebook, Windows hace lo que diga su configuración de energía (casi siempre, suspenderse) y Trading Hub no lo puede evitar. Para que siga funcionando así: Opciones de energía → «Elegir el comportamiento del cierre de la tapa» → «No hacer nada», mejor solo con el cargador conectado. Con la tapa cerrada la notebook no ventila igual: no la guardes en un bolso así.", powerOptions),
+            return Section("Prevent sleep", MaterialIconKind.SleepOff,
+                Setting("Keep this PC awake", "Prevent idle sleep while live strategies or Claude agents are running. The screen may still turn off. No password required.", awake),
+                Setting("With the lid closed", "When you close a laptop lid, Windows follows its power settings (usually sleep). Trading Hub cannot override that setting. To keep running, open Power options → 'Choose what closing the lid does' → 'Do nothing', preferably only while plugged in. A closed laptop may have reduced ventilation; do not leave it running in a bag.", powerOptions),
                 _sleepState);
         }
 
@@ -183,24 +183,24 @@ internal sealed class SettingsView : UserControl, IPage
         var lid = Switch(s.KeepAwakeLidClosed, v =>
         {
             s.KeepAwakeLidClosed = v;
-            _status(v ? "Tapa cerrada: cuando haya algo corriendo, macOS te pide la contraseña una vez (se deshace solo al cerrar Trading Hub)" : "Tapa cerrada desactivado: al cerrarla, la Mac se duerme como siempre");
+            _status(v ? "Lid closed: macOS prompts once for your password while tasks are running (automatically reverted on quit)" : "Lid-closed mode disabled: the Mac sleeps normally when the lid closes");
         });
         power.IsEnabled = s.KeepAwakeLidClosed;
         lid.IsCheckedChanged += (_, _) => power.IsEnabled = lid.IsChecked == true;
         RefreshSleep();
-        return Section("Modo sin dormir", MaterialIconKind.SleepOff,
-            Setting("Mantener la Mac despierta", "Mientras haya estrategias en vivo o agentes de Claude trabajando, la Mac no se duerme por inactividad (la pantalla sí se puede apagar). Sin contraseña.", awake),
-            Setting("Seguir con la tapa cerrada", "Al cerrar la tapa macOS duerme todo. Con esto activado, cuando haya algo corriendo Trading Hub te pide la contraseña de administrador una vez y la Mac sigue funcionando con la tapa cerrada mientras Trading Hub esté abierto. Se deshace solo al cerrar Trading Hub (aunque se cierre de golpe). Con la tapa cerrada la Mac no ventila igual: no la guardes en un bolso así.", lid),
-            Setting("Solo con el cargador conectado", "Con la batería, la Mac se duerme al cerrar la tapa aunque esté activado (recomendado).", power),
+        return Section("Prevent sleep", MaterialIconKind.SleepOff,
+            Setting("Keep this Mac awake", "Prevent idle sleep on this Mac while live strategies or Claude agents are running. The screen may still turn off. No password required.", awake),
+            Setting("Keep running with the lid closed", "Normally macOS sleeps when the lid closes. With this setting enabled, Trading Hub prompts once for your administrator password while tasks are active and keeps the Mac running with the lid closed. It resets on exit, even after a crash. Closing the lid reduces ventilation; do not leave a running Mac in a bag.", lid),
+            Setting("Only when plugged in", "On battery power, the Mac sleeps when the lid closes even if this option is enabled (recommended).", power),
             _sleepState);
     }
 
     private void RefreshSleep()
     {
         var g = _svc.Sleep;
-        string reason = _svc.AwakeReason() ?? "no hay nada corriendo";
-        _sleepState.Text = (g.Awake ? $"Ahora: despierta ({g.Reason})." : $"Ahora: puede dormir ({reason}).") +
-                           (!SleepGuard.SupportsLidClosed ? "" : g.LidHelperRunning ? " Tapa cerrada: activo." : _svc.Settings.KeepAwakeLidClosed ? " Tapa cerrada: se activa cuando haya algo corriendo." : "") +
+        string reason = _svc.AwakeReason() ?? "nothing is running";
+        _sleepState.Text = (g.Awake ? $"Current state: awake ({g.Reason})." : $"Current state: can sleep ({reason}).") +
+                           (!SleepGuard.SupportsLidClosed ? "" : g.LidHelperRunning ? " Lid-closed mode: active." : _svc.Settings.KeepAwakeLidClosed ? " Lid-closed mode: enables while tasks are running." : "") +
                            (g.LidError != null ? " " + g.LidError : "");
     }
 
@@ -219,13 +219,13 @@ internal sealed class SettingsView : UserControl, IPage
             {
                 var def = h;
                 var key = new Button { MinWidth = 150, HorizontalContentAlignment = HorizontalAlignment.Center, Padding = new Thickness(10, 4) };
-                ToolTip.SetTip(key, Os.IsWindows ? "Hacé clic y presioná la combinación. Esc cancela · Retroceso lo deja sin asignar." : "Hacé clic y presioná la combinación. Esc cancela · ⌫ lo deja sin asignar.");
+                ToolTip.SetTip(key, Os.IsWindows ? "Click and press a key combination. Esc cancels · Backspace clears the shortcut." : "Click and press a key combination. Esc cancels · ⌫ clears the shortcut.");
                 _hotkeyButtons[def.Id] = key;
                 bool capturing = false;
                 key.Click += (_, _) =>
                 {
                     capturing = true;
-                    key.Content = "Presioná una tecla…";
+                    key.Content = "Press a key…";
                     key.Classes.Add("primary");
                     key.Focus();
                 };
@@ -261,7 +261,7 @@ internal sealed class SettingsView : UserControl, IPage
                         {
                             s.Hotkeys[other.Id] = "";
                             RefreshHotkey(other.Id);
-                            _status($"{Hotkeys.Pretty(gesture)} estaba en «{other.Name}»: se pasó a «{def.Name}»");
+                            _status($"{Hotkeys.Pretty(gesture)} was assigned to '{other.Name}'; now assigned to '{def.Name}'");
                         }
 
                         s.Hotkeys[def.Id] = gesture;
@@ -282,21 +282,21 @@ internal sealed class SettingsView : UserControl, IPage
             }
         }
 
-        var reset = Ui.Button("Restablecer los de fábrica", MaterialIconKind.Restore, () =>
+        var reset = Ui.Button("Restore defaults", MaterialIconKind.Restore, () =>
         {
             s.Hotkeys.Clear();
             s.Save();
             foreach (var h in Hotkeys.All) RefreshHotkey(h.Id);
-            _status("Atajos restablecidos");
+            _status("Shortcuts reset");
         });
         reset.HorizontalAlignment = HorizontalAlignment.Left;
         var note = new TextBlock
         {
-            Text = "Funcionan en Trading y en las ventanas de gráfico aparte, sobre el gráfico activo. Los de operar vienen sin asignar; en cuentas reales siguen pidiendo confirmación si está activada.",
+            Text = "Shortcuts work in Trading and detached chart windows, on the active chart. Trading shortcuts are unassigned by default; live accounts still require confirmation when enabled.",
             Classes = { "muted", "small" },
             TextWrapping = TextWrapping.Wrap,
         };
-        return Ui.Card(Ui.V(16, Ui.H(10, Ui.Icon(MaterialIconKind.KeyboardOutline, 18, Ui.Accent), Ui.H2("Atajos de teclado")), note, list, reset), 20);
+        return Ui.Card(Ui.V(16, Ui.H(10, Ui.Icon(MaterialIconKind.KeyboardOutline, 18, Ui.Accent), Ui.H2("Keyboard shortcuts")), note, list, reset), 20);
     }
 
     private void RefreshHotkey(string id)
