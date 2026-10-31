@@ -117,7 +117,7 @@ internal static class ReportBuilder
             meta.Add($"**Period:** {Date(x.Portfolio.From)} – {Date(x.Portfolio.To)}");
         }
 
-        meta.Add($"**Generated:** {DateTimeText(DateTime.Now)} con Trading Hub");
+        meta.Add($"**Generated:** {DateTimeText(DateTime.Now)} with Trading Hub");
         sb.AppendLine("> " + string.Join(" · ", meta));
         sb.AppendLine();
         if (VerdictText(x.Verdict) is { Length: > 0 } vt)
@@ -234,7 +234,7 @@ internal static class ReportBuilder
             {
                 ("Instrument", $"{s.Symbol} ({s.FeedId})"),
                 ("Bars", s.Period),
-                ("Desde", DateTimeText(s.FromUtc) + " UTC"),
+                ("From", DateTimeText(s.FromUtc) + " UTC"),
                 ("Hasta", DateTimeText(s.ToUtc) + " UTC"),
                 ("Calendar days", Num((s.ToUtc - s.FromUtc).TotalDays, 1)),
                 ("Ticks procesados", main.Ticks.ToString("N0", Es)),
@@ -354,7 +354,7 @@ internal static class ReportBuilder
             if (a.Histogram.Count > 0)
             {
                 images.Add(("distribucion.png", ReportCharts.Histogram(a.Histogram)));
-                sb.AppendLine("![Distribución de resultados]({{assets}}/distribucion.png)");
+                sb.AppendLine("![Trade P&L distribution]({{assets}}/distribucion.png)");
                 sb.AppendLine();
             }
 
@@ -454,7 +454,7 @@ internal static class ReportBuilder
             var om = w.OutSampleMetrics;
             KeyValues(sb, new[]
             {
-                ("Windows", $"{w.Windows.Count} · {w.InSampleDays} days de optimización y {w.OutSampleDays} de prueba ({(w.Anchored ? "anchored" : "rolling")})"),
+                ("Windows", $"{w.Windows.Count} · {w.InSampleDays} optimization days and {w.OutSampleDays} test days ({(w.Anchored ? "anchored" : "rolling")})"),
                 ("Metric", w.Metric.ToString()),
                 ("Eficiencia walk-forward", Num(w.WalkForwardEfficiency)),
                 ("Ventanas ganadoras", Pct(w.ProfitableWindowsPercent)),
@@ -541,12 +541,12 @@ internal static class ReportBuilder
             });
             var labels = pf.Components.Select(c => c.Label).ToList();
             images.Add(("correlacion.png", ReportCharts.Correlation(labels, pf.Correlation)));
-            sb.AppendLine("![Correlación]({{assets}}/correlacion.png)");
+            sb.AppendLine("![Correlation]({{assets}}/correlacion.png)");
             sb.AppendLine();
             if (main != null)
             {
                 images.Add(("portafolio.png", ReportCharts.Equity(pf.Equity.Select(p => (p.Time, p.Equity)).ToList(), x.PortfolioCapital, "Portfolio equity curve", PortfolioCurves(pf, x.PortfolioCapital))));
-                sb.AppendLine("![Curva del portafolio]({{assets}}/portafolio.png)");
+                sb.AppendLine("![Portfolio equity curve]({{assets}}/portafolio.png)");
                 sb.AppendLine();
             }
         }
