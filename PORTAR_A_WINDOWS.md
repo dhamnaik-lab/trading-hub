@@ -1,95 +1,91 @@
-# Portar Trading Hub a Windows con Claude
+# Trading Hub Windows port — technical reference
 
-> **Ya está hecho:** desde la versión 1.1.0 Trading Hub corre en Windows 10 y 11 con un instalador
-> ([descargalo acá](https://github.com/ralphtradesz/trading-hub/releases/latest)). Esta guía queda como referencia de
-> qué depende de cada sistema operativo y cómo se armó el porte (sirve también para llevarla a Linux).
+> **Historical note:** Trading Hub already supports Windows 10 and 11 in the current source. The initial port was completed in the upstream project's 1.1.0 timeframe. This document preserves the porting architecture and regression checklist, **not** a request to port the app again. Upstream installers are published by the [original author](https://github.com/ralphtradesz/trading-hub/releases) and do not automatically include this fork's English-language changes.
 
-Trading Hub está hecho en C#/.NET 10 con Avalonia y SkiaSharp, que funcionan igual en Windows. La mayor parte del
-código (datos, feeds, gráficos, backtesting, estrategias, indicadores) no depende del sistema operativo. Lo que sí es
-propio de macOS está en pocos lugares bien identificados, y esta guía te deja todo listo para que **Claude Code** haga
-el trabajo en una PC con Windows: el inventario de lo que hay que cambiar, el plan por etapas y el prompt completo.
+Trading Hub uses C#/.NET 10, Avalonia, and SkiaSharp. Most projects—data, market feeds, charts, backtesting, strategies, indicators, and the MCP laboratory—are platform-independent. The operating-system-specific concerns are secure credentials, power management, menus, process launching, paths, shortcuts, and packaging.
 
-> Requisitos en la PC: Windows 10/11 de 64 bits (x64 o ARM64), [Git](https://git-scm.com), el
-> [SDK de .NET 10](https://dotnet.microsoft.com/download) y [Claude Code](https://claude.com/claude-code) con tu sesión
-> iniciada (`npm install -g @anthropic-ai/claude-code` o el instalador oficial).
+For current installation commands see [Installation](docs/instalacion.md); for contribution constraints see [Development](docs/desarrollo.md).
 
-## Qué depende de macOS (inventario)
+## Platform-specific components
 
-| Dónde | Qué hace en macOS | Qué hacer en Windows |
+| Area | macOS implementation | Windows implementation / requirement |
 |---|---|---|
-| `build-app.sh` | Publica para `osx-arm64`, arma `Trading Hub.app`, lo firma con `codesign` y lo copia con `ditto` | Un `build-windows.ps1` que publique `win-x64` (y `win-arm64`) self-contained, con ícono `.ico`; opcional, un instalador (Inno Setup o MSIX) |
-| `src/TradingHub.App/Services/Connections.cs` (clase `Keychain`) | Guarda las claves en el Llavero con `/usr/bin/security` | Credential Manager de Windows (`CredWrite`/`CredRead`/`CredDelete` de `advapi32.dll`) o DPAPI (`ProtectedData`) con un archivo cifrado por usuario. Mantener la misma interfaz `Get`/`Set` |
-| `src/TradingHub.App/Services/SleepGuard.cs` | Evita que la Mac se duerma (IOKit `IOPMAssertion`) y, con la tapa cerrada, `pmset` con permiso de administrador vía `osascript` | `SetThreadExecutionState(ES_CONTINUOUS \| ES_SYSTEM_REQUIRED)` de `kernel32.dll`. La opción de la tapa cerrada se oculta o se cambia por una explicación de la configuración de energía de Windows |
-| `src/TradingHub.App/Program.cs` | `CGGetActiveDisplayList` (espera a que haya pantalla antes de arrancar) | Saltear esa espera en Windows (`OperatingSystem.IsMacOS()`) |
-| `src/TradingHub.App/Services/MenuBar.cs` | Ícono en la barra de menú (Avalonia `TrayIcon`) y la posición del mouse con `objc_msgSend` | `TrayIcon` funciona en la bandeja de Windows; la posición del mouse sale de `GetCursorPos` (`user32.dll`) y el panel se abre arriba de la barra de tareas |
-| `src/TradingHub.App/Windows/MainWindow.cs` (`Shell.OpenUrl`, `OpenFolder`…) y `Views/StrategiesView.Reports.cs` | Abre links, carpetas y reportes con `open` | `Process.Start(new ProcessStartInfo(ruta) { UseShellExecute = true })`; para mostrar un archivo en su carpeta, `explorer.exe /select,"ruta"` |
-| `src/TradingHub.App/Views/TradingView.cs` | Sonidos con `afplay` | `System.Media.SoundPlayer` (WAV) o un reproductor de Avalonia; mantener los mismos archivos de sonido |
-| `src/TradingHub.App/Services/ClaudeCode.cs` | Busca la CLI `claude` en rutas de Mac, arma el `PATH` con `/usr/local/bin`, `/opt/homebrew/bin`… y abre la Terminal con `osascript` para `/login` | Buscar `claude.exe`/`claude.cmd` en `%USERPROFILE%\.local\bin`, `%APPDATA%\npm`, `%LOCALAPPDATA%\Programs` y el `PATH` (con `where claude`); abrir `cmd.exe /k claude /login` o Windows Terminal (`wt.exe`) |
-| `MainWindow` (barra de título) | La navegación va dentro de la barra de título de macOS (`ExtendClientAreaToDecorationsHint`), con los semáforos a la izquierda | En Windows los botones de la ventana van a la derecha: dejar espacio a la derecha en vez de a la izquierda y probar que arrastrar y maximizar funcionen |
-| Atajos (`KeyModifiers.Meta`, ~30 usos) | ⌘ | `Ctrl` en Windows: un helper `Keys.Command` que devuelva `Meta` en Mac y `Control` en Windows, y textos de ayuda que digan «Ctrl» |
-| Fuentes (`"Menlo, monospace"`, ~12 usos) | Fuente monoespaciada de Mac | `"Cascadia Mono, Consolas, monospace"` en Windows (un `Ui.MonoFont` común) |
-| `TradingHub.Common.Product` | Datos en `~/Library/Application Support/Trading Hub` y archivos en `~/Documents/Trading Hub` | Ya usa `Environment.SpecialFolder`: en Windows queda `%APPDATA%\Trading Hub` y `Documentos\Trading Hub` sin cambios. Revisar comentarios y textos de la interfaz que digan «Mac» |
-| Textos de la interfaz | Mencionan «la Mac», «Llavero de macOS», «barra de menú», ⌘Q | Textos por plataforma (`OperatingSystem.IsWindows()`): «la PC», «Administrador de credenciales», «bandeja del sistema», Alt+F4 |
+| Build and packaging | `build-app.sh`, `osx-arm64` app bundle, `codesign`, `ditto` | `build-windows.ps1`, self-contained `win-x64` and `win-arm64`, NSIS installer |
+| Secure credentials | Keychain through `/usr/bin/security` | Windows Credential Manager / dedicated secure store through `WindowsCredentialStore` |
+| Sleep policy | `SleepGuard.cs`, IOKit power assertions and optional `pmset` for lid-closed operation | `SetThreadExecutionState`; Windows itself manages lid-close behavior |
+| Startup | macOS active-display checks | Platform guard to avoid invoking macOS-only display APIs on Windows |
+| Menu and tray | Avalonia `TrayIcon`, macOS pointer positioning via Objective-C | Windows system tray and native pointer positioning via `GetCursorPos` |
+| Open URLs/files | macOS `open` | `Process.Start` with `UseShellExecute = true`; `explorer.exe /select,...` where appropriate |
+| Sound playback | macOS playback helpers | Windows-supported audio playback |
+| Claude Code | Common Mac CLI folders and Terminal authorization | `claude.exe` / `claude.cmd` in user/npm paths and Windows terminal login |
+| Window chrome | Mac traffic-light buttons on left | Windows title-bar buttons on right |
+| Shortcuts | Command/Option keys | Ctrl/Alt keys; use common `Keys.Command` mapping |
+| Fonts | Mac monospace fonts | Cascadia Mono / Consolas fallback |
+| Application data | `~/Library/Application Support/Trading Hub` | `%APPDATA%\Trading Hub` |
+| User strategies and indicators | `~/Documents/Trading Hub` | `Documents\Trading Hub` |
+| Platform-specific wording | Mac, Keychain, menu bar, Command-Q | PC, Credential Manager, system tray, Alt+F4 |
 
-Todo lo demás (Rithmic, Tradovate, Binance, Bybit, OANDA, Alpaca, cTrader, Databento, el motor de backtest, el
-walk-forward, los gráficos con Skia, el compilador de estrategias con Roslyn y el laboratorio MCP) es multiplataforma.
+Core source locations include `src/TradingHub.App/Services/Connections.cs`, `SleepGuard.cs`, `MenuBar.cs`, `ClaudeCode.cs`, `src/TradingHub.App/Windows/MainWindow.cs`, and `src/TradingHub.App/Program.cs`.
 
-## Plan por etapas
+## Historical porting sequence
 
-1. **Que compile y corra.** `dotnet build TradingHub.slnx` y `dotnet test tests/TradingHub.Tests` en Windows. Aislar lo
-   de Mac detrás de `OperatingSystem.IsMacOS()` o de interfaces con dos implementaciones (por ejemplo `ISecretStore`,
-   `ISleepGuard`, `IShell`), sin romper la versión de Mac.
-2. **Claves seguras.** El almacén de claves de Windows, con pruebas que no toquen las credenciales reales del usuario
-   (como en Mac, una variable de entorno apunta a un archivo de prueba).
-3. **Integraciones del sistema.** Sueño, bandeja del sistema, abrir links y carpetas, sonidos, Claude Code.
-4. **Interfaz.** Barra de título, atajos con Ctrl, fuentes, textos por plataforma. Revisar cada sección con las escenas
-   sin pantalla (`dotnet run --project tools/TradingHub.UiSnapshot -- <carpeta> 4 <escena>`).
-5. **Empaquetado.** `build-windows.ps1` con publicación self-contained e ícono, y opcionalmente un instalador.
-6. **Verificación.** Pruebas unitarias, escenas y una prueba manual con la cuenta simulada y datos gratis de Binance.
+The original porting plan was:
 
-## El prompt para Claude Code
+1. **Build and launch:** Run `dotnet build TradingHub.slnx` and `dotnet test tests/TradingHub.Tests` on Windows, isolating Mac-only APIs behind platform guards or small interfaces.
+2. **Secure secrets:** Implement a Windows credential store without exporting secrets to plaintext files. Use test-only credential storage in automated checks.
+3. **OS integration:** Add Windows sleep handling, system tray, URL/file opening, sounds, and Claude CLI discovery.
+4. **UI:** Adapt window chrome, command-key mapping, fonts, and platform-specific text. Verify UI snapshot scenes.
+5. **Packaging:** Publish self-contained x64/ARM64 builds with app icon; build an installer.
+6. **Final checks:** Run unit tests, UI snapshots, and manual simulated-account flows without real broker orders.
 
-Cloná el repositorio en la PC con Windows, abrí una terminal en la carpeta, corré `claude` y pegá esto:
+These are regression categories now that Windows support exists; they should not be reimplemented without evidence of defects.
 
-```
-Quiero portar Trading Hub a Windows sin romper la versión de macOS. Es una app de escritorio en C#/.NET 10 con
-Avalonia y SkiaSharp (solución TradingHub.slnx). Leé primero CLAUDE.md, README.md, docs/desarrollo.md y
-PORTAR_A_WINDOWS.md (tiene el inventario de lo que depende de macOS y el plan por etapas).
+## Source-maintenance prompt for Claude Code
 
-Reglas:
-- La versión de macOS tiene que seguir compilando y funcionando igual. Separá lo de cada sistema con
-  OperatingSystem.IsMacOS()/IsWindows() o, mejor, con interfaces chicas (ISecretStore, ISleepGuard, IShell, ISound)
-  y una implementación por plataforma. Nada de copiar archivos enteros.
-- Nunca guardes claves, tokens ni contraseñas en archivos de texto: en Windows usá el Administrador de credenciales
-  (advapi32 CredWrite/CredRead/CredDelete) o DPAPI. Las pruebas no pueden tocar las credenciales reales: usá una
-  variable de entorno (como TRADINGHUB_KEYCHAIN_FILE en Mac) para apuntar a un almacén de prueba.
-- Las herramientas y pruebas nunca usan los datos reales del usuario: las escenas sin pantalla ya usan carpetas
-  temporales (TRADINGHUB_DATA_DIR, TRADINGHUB_STRATEGIES_DIR, TRADINGHUB_INDICATORS_DIR); mantené eso.
-- No agregues confirmaciones que bloqueen clics en los botones de operar; la seguridad va por límites de riesgo.
-- La interfaz está en español rioplatense: los textos nuevos, igual.
+The following is a **maintenance prompt for the existing cross-platform implementation**, not a new porting request. Run it from a clone of **this fork**, `https://github.com/dhamnaik-lab/trading-hub`:
 
-Hacelo por etapas y al final de cada una compilá (dotnet build TradingHub.slnx), corré las pruebas
-(dotnet test tests/TradingHub.Tests) y contame qué cambiaste:
-1. Que compile y arranque en Windows (Program.cs sin la espera de pantalla de macOS, rutas, fuentes).
-2. Almacén de claves de Windows detrás de la misma interfaz que el Llavero (Connections.cs).
-3. Integraciones: SleepGuard con SetThreadExecutionState, bandeja del sistema (TrayIcon + GetCursorPos para ubicar
-   el panel), abrir links/carpetas/reportes con UseShellExecute, sonidos sin afplay, y Claude Code (buscar claude.exe
-   o claude.cmd con `where`, %USERPROFILE%\.local\bin y %APPDATA%\npm; abrir /login en cmd o Windows Terminal).
-4. Interfaz: barra de título con los botones de Windows a la derecha, atajos con Ctrl (un helper común en vez de
-   KeyModifiers.Meta) y textos por plataforma (Mac/PC, Llavero/Administrador de credenciales, barra de menú/bandeja).
-5. Un build-windows.ps1 que publique self-contained para win-x64 y win-arm64 con el ícono, y deje la app lista en
-   una carpeta dist\Trading Hub. Si podés, un script de Inno Setup opcional.
-6. Verificación final: pruebas unitarias, las escenas sin pantalla que correspondan
-   (dotnet run --project tools/TradingHub.UiSnapshot -- capturas 4 trading conexiones panel footprint mercado)
-   y una lista de lo que conviene probar a mano con la cuenta simulada.
+> Inspect CLAUDE.md, README.md, docs/desarrollo.md, and PORTAR_A_WINDOWS.md before changing source. The project is a C#/.NET 10 Avalonia/SkiaSharp trading app supporting Windows and macOS. Preserve current behavior, platform support, existing UI layouts, broker integrations, trading/risk logic, and user-data paths. Audit cross-platform compatibility for secure credentials, sleep guard, system tray, file/URL opening, sounds, CLI discovery, window chrome, keyboard shortcuts, and packaging. Identify actual problems and implement only narrowly scoped corrections. Never use production data or real credentials in tests; use isolated folders, fake servers, and the simulated account. Do not add dependencies without approval. Verify with dotnet build TradingHub.slnx, dotnet test tests/TradingHub.Tests, relevant headless UI snapshots, and the platform build script. Translate only user-facing text into English; preserve serialized identifiers, API fields, and source compatibility. Report risks, files changed, and next steps, and disclose any checks not run.
 
-Si algo no se puede hacer igual que en Mac (por ejemplo, seguir con la tapa cerrada), ocultá esa opción en Windows y
-explicalo en el texto de Ajustes. Mostrá los errores reales si algo falla; no sigas como si hubiera funcionado.
+## Windows build prerequisites
+
+- Windows 10/11 on x64 or ARM64.
+- [Git](https://git-scm.com).
+- [.NET 10 SDK](https://dotnet.microsoft.com/download).
+- [NSIS](https://nsis.sourceforge.io) for the Windows installer.
+- Claude Code is optional for coding assistance and product AI features.
+
+From a PowerShell terminal opened at the fork root:
+
+```powershell
+dotnet build TradingHub.slnx
+dotnet test tests/TradingHub.Tests
+.\build-windows.ps1
 ```
 
-## Después
+The Windows build script should produce architecture-specific installers in `dist`. Confirm actual output names and successful commands. Do not assume the upstream author's installer contains this fork's translations.
 
-- Si querés compartir el resultado, abrí un *pull request* en el repositorio con los cambios por etapas.
-- Mantené las pruebas en verde en las dos plataformas: cada cambio de una no debería romper la otra.
-- Linux sigue el mismo camino (Secret Service/libsecret para las claves, `systemd-inhibit` para el sueño,
-  `xdg-open` para links).
+## Cross-platform verification
+
+Verify both OS implementations after any change to shared source:
+
+- Build and test the entire solution.
+- Exercise simulator connection, chart loading, backtesting and replay.
+- Check credentials are saved only in OS secure stores; never include test secrets in commits.
+- Verify that manual real-account permissions and confirmations are unchanged.
+- Check startup resumption of real-money strategies remains disabled unless explicitly enabled.
+- Check detached windows, tray/menu panel positioning, navigation, fonts, dialogs and power management.
+- Run isolated UI snapshot scenarios, for example:
+
+```bash
+dotnet run --project tools/TradingHub.UiSnapshot -- snapshots 4 trading connections panel footprint mercado
+```
+
+Some scenario identifiers (such as `mercado`) are intentionally retained in Spanish because they are test keys, not displayed labels.
+
+## Linux considerations
+
+Linux support would require a separate compatibility review: Secret Service/libsecret for credentials, a suitable sleep inhibitor (such as `systemd-inhibit`), `xdg-open` for file/URL launching, desktop integration, and packaging. Do not claim Linux is supported without build and runtime evidence.
+
+## Project provenance
+
+The original Windows porting work belongs to the upstream project maintained by [@ralphtradesz](https://x.com/ralphtradesz). This English fork remains separate; any future upstream contribution requires its own pull request and maintainers' approval.
