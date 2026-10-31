@@ -139,7 +139,7 @@ internal sealed class LiveRiskAgent
                     item.Status = "approved";
                 }
 
-                proposal.Source = "agent (automatic)";
+                proposal.Source = "agente (automático)"; // Legacy persisted provenance label.
                 LiveStore.AddProposal(proposal);
                 _center.Notify($"Risk agent adjusted {proposal.Items.Count} strategies in '{p.Def.Name}' (automatic mode, simulated accounts only).");
             }
@@ -257,7 +257,7 @@ internal sealed class LiveRiskAgent
             sb.AppendLine("  " + ContractLine(e, size));
             sb.AppendLine($"  {sm.TotalTrades} trades over {days:0.#} days · net {N(stats.Net)} · PF {N(Math.Min(sm.ProfitFactor, 99))} · win rate {sm.WinRate:0}% · " +
                           $"avg/trade {N(sm.TotalTrades > 0 ? e.Ledger.Trades.Average(t => t.NetPnl) : 0)} · average win {N(sm.AverageWin)} · average loss {N(sm.AverageLoss)}");
-            sb.AppendLine($"  current drawdown {N(stats.CurrentDrawdown)} · worst drawdown {N(sm.MaxDrawdown)} · last {stats.RecentTrades} trades: PF {N(Math.Min(stats.RecentProfitFactor, 99))}, media {N(stats.RecentExpectancy)}" +
+            sb.AppendLine($"  current drawdown {N(stats.CurrentDrawdown)} · worst drawdown {N(sm.MaxDrawdown)} · last {stats.RecentTrades} trades: PF {N(Math.Min(stats.RecentProfitFactor, 99))}, average {N(stats.RecentExpectancy)}" +
                           $"{(r != null ? $" · today's P&L {N(r.TodayPnL)}" : "")}");
             if (i < analysis.DailyPnl.Count)
             {
