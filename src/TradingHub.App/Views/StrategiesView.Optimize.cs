@@ -329,7 +329,7 @@ internal sealed partial class StrategiesView
             };
             StrategyStore.Save(run, _compiledSource.Length > 0 ? _compiledSource : File.ReadAllText(file.Path));
             _optSummary.Text = $"{res.Combinations:N0} combinaciones en {res.Seconds:0.#} s · guardado en el historial";
-            _status($"Optimización de {file.DisplayName} terminada");
+            _status($"Optimization of {file.DisplayName} completed");
         }
         catch (OperationCanceledException)
         {
@@ -439,7 +439,7 @@ internal sealed partial class StrategiesView
             Ui.Field("Parameter search", _search),
             new TextBlock
             {
-                Text = "Cada combinación se corre una sola vez sobre toda la historia (los ticks repetidos se juntan) y en cada ventana se elige la mejor meseta, no el mejor pico. " +
+                Text = "Each combination runs once over all saved history (consecutive duplicate ticks may be compressed); each window selects a parameter plateau rather than an isolated peak. " +
                        "Estimates overfitting using PBO (in-sample winners tested out of sample) and CPCV paths.",
                 Classes = { "faint", "small" },
                 TextWrapping = TextWrapping.Wrap,
@@ -512,7 +512,7 @@ internal sealed partial class StrategiesView
         int windows = total > isD ? (int)Math.Ceiling((total - isD) / osD) : 0;
         long combos = Optimizer.Combinations(_state.Ranges);
         _wfoPreview.Text = windows > 0
-            ? $"{windows} window(s) in {total:0} días · {windows * combos:N0} backtests total"
+            ? $"{windows} window(s) in {total:0} days · {windows * combos:N0} backtests total"
             : $"Backtest date range ({total:0} days) is shorter than the optimization window. Download more history or shorten the windows.";
         _wfoPreview.Foreground = windows > 0 ? Ui.Text1 : Ui.Warn;
     }
@@ -577,7 +577,7 @@ internal sealed partial class StrategiesView
                 Ticks = data.Count,
                 Seconds = res.Seconds,
             }, _compiledSource.Length > 0 ? _compiledSource : File.ReadAllText(file.Path));
-            _wfoPreview.Text = $"{res.Windows.Count} windows in {res.Seconds:0.#} s · búsqueda {res.Search}: {res.Evaluated} de {res.SpaceSize} combinaciones, cada una corrida una vez" +
+            _wfoPreview.Text = $"{res.Windows.Count} windows in {res.Seconds:0.#} s · search {res.Search}: {res.Evaluated} of {res.SpaceSize} combinations, each evaluated once" +
                                (res.Compression < 0.99 ? $" · ticks juntados al {res.Compression * 100:0}%" : "") + " · guardado en el historial";
         }
         catch (OperationCanceledException)
