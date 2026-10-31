@@ -68,7 +68,7 @@ internal static class LabServer
                         result = await CallAsync(msg!["params"]);
                         break;
                     default:
-                        error = (-32601, $"Método desconocido: {method}");
+                        error = (-32601, $"Unknown method: {method}");
                         break;
                 }
             }
@@ -91,7 +91,7 @@ internal static class LabServer
         ["protocolVersion"] = p?["protocolVersion"]?.GetValue<string>() ?? "2025-06-18",
         ["capabilities"] = new JsonObject { ["tools"] = new JsonObject() },
         ["serverInfo"] = new JsonObject { ["name"] = "tradinghub-lab", ["version"] = "1.0" },
-        ["instructions"] = "Laboratorio de Trading Hub: estrategias en C#, datos tick a tick guardados, backtest, optimización, walk-forward, Monte Carlo y reportes.",
+        ["instructions"] = "Trading Hub laboratory: C# strategies, saved tick data, backtests, optimization, walk-forward, Monte Carlo and reports.",
     };
 
     // ===================================================================== herramientas
@@ -111,19 +111,19 @@ internal static class LabServer
 
     private static readonly (string Name, string Type, string Description, bool Required)[] RangeProps =
     {
-        ("file", "string", "Archivo de la estrategia sin .cs (ej. CruceDeMedias)", true),
-        ("feed", "string", "Conexión de los datos (ej. binance-futures), ver list_data", true),
-        ("symbol", "string", "Símbolo (ej. BTCUSDT)", true),
-        ("from", "string", "Desde (AAAA-MM-DD, UTC)", true),
-        ("to", "string", "Hasta (AAAA-MM-DD, UTC, inclusive)", true),
-        ("period", "string", "Velas: M1, M5, M15, H1, Tick500, Volume100, Range20… (por defecto M5)", false),
-        ("parameters", "object", "Parámetros fijos {Nombre: valor}; los que falten usan el valor por defecto", false),
-        ("capital", "number", "Capital inicial (10000)", false),
-        ("commission_percent", "number", "Comisión % del nominal por lado (0.04). Para futuros usá 0 y commission_per_unit", false),
-        ("commission_per_unit", "number", "Comisión fija por contrato o unidad y por lado (ej. 2.5 en futuros de CME); se suma a la porcentual", false),
-        ("slippage_ticks", "integer", "Deslizamiento en ticks de las órdenes a mercado y stops (1)", false),
-        ("timezone", "string", "Zona horaria de la sesión (ej. America/New_York); por defecto UTC", false),
-        ("session_start_hour", "number", "Hora local de inicio de sesión (0)", false),
+        ("file", "string", "Strategy filename without .cs (e.g. MovingAverageCross)", true),
+        ("feed", "string", "Data connection ID (e.g. binance-futures); see list_data", true),
+        ("symbol", "string", "Symbol (e.g. BTCUSDT)", true),
+        ("from", "string", "From (YYYY-MM-DD, UTC)", true),
+        ("to", "string", "To (YYYY-MM-DD, UTC, inclusive)", true),
+        ("period", "string", "Bars: M1, M5, M15, H1, Tick500, Volume100, Range20… (default M5)", false),
+        ("parameters", "object", "Fixed parameters {Name: value}; omitted parameters use defaults", false),
+        ("capital", "number", "Starting capital (10000)", false),
+        ("commission_percent", "number", "Commission as % of notional per side (0.04); use 0 and commission_per_unit for futures", false),
+        ("commission_per_unit", "number", "Fixed commission per contract/unit per side (e.g. 2.5 for CME futures), added to the percentage fee", false),
+        ("slippage_ticks", "integer", "Slippage in ticks for market and stop orders (1)", false),
+        ("timezone", "string", "Session time zone (e.g. America/New_York); defaults to UTC", false),
+        ("session_start_hour", "number", "Session start hour in local time (0)", false),
     };
 
     private static JsonArray Tools()
@@ -137,9 +137,9 @@ internal static class LabServer
 
         var optimizeProps = RangeProps.Concat(new[]
         {
-            ("ranges", "object", "Rangos {Parametro: {min, max, step}}; sin esto usa los [Optimize] de la estrategia", false),
-            ("metric", "string", "Métrica a maximizar: NetProfit, ProfitFactor, Sharpe, Sortino, RecoveryFactor, NetProfitOverDrawdown, WinRate, Expectancy (por defecto NetProfitOverDrawdown)", false),
-            ("min_trades", "integer", "Mínimo de operaciones para que una combinación cuente (10)", false),
+            ("ranges", "object", "Parameter ranges {Parameter: {min, max, step}}; otherwise uses [Optimize] attributes", false),
+            ("metric", "string", "Metric to maximize: NetProfit, ProfitFactor, Sharpe, Sortino, RecoveryFactor, NetProfitOverDrawdown, WinRate, Expectancy (default NetProfitOverDrawdown)", false),
+            ("min_trades", "integer", "Minimum trades for a combination to qualify (10)", false),
         }).ToArray();
 
         return new JsonArray
@@ -147,32 +147,32 @@ internal static class LabServer
             Tool("list_strategies", "Lista las estrategias (archivos .cs) con su estado de compilación, sus parámetros (con los rangos de [Optimize]) y su calentamiento: " +
                                     "los indicadores que crea en OnInit con su período (por ejemplo ATR(14), constantes del código incluidas) y las velas que tardan en estar listos " +
                                     "(con los parámetros por defecto y, si cambia, con los máximos de [Optimize]). Cada ventana del walk-forward arranca sin historia y gasta esas primeras velas en calentar.", Schema()),
-            Tool("compile_strategy", "Compila una estrategia y devuelve los errores (línea y mensaje), sus parámetros y su calentamiento (indicadores con su período y velas que necesita).", Schema(("file", "string", "Archivo sin .cs", true))),
+            Tool("compile_strategy", "Compiles a strategy and returns errors (line/message), parameters and warm-up requirements (indicators, periods and required bars).", Schema(("file", "string", "Filename without .cs", true))),
             Tool("chart_snapshot", "Mira el gráfico: corre la estrategia en un rango y guarda una imagen con las velas, sus entradas y salidas, sus dibujos y sus líneas. Devuelve la ruta de la imagen (miralo con Read) y, con hora local, las velas del rango (con los valores de las líneas de la estrategia), las operaciones, los dibujos y su registro. Sirve para entender por qué entró o salió a tal hora.",
-                Schema(("file", "string", "Estrategia (archivo sin .cs)", true), ("feed", "string", "Conexión (como en list_data)", true), ("symbol", "string", "Símbolo", true),
-                    ("period", "string", "Período: M1, M5, M15, H1…", true), ("from", "string", "Desde, hora local: AAAA-MM-DD HH:mm (o solo la fecha)", true),
-                    ("to", "string", "Hasta, hora local: AAAA-MM-DD HH:mm (o solo la fecha = todo ese día)", true),
-                    ("parameters", "object", "Parámetros fijos {Nombre: valor}; los que falten usan el valor por defecto", false),
-                    ("warmup_days", "number", "Días previos para calentar indicadores (por defecto 3)", false),
-                    ("timezone", "string", "Huso horario (por defecto el de Trading Hub)", false))),
-            Tool("list_indicators", "Indicadores propios del usuario (su carpeta de indicadores): archivos, clases y nombres visibles.", Schema()),
-            Tool("compile_indicator", "Compila los indicadores propios y devuelve los errores del archivo pedido (línea y mensaje). Si compila, aparece en el gráfico en Indicadores → «Mis indicadores».",
-                Schema(("file", "string", "Archivo sin .cs (en la carpeta de indicadores)", true))),
-            Tool("list_data", "Datos tick a tick guardados por instrumento (días disponibles). Los backtests solo usan estos datos.", Schema()),
-            Tool("download_data", "Baja días completos de ticks de los archivos públicos (Binance Futures/Spot y Bybit; ~5 s por día). Máximo 62 días por llamada.",
-                Schema(("feed", "string", "binance-futures, binance-spot o bybit-linear", true), ("symbol", "string", "Símbolo", true),
-                    ("from", "string", "Primer día AAAA-MM-DD", true), ("to", "string", "Último día AAAA-MM-DD (inclusive)", true))),
-            Tool("run_backtest", "Backtest tick a tick con comisiones y deslizamiento. Devuelve métricas completas y el id de la corrida (queda en el historial).",
+                Schema(("file", "string", "Strategy filename without .cs", true), ("feed", "string", "Connection ID (as returned by list_data)", true), ("symbol", "string", "Symbol", true),
+                    ("period", "string", "Period: M1, M5, M15, H1…", true), ("from", "string", "From, local time: YYYY-MM-DD HH:mm (or date only)", true),
+                    ("to", "string", "To, local time: YYYY-MM-DD HH:mm (or date only = full day)", true),
+                    ("parameters", "object", "Fixed parameters {Name: value}; omitted parameters use defaults", false),
+                    ("warmup_days", "number", "Previous days for indicator warm-up (default 3)", false),
+                    ("timezone", "string", "Time zone (defaults to Trading Hub's)", false))),
+            Tool("list_indicators", "User indicators: source files, classes and display names.", Schema()),
+            Tool("compile_indicator", "Compiles user indicators, returning any errors by file/line. Compiled indicators appear under Indicators → My indicators.",
+                Schema(("file", "string", "Filename without .cs (in indicators folder)", true))),
+            Tool("list_data", "Saved tick-by-tick data by instrument and day. Backtests use these saved data.", Schema()),
+            Tool("download_data", "Downloads complete tick days from public Binance Futures/Spot and Bybit archives (approximately 5 s per day); maximum 62 days per call.",
+                Schema(("feed", "string", "binance-futures, binance-spot or bybit-linear", true), ("symbol", "string", "Symbol", true),
+                    ("from", "string", "First day YYYY-MM-DD", true), ("to", "string", "Last day YYYY-MM-DD (inclusive)", true))),
+            Tool("run_backtest", "Tick-level backtest with modeled commissions and slippage. Returns metrics and saved run ID.",
                 Schema(RangeProps.Concat(new[]
                 {
-                    ("monte_carlo_runs", "integer", "Si es > 0, agrega Monte Carlo (reordenar operaciones) con esa cantidad de corridas", false),
-                    ("include_trades", "boolean", "Incluir las primeras y últimas operaciones", false),
+                    ("monte_carlo_runs", "integer", "If greater than 0, add Monte Carlo with this many reordered-trade runs", false),
+                    ("include_trades", "boolean", "Include the first and last trades", false),
                 }).ToArray())),
-            Tool("run_optimization", "Optimización en grilla (en paralelo) de los parámetros. Devuelve las mejores combinaciones. Ojo con el sobreajuste: validá con walk-forward.",
+            Tool("run_optimization", "Parallel grid optimization. Returns top parameter combinations; validate out of sample with walk-forward to assess overfitting.",
                 Schema(optimizeProps.Concat(new[]
                 {
-                    ("top", "integer", "Cuántas combinaciones devolver (10)", false),
-                    ("max_combinations", "integer", "Tope de combinaciones (5000)", false),
+                    ("top", "integer", "Number of combinations to return (10)", false),
+                    ("max_combinations", "integer", "Maximum combinations (5000)", false),
                 }).ToArray())),
             Tool("run_walk_forward", "Walk-forward: en cada ventana elige parámetros mirando solo esa ventana y los prueba fuera de muestra en la siguiente. Corre cada combinación una sola vez " +
                                      "sobre toda la historia (ticks repetidos juntados, indicadores calientes como en vivo) y recorta por ventana, busca con la grilla entera si hay ≤ 300 combinaciones " +
@@ -180,41 +180,41 @@ internal static class LabServer
                                      "combinatoria purgada (CPCV). Devuelve el resultado encadenado fuera de muestra. Si lo pedís igual mientras ya corre, espera al que corre (no lo relances).",
                 Schema(optimizeProps.Concat(new[]
                 {
-                    ("in_sample_days", "integer", "Días de cada ventana de optimización", true),
-                    ("out_sample_days", "integer", "Días de cada ventana fuera de muestra", true),
-                    ("anchored", "boolean", "Ventanas ancladas al inicio (false = móviles)", false),
-                    ("search", "string", "Búsqueda: auto (grilla hasta 300 combinaciones, si no bayesiana), grid o bayesian", false),
-                    ("budget", "integer", "Combinaciones que mide la bayesiana en cada ventana (80)", false),
-                    ("estimate_only", "boolean", "Solo estimar cuánto va a tardar (corre una combinación para medir; no guarda nada)", false),
+                    ("in_sample_days", "integer", "Days per optimization window", true),
+                    ("out_sample_days", "integer", "Days per out-of-sample window", true),
+                    ("anchored", "boolean", "Anchored windows from beginning (false = rolling)", false),
+                    ("search", "string", "Search: auto (grid up to 300 combinations, otherwise Bayesian), grid or bayesian", false),
+                    ("budget", "integer", "Bayesian evaluations per window (80)", false),
+                    ("estimate_only", "boolean", "Estimate runtime only (evaluates one combination; does not save a run)", false),
                 }).ToArray())),
-            Tool("list_runs", "Corridas guardadas de una estrategia (backtests, optimizaciones, walk-forward) con sus métricas.",
-                Schema(("file", "string", "Archivo sin .cs", true), ("limit", "integer", "Cuántas (20)", false))),
-            Tool("analyze_portfolio", "Combina varias estrategias (corridas guardadas) en un portafolio: métricas conjuntas, matriz de correlación de los resultados diarios y beneficio de diversificar.",
-                Schema(("components", "array", "Lista de {file, run_id (opcional: si falta, el último backtest), weight (opcional, 1)}", true),
-                    ("capital", "number", "Capital del portafolio (10000)", false))),
-            Tool("suggest_portfolio", "Busca entre los últimos backtests de todas las estrategias la combinación poco correlacionada que más mejora el Sharpe del conjunto.",
-                Schema(("max_components", "integer", "Máximo de estrategias (5)", false), ("max_correlation", "number", "Correlación máxima entre dos estrategias (0.5)", false),
-                    ("capital", "number", "Capital del portafolio (10000)", false))),
+            Tool("list_runs", "Saved strategy runs (backtests, optimizations and walk-forward), with metrics.",
+                Schema(("file", "string", "Filename without .cs", true), ("limit", "integer", "Limit count (20)", false))),
+            Tool("analyze_portfolio", "Combine saved strategy runs in a portfolio: joint metrics, daily P&L correlation matrix and diversification measures.",
+                Schema(("components", "array", "Array of {file, run_id (optional: defaults to latest backtest), weight (optional, default 1)}", true),
+                    ("capital", "number", "Portfolio capital (10000)", false))),
+            Tool("suggest_portfolio", "Find a recent-backtest combination with low correlation and improved portfolio Sharpe.",
+                Schema(("max_components", "integer", "Maximum strategies (5)", false), ("max_correlation", "number", "Maximum pairwise strategy correlation (0.5)", false),
+                    ("capital", "number", "Portfolio capital (10000)", false))),
             Tool("live_portfolio", "Cartera en vivo (solo lectura): cada estrategia que opera (o operó) con algoritmos en Trading Hub, con sus parámetros en vivo, tamaño actual, posición, resultado, operaciones, acierto, profit factor (total y de las últimas 20), drawdown actual y máximo, y sus últimas operaciones (con precios y cantidad). " +
                                    "Dice en qué contrato ejecuta cada una (por ejemplo MNQ para una estrategia del NQ): cantidades y resultado salen en ese contrato.",
-                Schema(("recent_trades", "integer", "Cuántas operaciones recientes por estrategia (10)", false))),
-            Tool("propose_sizing", "Propone cambios de tamaño para estrategias de la cartera en vivo. NO aplica nada: quedan pendientes y el usuario aprueba o rechaza cada uno en Trading Hub (En vivo → Propuestas).",
-                Schema(("summary", "string", "Resumen del análisis en 1 a 3 líneas", true),
-                    ("items", "array", "Lista de {key (de live_portfolio), proposed_size (multiplicador: 1 = normal, 0 = pausa, máximo 3), reason}", true))),
+                Schema(("recent_trades", "integer", "Recent trades to include per strategy (10)", false))),
+            Tool("propose_sizing", "Propose live strategy size adjustments. Does NOT apply changes; proposals await user approval or rejection in Live → Proposals.",
+                Schema(("summary", "string", "Analysis summary in 1–3 lines", true),
+                    ("items", "array", "Array of {key (from live_portfolio), proposed_size (multiplier: 1 = normal, 0 = pause, max 3), reason}", true))),
             Tool("save_report", "Arma y guarda el INFORME PROFESIONAL (lo genera Trading Hub con todas las métricas, tablas y gráficos a partir de las corridas: resumen, datos y supuestos, rentabilidad, operaciones, riesgo, largos/cortos, mensual, por hora y día, drawdowns, optimización con sensibilidad, walk-forward, Monte Carlo y portafolio). Vos aportás el veredicto y los textos de análisis. Se ve en Backtesting → Reportes.",
-                Schema(("title", "string", "Título corto del informe", true),
+                Schema(("title", "string", "Short report title", true),
                     ("verdict", "string", "ganadora, prometedora, perdedora o descartada", true),
-                    ("file", "string", "Estrategia evaluada (sin .cs); si faltan los run_id se usan sus últimas corridas", false),
-                    ("backtest_run_id", "string", "Corrida de backtest principal (idealmente con Monte Carlo)", false),
-                    ("optimization_run_id", "string", "Corrida de optimización", false),
-                    ("walk_forward_run_id", "string", "Corrida de walk-forward", false),
-                    ("portfolio", "array", "Opcional: componentes del portafolio [{file, run_id, weight}] para incluir la sección de portafolio", false),
-                    ("capital", "number", "Capital del portafolio (10000)", false),
-                    ("summary", "string", "Resumen ejecutivo de 2 a 5 líneas con la conclusión", true),
-                    ("analysis", "string", "Análisis en Markdown: qué funciona, qué no, robustez, sobreajuste, comparación entre versiones", true),
-                    ("risks", "string", "Riesgos en Markdown (lista)", false),
-                    ("next_steps", "string", "Próximos pasos en Markdown (lista)", false),
-                    ("extra_markdown", "string", "Secciones extra opcionales (por ejemplo, cambios al código)", false))),
+                    ("file", "string", "Strategy under review (without .cs); omitted run IDs use latest runs", false),
+                    ("backtest_run_id", "string", "Primary backtest run (ideally with Monte Carlo)", false),
+                    ("optimization_run_id", "string", "Optimization run", false),
+                    ("walk_forward_run_id", "string", "Walk-forward run", false),
+                    ("portfolio", "array", "Optional portfolio components [{file, run_id, weight}] for the portfolio section", false),
+                    ("capital", "number", "Portfolio capital (10000)", false),
+                    ("summary", "string", "Executive summary of 2–5 lines with conclusion", true),
+                    ("analysis", "string", "Markdown analysis of strengths, weaknesses, robustness, overfitting and version comparisons", true),
+                    ("risks", "string", "Risks in Markdown (list)", false),
+                    ("next_steps", "string", "Next steps in Markdown (list)", false),
+                    ("extra_markdown", "string", "Optional additional sections (e.g. source changes)", false))),
         };
     }
 
@@ -263,7 +263,7 @@ internal static class LabServer
     private static string Str(JsonObject a, string key, string? def = null)
     {
         var v = a[key];
-        if (v == null) return def ?? throw new ArgumentException($"Falta «{key}».");
+        if (v == null) return def ?? throw new ArgumentException($"Missing required argument '{key}'.");
         return v.GetValueKind() == JsonValueKind.String ? v.GetValue<string>() : v.ToJsonString();
     }
 
@@ -280,7 +280,7 @@ internal static class LabServer
     {
         var s = Str(a, key);
         if (!DateTime.TryParse(s, Inv, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var d))
-            throw new ArgumentException($"Fecha inválida en «{key}»: {s} (usá AAAA-MM-DD)");
+            throw new ArgumentException($"Invalid date for '{key}': {s} (use YYYY-MM-DD)");
         d = DateTime.SpecifyKind(d, DateTimeKind.Utc);
         // "hasta" con solo fecha incluye todo ese día
         return endOfDay && d.TimeOfDay == TimeSpan.Zero ? d.AddDays(1) : d;
@@ -326,12 +326,12 @@ internal static class LabServer
         Catalog.Refresh();
         file = Path.GetFileNameWithoutExtension(file);
         var f = Catalog.Files.FirstOrDefault(x => x.FileName.Equals(file, StringComparison.OrdinalIgnoreCase))
-                ?? throw new ArgumentException($"No existe la estrategia «{file}». Usá list_strategies.");
+                ?? throw new ArgumentException($"Strategy '{file}' does not exist. Use list_strategies.");
         var res = Catalog.Compile(f);
         if (!res.Success || f.Type == null)
         {
-            var errs = res.Diagnostics.Where(d => d.Severity == "error").Take(10).Select(d => $"línea {d.Line}: {d.Message}");
-            throw new ArgumentException($"«{file}» no compila: {string.Join(" | ", errs)}");
+            var errs = res.Diagnostics.Where(d => d.Severity == "error").Take(10).Select(d => $"line {d.Line}: {d.Message}");
+            throw new ArgumentException($"'{file}' does not compile: {string.Join(" | ", errs)}");
         }
 
         return f;
@@ -417,7 +417,7 @@ internal static class LabServer
         Catalog.Refresh();
         file = Path.GetFileNameWithoutExtension(file);
         var f = Catalog.Files.FirstOrDefault(x => x.FileName.Equals(file, StringComparison.OrdinalIgnoreCase))
-                ?? throw new ArgumentException($"No existe la estrategia «{file}».");
+                ?? throw new ArgumentException($"Strategy '{file}' does not exist.");
         var res = Catalog.Compile(f, force: true);
         var errors = new JsonArray(res.Diagnostics.Where(d => d.Severity == "error").Take(30)
             .Select(d => (JsonNode)new JsonObject { ["line"] = d.Line, ["column"] = d.Column, ["id"] = d.Id, ["message"] = d.Message }).ToArray());
@@ -909,7 +909,7 @@ internal static class LabServer
         // los fijos no se optimizan
         var pinned = PinnedFor(file);
         foreach (var r in ranges.Where(r => pinned.ContainsKey(r.Name))) r.Enabled = false;
-        if (!ranges.Any(r => r.Enabled)) throw new ArgumentException("No hay parámetros para optimizar: pasá «ranges» o marcá parámetros con [Optimize].");
+        if (!ranges.Any(r => r.Enabled)) throw new ArgumentException("No parameters to optimize: pass 'ranges' or mark properties with [Optimize].");
         return ranges;
     }
 
@@ -922,7 +922,7 @@ internal static class LabServer
         var ranges = Ranges(a, file);
         long combos = Optimizer.Combinations(ranges.Where(r => r.Enabled));
         long max = (long)Num(a, "max_combinations", 5000);
-        if (combos > max) throw new ArgumentException($"Son {combos:N0} combinaciones (tope {max:N0}). Achicá los rangos o agrandá los pasos.");
+        if (combos > max) throw new ArgumentException($"There are {combos:N0} combinations (limit {max:N0}). Narrow ranges or increase step sizes.");
         var (settings, data) = await PrepareAsync(a, Optimizer.CanCompress(file.Type!, Str(a, "period", "M5")));
         var metric = Metric(a);
         int minTrades = (int)Num(a, "min_trades", 10);
