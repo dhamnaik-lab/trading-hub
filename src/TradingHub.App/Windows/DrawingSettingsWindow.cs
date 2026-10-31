@@ -69,7 +69,7 @@ public sealed class DrawingSettingsWindow : Window
             _svc.Settings.Save();
             Title = ChartDrawing.KindName(_d.Kind) + " · estilo guardado como predeterminado";
         });
-        ToolTip.SetTip(makeDefault, "Los próximos dibujos de este tipo salen con este estilo");
+        ToolTip.SetTip(makeDefault, "New drawings of this type will use this style");
         var dup = Ui.Button("Duplicar", MaterialIconKind.ContentCopy, () =>
         {
             duplicate();
@@ -133,7 +133,7 @@ public sealed class DrawingSettingsWindow : Window
         };
         var style = new Ui.Segmented<LineStyleKind>(new[]
         {
-            (LineStyleKind.Solid, "Sólida", (string?)null),
+            (LineStyleKind.Solid, "Solid", (string?)null),
             (LineStyleKind.Dashed, "Guiones", (string?)null),
             (LineStyleKind.Dotted, "Puntos", (string?)null),
         });
@@ -144,7 +144,7 @@ public sealed class DrawingSettingsWindow : Window
             _d.Dashed = false;
             Changed();
         };
-        return Section("Línea",
+        return Section("Line",
             Labeled("Color", ColorPicker(() => _d.ColorArgb, c => _d.ColorArgb = c, allowAuto: false)),
             Labeled("Grosor", Ui.H(8, width, widthText)),
             Labeled("Estilo", style));
@@ -188,14 +188,14 @@ public sealed class DrawingSettingsWindow : Window
         };
         return Section("Texto",
             text,
-            Labeled("Tamaño", Ui.H(4, size, bold)),
+            Labeled("Size", Ui.H(4, size, bold)),
             Labeled("Color", ColorPicker(() => _d.TextArgb, c => _d.TextArgb = c, allowAuto: true)));
     }
 
     private Control ExtendSection()
     {
-        var left = new CheckBox { Content = "A la izquierda", IsChecked = _d.ExtendLeft };
-        var right = new CheckBox { Content = "A la derecha", IsChecked = _d.ExtendRight, Margin = new Thickness(16, 0, 0, 0) };
+        var left = new CheckBox { Content = "On the left", IsChecked = _d.ExtendLeft };
+        var right = new CheckBox { Content = "On the right", IsChecked = _d.ExtendRight, Margin = new Thickness(16, 0, 0, 0) };
         left.IsCheckedChanged += (_, _) =>
         {
             _d.ExtendLeft = left.IsChecked == true;
@@ -209,7 +209,7 @@ public sealed class DrawingSettingsWindow : Window
         var rows = new List<Control> { Ui.H(0, left, right) };
         if (_d.Kind is DrawingKind.HorizontalRay or DrawingKind.FibRetracement or DrawingKind.HorizontalLine)
         {
-            var price = new CheckBox { Content = "Mostrar el precio", IsChecked = _d.ShowPriceLabel };
+            var price = new CheckBox { Content = "Show price", IsChecked = _d.ShowPriceLabel };
             price.IsCheckedChanged += (_, _) =>
             {
                 _d.ShowPriceLabel = price.IsChecked == true;
@@ -270,7 +270,7 @@ public sealed class DrawingSettingsWindow : Window
             Changed();
             Rebuild();
         });
-        var price = new CheckBox { Content = "Mostrar el precio de cada nivel", IsChecked = _d.ShowPriceLabel };
+        var price = new CheckBox { Content = "Show price for each level", IsChecked = _d.ShowPriceLabel };
         price.IsCheckedChanged += (_, _) =>
         {
             _d.ShowPriceLabel = price.IsChecked == true;
@@ -336,7 +336,7 @@ public sealed class DrawingSettingsWindow : Window
             Labeled("Stop", stop),
             Labeled("Cantidad", qty),
             rr,
-            Note("Con cantidad muestra cuánto ganarías o perderías. Si las velas tocan el objetivo o el stop, lo marca."));
+            Note("With quantity entered, shows projected profit or loss. Marks when candles touch the target or stop."));
     }
 
     private Control PricesSection()
@@ -346,7 +346,7 @@ public sealed class DrawingSettingsWindow : Window
         for (int i = 0; i < n && i < _d.Points.Count; i++)
         {
             int k = i;
-            rows.Add(Labeled(n == 1 ? "Precio" : $"Precio {k + 1}", PriceBox(_d.Points[k].Price, v => _d.Points[k] = new ChartPoint(_d.Points[k].Time, v))));
+            rows.Add(Labeled(n == 1 ? "Price" : $"Precio {k + 1}", PriceBox(_d.Points[k].Price, v => _d.Points[k] = new ChartPoint(_d.Points[k].Time, v))));
         }
 
         return Section("Coordenadas", rows.ToArray());
@@ -360,9 +360,9 @@ public sealed class DrawingSettingsWindow : Window
             _d.Hidden = hidden.IsChecked == true;
             Changed();
         };
-        var only = new CheckBox { Content = $"Mostrar solo en {_period.DisplayName}", IsChecked = _d.OnlyPeriod != null, };
-        if (_d.OnlyPeriod != null && _d.OnlyPeriod != _period.Code) only.Content = $"Mostrar solo en {_d.OnlyPeriod} (destildá para verlo en todos)";
-        ToolTip.SetTip(only, "Sin tildar, el dibujo se ve en todos los gráficos de este instrumento (todos los períodos)");
+        var only = new CheckBox { Content = $"Show only on {_period.DisplayName}", IsChecked = _d.OnlyPeriod != null, };
+        if (_d.OnlyPeriod != null && _d.OnlyPeriod != _period.Code) only.Content = $"Show only on {_d.OnlyPeriod} (uncheck to show on all periods)";
+        ToolTip.SetTip(only, "If unchecked, this drawing appears on all charts for this instrument (all periods).");
         only.IsCheckedChanged += (_, _) =>
         {
             _d.OnlyPeriod = only.IsChecked == true ? _period.Code : null;
@@ -377,7 +377,7 @@ public sealed class DrawingSettingsWindow : Window
         var rows = new List<Control> { hidden, only, locked };
         if (_d.Kind is DrawingKind.HorizontalLine or DrawingKind.HorizontalRay)
         {
-            var alert = new CheckBox { Content = "Alerta cuando el precio la toque", IsChecked = _d.IsAlert };
+            var alert = new CheckBox { Content = "Alert when price touches the line", IsChecked = _d.IsAlert };
             alert.IsCheckedChanged += (_, _) =>
             {
                 _d.Alert = alert.IsChecked == true;
@@ -387,7 +387,7 @@ public sealed class DrawingSettingsWindow : Window
             rows.Add(alert);
         }
 
-        rows.Add(Note("Los dibujos se ven en todos los gráficos del mismo instrumento y se sincronizan al moverlos o editarlos."));
+        rows.Add(Note("Drawings appear on all charts for the same instrument and synchronize when moved or edited."));
         return Section("Visibilidad", rows.ToArray());
     }
 
@@ -409,7 +409,7 @@ public sealed class DrawingSettingsWindow : Window
         if (allowAuto)
         {
             var auto = new Button { Content = "Auto", Padding = new Thickness(6, 1), MinHeight = 22, FontSize = 11 };
-            ToolTip.SetTip(auto, "Igual que la línea");
+            ToolTip.SetTip(auto, "Same as the line");
             auto.Click += (_, _) =>
             {
                 set(0);

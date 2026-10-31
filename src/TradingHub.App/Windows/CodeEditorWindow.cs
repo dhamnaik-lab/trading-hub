@@ -54,7 +54,7 @@ internal sealed class CodeEditorWindow : Window
 
     private Control Build()
     {
-        var add = Ui.Button("Nuevo", MaterialIconKind.Plus, () => _ = NewAsync());
+        var add = Ui.Button("New", MaterialIconKind.Plus, () => _ = NewAsync());
         var folder = Ui.IconButton(MaterialIconKind.FolderOpenOutline, Os.IsWindows ? "Abrir la carpeta en el Explorador de archivos" : "Abrir la carpeta en Finder", () => Shell.OpenFolder(AppPaths.UserIndicators));
         var head = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
         var acts = Ui.H(4, folder, add);
@@ -70,7 +70,7 @@ internal sealed class CodeEditorWindow : Window
         left.Children.Add(head);
         var note = new TextBlock
         {
-            Text = "API de indicadores de Trading Hub (Indicator, OnCalculate, DataSeries, OnRender…); si pegás código escrito con esta API en otra plataforma, se adapta solo. Al guardar se recompila y queda disponible en Indicadores.",
+            Text = "Trading Hub indicator API (Indicator, OnCalculate, DataSeries, OnRender…). Compatible source from another platform is adapted automatically. Saving recompiles the indicator and makes it available in Indicators.",
             Classes = { "faint", "small" },
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 12, 0, 0),
@@ -79,7 +79,7 @@ internal sealed class CodeEditorWindow : Window
         left.Children.Add(note);
         left.Children.Add(Ui.Card(_files, 6));
 
-        var save = Ui.Button("Guardar y compilar", MaterialIconKind.Hammer, SaveAndCompile, "primary");
+        var save = Ui.Button("Save and compile", MaterialIconKind.Hammer, SaveAndCompile, "primary");
         ToolTip.SetTip(save, Keys.Label("S"));
         var bar = new DockPanel { Margin = new Thickness(16, 10) };
         var right = Ui.H(10, new Border { Child = Ui.H(7, _dot, _state), Classes = { "pill" } }, save);
@@ -141,13 +141,13 @@ internal sealed class CodeEditorWindow : Window
     {
         int errors = r.Diagnostics.Count(d => d.Severity == "error");
         _dot.Fill = r.Success ? Ui.Up : Ui.Down;
-        _state.Text = r.Success ? $"Compilado · {r.Elapsed.TotalMilliseconds:0} ms" : $"{errors} error(es)";
+        _state.Text = r.Success ? $"Compilado · {r.Elapsed.TotalMilliseconds:0} ms" : $"{errors} error(s)";
         if (_path != null) _editor.ShowDiagnostics(r.Diagnostics, _path);
     }
 
     private async Task NewAsync()
     {
-        var name = await PromptDialog.ShowAsync(this, "Nuevo indicador", "Nombre de la clase", "MiIndicador", "Crear");
+        var name = await PromptDialog.ShowAsync(this, "New indicator", "Nombre de la clase", "MiIndicador", "Crear");
         if (name == null) return;
         string cls = new string(name.Where(char.IsLetterOrDigit).ToArray());
         if (cls.Length == 0 || char.IsDigit(cls[0])) cls = "Indicador" + cls;
@@ -168,7 +168,7 @@ internal sealed class CodeEditorWindow : Window
         {
             private readonly ValueDataSeries _serie = new("Serie", "Valor") { Color = System.Drawing.Color.Orange, Width = 2 };
 
-            [Display(Name = "Período", GroupName = "Configuración")]
+            [Display(Name = "Period", GroupName = "Settings")]
             [Range(1, 1000)]
             public int Periodo { get; set; } = 20;
 

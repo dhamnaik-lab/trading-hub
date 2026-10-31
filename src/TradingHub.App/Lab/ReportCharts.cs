@@ -19,7 +19,7 @@ internal static class ReportCharts
         new(37, 99, 235), new(234, 140, 0), new(22, 163, 107), new(168, 85, 247), new(220, 53, 69), new(14, 165, 233), new(132, 94, 54), new(236, 72, 153),
     };
 
-    private static readonly CultureInfo Es = CultureInfo.GetCultureInfo("es-AR");
+    private static readonly CultureInfo Es = CultureInfo.GetCultureInfo("en-US");
     private static SKTypeface Face(bool bold = false) => SKTypeface.FromFamilyName(TradingHub.Common.PlatformFonts.SansSkia, bold ? SKFontStyle.Bold : SKFontStyle.Normal) ?? SKTypeface.Default;
 
     private static string Compact(double v)
@@ -211,7 +211,7 @@ internal static class ReportCharts
         var c = surface.Canvas;
         c.Clear(Bg);
         Title(c, "Rendimiento mensual", 40, 46);
-        string[] months = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic", "Año" };
+        string[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Year" };
         float left = 110, top = 96, cellW = (W - left - 40) / 13f;
         using var font = new SKFont(Face(), 17);
         using var bold = new SKFont(Face(true), 17);
@@ -257,7 +257,7 @@ internal static class ReportCharts
         using var surface = SKSurface.Create(new SKImageInfo(W, H));
         var c = surface.Canvas;
         c.Clear(Bg);
-        Title(c, "Distribución de resultados por operación", 40, 46);
+        Title(c, "Distribution of per-trade results", 40, 46);
         if (buckets.Count == 0) return Encode(surface);
         float left = 90, right = W - 40, top = 90, bottom = H - 90;
         int max = Math.Max(1, buckets.Max(b => b.Count));
@@ -353,7 +353,7 @@ internal static class ReportCharts
         using var surface = SKSurface.Create(new SKImageInfo(W, H));
         var c = surface.Canvas;
         c.Clear(Bg);
-        Title(c, "Correlación de los resultados diarios", 40, 46);
+        Title(c, "Correlation of daily P&L", 40, 46);
         float left = labelW, top = 110;
         using var font = new SKFont(Face(), 17);
         using var bold = new SKFont(Face(true), 19);
