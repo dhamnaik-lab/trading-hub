@@ -1334,7 +1334,7 @@ public sealed class ChartRenderer
         {
             _text.Color = t.TextDim.WithAlpha(150);
             int total = overlay.Count + model.Strategies.Count;
-            string n = total == 1 ? "1 indicador" : $"{total} indicadores";
+            string n = total == 1 ? "1 indicador" : $"{total} indicators";
             canvas.DrawText(n, nx, y, font, _text);
             state.Legend.Add(new LegendHit(new SKRect(nx - 2, y - 11, nx + RenderContext.MeasureWidth(font, n) + 2, y + 4), null, LegendAction.Collapse));
             return;
@@ -1580,8 +1580,8 @@ public sealed class ChartRenderer
         string? msg = state.Message;
         if (msg == null)
         {
-            if (model.Data.IsLoadingHistory) msg = $"Cargando historia…  {model.Data.HistoryProgress * 100:0}%";
-            else if (model.Series.Count == 0) msg = model.Data.HistoryError != null ? "Error: " + model.Data.HistoryError : "Esperando datos…";
+            if (model.Data.IsLoadingHistory) msg = $"Loading history…  {model.Data.HistoryProgress * 100:0}%";
+            else if (model.Series.Count == 0) msg = model.Data.HistoryError != null ? "Error: " + model.Data.HistoryError : "Waiting for data…";
         }
 
         if (msg == null) return;
