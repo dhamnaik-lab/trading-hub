@@ -139,7 +139,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
     /// <summary>Pausada: no abre ni agranda posiciones; si tiene una abierta, la sigue gestionando hasta cerrarla.</summary>
     public bool Paused { get; private set; }
 
-    /// <summary>Tocó la pérdida máxima del día: no new entries until the next session.</summary>
+    /// <summary>Maximum daily loss reached: block new entries until the next session.</summary>
     public bool DailyLimitActive => _limitDay != default && _limitDay == _sessionDay;
 
     /// <summary>Se detuvo y está esperando que se ejecute el cierre de su posición.</summary>
