@@ -1,0 +1,38 @@
+name: English localization verification
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "src/**/*.cs"
+      - "installer/**/*.nsi"
+      - "tools/check_docs_links.py"
+      - ".github/workflows/english-localization-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    name: Validate Markdown paths and anchors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate local documentation links
+        run: python3 tools/check_docs_links.py
+
+  windows-build-and-tests:
+    name: Build and test .NET 10 on Windows
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET SDK 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build complete solution
+        run: dotnet build TradingHub.slnx --configuration Release
+      - name: Run unit and integration tests (fake providers)
+        run: dotnet test tests/TradingHub.Tests --configuration Release --no-restore
