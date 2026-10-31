@@ -1,179 +1,175 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Desarrollo
+# Development
 
-Para quien quiera tocar el código. Trading Hub es C# sobre .NET 10, con Avalonia 11.3 para la interfaz y SkiaSharp 2.88
-para dibujar los gráficos. Los textos de la interfaz y los comentarios del código están en español.
+Trading Hub is a .NET 10 / C# desktop application using Avalonia (the original documentation describes 11.3) and SkiaSharp (2.88) for chart rendering. The original code contains Spanish comments and hardcoded user-facing strings; this English fork is being localized incrementally.
 
-## La solución
+## Solution structure
 
-`TradingHub.slnx` tiene diez proyectos:
+The `TradingHub.slnx` solution contains ten projects:
 
-| Proyecto | Qué hace |
+| Project | Responsibility |
 |---|---|
-| `src/TradingHub.Core` | Mercado y datos: instrumentos, operaciones, velas, archivos de ticks, importación de CSV, fuentes de historia (la combinada de Rithmic y Databento), las conexiones (Binance, Bybit, Rithmic, Tradovate, OANDA, Alpaca, cTrader, Databento, la prueba de Interactive Brokers, el simulador y el replay) y la parte de operar (cuentas, cuenta simulada, stop y objetivos, historial). Sin paquetes externos. |
-| `src/TradingHub.Sdk` | La API de indicadores, con la misma forma que la de ATAS: `Indicator`, series, dibujo, atributos y textos. |
-| `src/TradingHub.Charting` | El motor de gráficos con Skia: modelo, velas, footprint, DOM, cinta, dibujos y temas. |
-| `src/TradingHub.Scripting` | Compila C# en memoria con Roslyn (indicadores y estrategias) y adapta los namespaces de ATAS. |
-| `src/TradingHub.Strategies` | La API de estrategias, el motor de backtest, la optimización, el walk-forward inteligente, la robustez y la validación, los portafolios y la ejecución en vivo con su contabilidad. Solo depende de Core. |
-| `src/TradingHub.Indicators.Native` | Los indicadores incluidos. |
-| `src/TradingHub.Indicators.Technical` | El lugar de los indicadores técnicos portados; en la versión pública solo trae los tipos de editores que usan. |
-| `src/TradingHub.App` | La app (ejecutable `TradingHub`): `Views` (secciones), `Windows` (ventanas), `Controls`, `Services` (conexiones y Llavero, Claude Code, En vivo, agente de riesgo, condición de los mercados, barra de menú, modo sin dormir…), `Lab` (servidor MCP y reportes) y `Styles`. Con `--mcp` corre como servidor del laboratorio, sin ventanas. |
-| `tests/TradingHub.Tests` | Las pruebas, con xUnit. |
-| `tools/TradingHub.UiSnapshot` | La app sin pantalla, con escenas que verifican y capturan la interfaz. |
+| `src/TradingHub.Core` | Market data types, ticks, bars, CSV imports, history providers, replay, broker feeds and accounts, simulator, protective orders and fills |
+| `src/TradingHub.Sdk` | ATAS-style indicator API: indicators, series, drawing, attributes, localization |
+| `src/TradingHub.Charting` | Skia-based chart engine, candles, footprint, DOM, time and sales, drawings and themes |
+| `src/TradingHub.Scripting` | Roslyn compilation of strategy and indicator C#, plus namespace adaptations |
+| `src/TradingHub.Strategies` | Strategy API, backtests, optimization, walk-forward, robustness validation, portfolios and live strategy execution |
+| `src/TradingHub.Indicators.Native` | Built-in indicators |
+| `src/TradingHub.Indicators.Technical` | Locally ported technical indicators and compatibility editor types |
+| `src/TradingHub.App` | Avalonia UI, windows, controls, services, connection/credential management, Claude integration, MCP lab and reports |
+| `tests/TradingHub.Tests` | xUnit tests |
+| `tools/TradingHub.UiSnapshot` | Headless UI scenarios and screenshot verification |
 
-Las versiones de Avalonia y SkiaSharp, el framework y la versión del producto están en `Directory.Build.props`. El
-nombre visible sale de `TradingHub.Common.Product.Name` y las carpetas, de `Product` y `AppPaths`.
+Project versions and framework settings are in `Directory.Build.props`. The displayed product name comes from `TradingHub.Common.Product.Name`. Application data locations are managed by `Product` and `AppPaths`.
 
-## Compilar y correr
+## Build and run
+
+```bash
+dotnet build TradingHub.slnx
+dotnet test tests/TradingHub.Tests
+```
+
+On macOS, add the user-local SDK to `PATH` if required, then:
 
 ```bash
 export PATH="$HOME/.dotnet:$PATH"
-dotnet build TradingHub.slnx          # todo
-dotnet test tests/TradingHub.Tests    # pruebas
-./build-app.sh                        # arma dist/Trading Hub.app (firmada ad hoc)
-./build-app.sh --install              # y la copia a /Applications
+./build-app.sh
+./build-app.sh --install
 ```
 
-`build-app.sh` publica en Release para `osx-arm64`, autocontenida, y arma el paquete fuera del Escritorio (iCloud le
-agrega atributos que rompen la firma). Un archivo `build.local.env`, que no se sube, puede definir `BUNDLE_ID` y
-`SIGN_IDENTITY`; `TH_OUT` y `TH_STAGE` cambian las carpetas de salida y de armado. Más en
-[Instalación](instalacion.md).
+The Mac script produces a self-contained `osx-arm64` app, signs it (ad hoc without an available certificate), and can install it to Applications. A local, ignored `build.local.env` can specify `BUNDLE_ID` and `SIGN_IDENTITY`. `TH_OUT` and `TH_STAGE` change build/output folders.
 
-Para correr la app desde el código sin tocar tus datos ni tu Llavero:
+On Windows, use:
+
+```powershell
+.\build-windows.ps1
+```
+
+This requires the .NET 10 SDK and NSIS for installer creation. For user guidance see [Installation](instalacion.md).
+
+### Isolated development execution
+
+On macOS, an isolated example:
 
 ```bash
-TRADINGHUB_DATA_DIR=/tmp/th-dev TRADINGHUB_KEYCHAIN_FILE=/tmp/th-dev/llavero.json dotnet run --project src/TradingHub.App
+TRADINGHUB_DATA_DIR=/tmp/th-dev TRADINGHUB_KEYCHAIN_FILE=/tmp/th-dev/keychain-test.json dotnet run --project src/TradingHub.App
 ```
 
-Con `TRADINGHUB_DATA_DIR`, las estrategias y los indicadores también van a subcarpetas de esa carpeta, no aparece el
-ícono de la barra de menú y el modo sin dormir no toca la energía de la Mac. Nunca corras una segunda copia sobre los
-datos reales con la app instalada abierta: dos procesos grabando los mismos archivos los dañan.
+On Windows, use a dedicated temporary location and PowerShell environment variables:
 
-## Pruebas
+```powershell
+$env:TRADINGHUB_DATA_DIR = Join-Path $env:TEMP 'tradinghub-dev-data'
+$env:TRADINGHUB_KEYCHAIN_FILE = Join-Path $env:TEMP 'tradinghub-test-secrets.json'
+dotnet run --project src/TradingHub.App
+```
 
-`dotnet test tests/TradingHub.Tests` corre todas. Cubren el motor de backtest y sus llenados (`StrategyTests`), stop,
-objetivos y OCO (`BracketTests`), el contexto de mercado y el filtro (`ContextTests`), la robustez y la validación
-(`RobustnessTests`), el walk-forward inteligente (`SmartWalkForwardTests`), la ejecución en vivo (`LiveRunnerTests`,
-`LivePortfolioTests`), portafolios e informes (`PortfolioTests`), los datos (`CoreTests`, `DataIntegrityTests`,
-`HistorySourcesTests`, `LongHistoryTests`, `CsvImportTests`), las cuentas (`AccountTests`), los dibujos y la leyenda
-(`DrawingAndLegendTests`) y las conexiones (`RithmicTests`, `BrokerConnectionTests`, `DataSourceTests`,
-`BinanceSignatureTests`).
+Ensure the temporary directory contains **no production account data**. Never run a development process concurrently on a real user's saved data; multiple writers can corrupt the store.
 
-Las pruebas usan carpetas temporales y servidores de mentira con los mensajes reales de cada servicio
-(`FakeRithmicServer`, y `FakeHttpServer` con `FakeBrokers` para OANDA, Alpaca, Databento, cTrader y Tradovate): nunca
-entran a una cuenta real. Para correr un grupo: `dotnet test tests/TradingHub.Tests --filter FullyQualifiedName~SmartWalkForward`.
+## Tests
 
-## Escenas sin pantalla
+Run all unit and integration tests:
 
 ```bash
-dotnet run --project tools/TradingHub.UiSnapshot -- <carpeta> 4 <escena> [<escena>…] [--open conexión:SÍMBOLO] [--size 1600x950]
+dotnet test tests/TradingHub.Tests
 ```
 
-`<carpeta>` es donde guarda las capturas PNG y `4`, los segundos que espera a que la app cargue antes de las escenas
-(sin escenas, captura Trading). Las que tienen verificaciones imprimen `OK` o `FALLA` por cada una, y el proceso termina
-con la cantidad de fallas como código de salida.
+Focused examples:
 
-| Escena | Qué hace |
+```bash
+dotnet test tests/TradingHub.Tests --filter FullyQualifiedName~SmartWalkForward
+```
+
+Test projects cover strategy fills, protective OCO orders, market-context filters, walk-forward/robustness, live strategy runner, accounts, data integrity, history, CSV imports, drawing/legend, brokers and API signatures. Tests use temporary files and fake provider servers such as `FakeRithmicServer`, `FakeHttpServer`, and `FakeBrokers`.
+
+## Headless UI snapshots
+
+Run:
+
+```bash
+dotnet run --project tools/TradingHub.UiSnapshot -- <output-folder> 4 <scene> [<scene>…] [--open connection:SYMBOL] [--size 1600x950]
+```
+
+The first argument is an output folder for PNGs; `4` is the initial wait interval in seconds. Omit scenes to capture the Trading page. Verification scenes report OK/failure and exit with a failure count.
+
+| Scene | Purpose |
 |---|---|
-| `trading`, `accounts`, `strategies`, `live`, `data`, `connections`, `settings` | Abre esa sección y la captura |
-| `conexiones` | Tradovate, cTrader, OANDA, Alpaca y Databento contra servidores falsos: alta, prueba, descarga en Datos, costo de Databento, cuentas de Tradovate y precios en vivo de OANDA |
-| `panel` | El panel derecho de Trading (Chart Trader, DOM y cinta), los botones del DOM y las ventanas aparte |
-| `footprint` | Las escaleras del footprint con colores propios y el editor de footprint |
-| `mercado` | El backtest según el mercado y la corrida filtrada por condición |
-| `theme` | Modo oscuro y claro, con la configuración del gráfico |
-| `choice`, `picker`, `esquinas` | El botón de historia de la barra, el selector de instrumentos y un diagnóstico de bordes redondeados |
-| `data+rithmic`, `data+import` | Datos con Rithmic (servidor falso) e importación de un CSV de prueba |
-| `accounts+demo` | La sección Cuenta con órdenes en la simulada y en Rithmic falso |
-| `connections+rithmic`, `connections+amp` | El perfil de Rithmic o de AMP con su lista de servidores |
-| `trading+…` | `layout2`, `layout2r`, `layout3`, `layout4`, `layout6`, `history<horas>[+período]`, `historyall`, `jitter`, `float`, `brackets`, `drawings`, `drawsettings`, `links`, `toolbar`, `trader`, `accounts`, `crossdemo`, `strategy`, `domfloat`, `domsettings` |
-| `strategies+…` | `backtest`, `optimize` y `wfo` (corren y capturan), `code`, `history`, `reports`, `portfolio`, `claudefloat`, `claude`, `claudelab`; con `+Archivo` al final elige esa estrategia |
+| `trading`, `accounts`, `strategies`, `live`, `data`, `connections`, `settings` | Capture main sections |
+| `conexiones` | Test provider setup (Tradovate, cTrader, OANDA, Alpaca, Databento) using fake servers |
+| `panel` | Chart Trader, DOM, tape and detached panels |
+| `footprint` | Footprint ladders and editor |
+| `mercado` | Market-condition backtest results |
+| `theme` | Light/dark theme and chart appearance |
+| `choice`, `picker`, `esquinas` | History button, instrument picker, rounded-corner diagnostics |
+| `data+rithmic`, `data+import` | Simulated provider downloads and CSV imports |
+| `accounts+demo` | Account screens with simulated/fake broker orders |
+| `connections+rithmic`, `connections+amp` | Rithmic/AMP profile server list |
+| `trading+...` | Layout, historical ranges, drawings, bracket, toolbar, trading, strategy, DOM floating panels |
+| `strategies+...` | Backtest, optimization, walk-forward, code, history, portfolio, reports, Claude and laboratory |
 
-Cómo se aíslan de tus datos:
+**Scene identifiers remain in their original form for compatibility. Do not translate scene keys merely because they contain Spanish.**
 
-- Pone `TRADINGHUB_SLEEP_GUARD=off` y un `TRADINGHUB_KEYCHAIN_FILE` temporal con secretos de mentira: nunca lee el Llavero.
-- Copia tus estrategias e indicadores a carpetas temporales (`TRADINGHUB_STRATEGIES_DIR`, `TRADINGHUB_INDICATORS_DIR`).
-- Usa una carpeta de datos temporal (`TRADINGHUB_DATA_DIR`) con copias de `settings.json`, `workspace.json`,
-  `connections.json` y de lo bajado (`Ticks`, `Klines`, `Drawings`, salvo Rithmic), nunca los originales. A las
-  conexiones les saca las API keys, les apaga las órdenes reales y lleva Rithmic a un servidor falso con el usuario
-  `demo`; el historial de las cuentas empieza vacío.
-- No corren dos a la vez: un candado en la carpeta temporal hace esperar a la siguiente (hasta 20 minutos).
-- Si ya definiste alguna de esas variables, respeta la tuya.
+### Snapshot isolation
 
-Ojo: `strategies+claude` y `strategies+claudelab` mandan un pedido de verdad a tu Claude Code (gastan de tu límite),
-salvo que `TRADINGHUB_CLAUDE_CLI` apunte a otro ejecutable. Para diagnosticar: `TRADINGHUB_SNAP_INDICATORS="Nombre|Otro"`
-agrega esos indicadores al gráfico activo, `TRADINGHUB_SCRIPTS_DEBUG=1` muestra cómo compilaron los indicadores
-propios y `TRADINGHUB_SNAP_DEBUG=1`, el estado de la conexión.
+The snapshot runner uses `TRADINGHUB_DATA_DIR`, `TRADINGHUB_STRATEGIES_DIR`, `TRADINGHUB_INDICATORS_DIR`, and test-only credential storage. It disables real order permissions and uses fake broker connections. A lock prevents concurrent scenarios from sharing a working folder.
 
-## Variables de entorno
+**Claude warning:** Scenes `strategies+claude` and `strategies+claudelab` can invoke a real Claude Code request and consume usage. Do not run them unintentionally against a real CLI account.
 
-| Variable | Qué cambia |
+Helpful diagnostics include `TRADINGHUB_SNAP_INDICATORS`, `TRADINGHUB_SCRIPTS_DEBUG=1`, and `TRADINGHUB_SNAP_DEBUG=1`.
+
+## Environment variables
+
+| Variable | Purpose |
 |---|---|
-| `TRADINGHUB_DATA_DIR` | La carpeta de datos (en vez de `~/Library/Application Support/Trading Hub`) |
-| `TRADINGHUB_STRATEGIES_DIR`, `TRADINGHUB_INDICATORS_DIR` | Las carpetas de estrategias e indicadores |
-| `TRADINGHUB_KEYCHAIN_FILE` | Un JSON con los secretos, en vez del Llavero |
-| `TRADINGHUB_BACKTESTS_DIR`, `TRADINGHUB_LIVE_DIR` | El historial de backtests y la cartera en vivo |
-| `TRADINGHUB_SLEEP_GUARD=off` | No toca la energía de la Mac |
-| `TRADINGHUB_CLAUDE_CLI` | La ruta de la CLI de Claude Code |
-| `TRADINGHUB_MCP_COMMAND` | El ejecutable que levanta el laboratorio (por defecto, la misma app) |
-| `TRADINGHUB_OANDA_REST`, `TRADINGHUB_OANDA_STREAM`, `TRADINGHUB_ALPACA_DATA`, `TRADINGHUB_ALPACA_TRADING`, `TRADINGHUB_ALPACA_STREAM`, `TRADINGHUB_TRADOVATE_REST`, `TRADINGHUB_TRADOVATE_WS`, `TRADINGHUB_TRADOVATE_MD`, `TRADINGHUB_CTRADER_URL`, `TRADINGHUB_DATABENTO_URL` | Apuntan cada conexión a otro servidor (los usan las escenas con servidores falsos) |
+| `TRADINGHUB_DATA_DIR` | Overrides the application data directory |
+| `TRADINGHUB_STRATEGIES_DIR`, `TRADINGHUB_INDICATORS_DIR` | Override custom source directories |
+| `TRADINGHUB_KEYCHAIN_FILE` | Use a test JSON secret store instead of actual OS secrets |
+| `TRADINGHUB_BACKTESTS_DIR`, `TRADINGHUB_LIVE_DIR` | Override saved research/live-state directories |
+| `TRADINGHUB_SLEEP_GUARD=off` | Prevents system power-policy changes |
+| `TRADINGHUB_CLAUDE_CLI` | Choose a Claude Code executable |
+| `TRADINGHUB_MCP_COMMAND` | Executable used by the local laboratory server |
+| `TRADINGHUB_OANDA_REST`, `TRADINGHUB_OANDA_STREAM`, `TRADINGHUB_ALPACA_DATA`, `TRADINGHUB_ALPACA_TRADING`, `TRADINGHUB_ALPACA_STREAM`, `TRADINGHUB_TRADOVATE_REST`, `TRADINGHUB_TRADOVATE_WS`, `TRADINGHUB_TRADOVATE_MD`, `TRADINGHUB_CTRADER_URL`, `TRADINGHUB_DATABENTO_URL` | Provider endpoints used for local fake-server tests |
 
-## Agregar una conexión
+Never use testing overrides with production credentials or accounts.
 
-1. En `src/TradingHub.Core/Feeds/<Nombre>/`, una clase que implemente `IMarketDataFeed`: `GetInstrumentsAsync`,
-   `LoadTradesAsync` (historia por lotes) y `Subscribe`, que entrega operaciones, profundidad y estado a un
-   `IMarketDataSink`. Según lo que dé el servicio, sumá `IKlineHistory` (velas para historia larga), `IDayDownloader`
-   (bajar días completos en Datos), `ISessionAwareFeed` (mercados que cierran) o `ITickerStatsProvider` (precio y
-   variación de 24 horas en el selector).
-2. Si se puede operar, una cuenta que implemente `ITradingAccount` (mercado, límite, stop, cancelar, modificar, cerrar,
-   dar vuelta, posición e `IsReal`).
-3. En `src/TradingHub.App/Services/Connections.cs`: un valor nuevo en `ConnectionKind`, su `MarketDataId`, los datos
-   no secretos en `ConnectionProfile`, el feed en `ConnectionManager.GetFeed` y la prueba en `TestAsync`. Los secretos,
-   con `SetSecret` y `GetSecret` (van al Llavero). Sumá una variable `TRADINGHUB_…` para cambiar la dirección del
-   servidor en las pruebas.
-4. El formulario en `src/TradingHub.App/Views/ConnectionsView.cs` y, si opera, sus cuentas en `AppServices.AccountsFor`
-   y `AccountFor`: las reales solo con «Permitir órdenes reales».
-5. Un servidor de mentira en `tests/TradingHub.Tests` (podés partir de `FakeHttpServer`) con sus pruebas.
+## Add a market-data provider
 
-## Agregar un indicador o una herramienta del laboratorio
+1. Implement `IMarketDataFeed` within `src/TradingHub.Core/Feeds/<Provider>/`, including `GetInstrumentsAsync`, `LoadTradesAsync`, and `Subscribe` through `IMarketDataSink`. Add `IKlineHistory`, `IDayDownloader`, `ISessionAwareFeed`, or `ITickerStatsProvider` where applicable.
+2. If supported, implement `ITradingAccount` with market/limit/stop order methods, cancellation, modification, position state, and correct `IsReal` behavior.
+3. Register the provider in `src/TradingHub.App/Services/Connections.cs`: `ConnectionKind`, `ConnectionProfile`, feed factory, and connection test. Store secrets only with the credential service. Add test-only endpoint override support.
+4. Build the setup UI in `ConnectionsView.cs` and, if applicable, supported accounts in `AppServices.AccountsFor` and `AccountFor`.
+5. Add fake-server tests for the provider. Never enable real-order permissions in automated checks.
 
-- **Indicador incluido**: una clase en `src/TradingHub.Indicators.Native` que herede de `Indicator`, con constructor sin
-  parámetros, `[DisplayName]` y `[Category(IndicatorCategories.…)]`. La app escanea ese ensamblado al arrancar. Para uno
-  tuyo no hace falta tocar el código: va en la carpeta de indicadores (ver [Indicadores](indicadores.md)).
-- **Herramienta del laboratorio**: su esquema en `LabServer.Tools()` y su caso en `LabServer.CallAsync`
-  (`src/TradingHub.App/Lab/LabServer.cs`), y su nombre en `ClaudeCodeBridge.LabTools`
-  (`src/TradingHub.App/Services/ClaudeCode.cs`), que es la lista de herramientas permitidas.
+## Add an indicator or laboratory tool
 
-## La validación desde código
+- **Built-in indicator:** Create a parameterless `Indicator` subclass in `TradingHub.Indicators.Native`, with `[DisplayName]` and `[Category]`. The application scans built-in assemblies at startup. Custom user indicators require no product source changes.
+- **Laboratory tool:** Define its schema in `LabServer.Tools()`, handle it in `LabServer.CallAsync`, and explicitly allow it in `ClaudeCodeBridge.LabTools`. Keep laboratory operations isolated from real orders.
 
-`ValidationGate.Evaluate` (en `TradingHub.Strategies`) aplica las reglas de [Backtesting](backtesting.md) a un
-walk-forward. `tests/TradingHub.Tests/RobustnessTests.cs` tiene ejemplos.
+## Validation from code
+
+`ValidationGate.Evaluate` evaluates a walk-forward result against the rules described in [Backtesting](backtesting.md). See `tests/TradingHub.Tests/RobustnessTests.cs` for examples.
 
 ```csharp
 var gate = ValidationGate.Evaluate(new GateInput
 {
-    WalkForward = walkForward,   // el resultado de Optimizer.WalkForward
-    Optimization = optimizacion, // opcional: para la meseta y la robustez
-    Trials = 12,                 // configuraciones probadas, para el Sharpe deflactado
-    TrialVariance = 0.01,        // varianza de sus Sharpe por operación
+    WalkForward = walkForward,
+    Optimization = optimization,
+    Trials = 12,
+    TrialVariance = 0.01,
     MinTrades = 30,
 });
-Console.WriteLine($"{gate.StatusText} · Sharpe deflactado {gate.Deflated:P0}");
-foreach (var c in gate.Checks) Console.WriteLine($"{c.Status} · {c.Name}: {c.Text}");
+Console.WriteLine($"{gate.StatusText} · Deflated Sharpe {gate.Deflated:P0}");
+foreach (var check in gate.Checks)
+    Console.WriteLine($"{check.Status} · {check.Name}: {check.Text}");
 ```
 
-`LiveStrategyRunner.Guard` acepta además un `ILiveOrderGuard`, un limitador que revisa cada orden que abre o agranda una
-posición antes de mandarla (las que achican siempre pasan); la app no trae uno, pero las pruebas muestran cómo se usa.
+`LiveStrategyRunner.Guard` also accepts an `ILiveOrderGuard` to inspect orders that open or increase exposure. Position-reducing orders remain permitted. Unit tests illustrate usage.
 
-## Reglas
+## Rules for contributions
 
-- **Nunca escribas contraseñas, tokens ni claves en archivos del repositorio.** La app los guarda en el Llavero
-  (`Keychain` en `Connections.cs`); las herramientas de prueba usan `TRADINGHUB_KEYCHAIN_FILE` con datos de mentira.
-- **Nunca corras herramientas sobre los datos reales** (la carpeta de datos y `~/Documents/Trading Hub`): usá las
-  variables de arriba. Dos procesos grabando los mismos archivos los dañan.
-- **Sin confirmaciones que bloqueen los botones de operar.** La seguridad va por los límites de riesgo (tamaño, pérdida
-  del día, drawdown, Frenar todo) y por tener que habilitar el dinero real en cada conexión, no por trabas entre el clic
-  y la orden. Los botones de operar tampoco se tienen que mover: la escena `trading+jitter` mide si la barra cambia de
-  alto o si el botón de comprar se corre cuando cambia la variación del día.
-- Probá siempre con la cuenta simulada, y con servidores falsos cuando toques una conexión.
-- Los textos de la interfaz van en español, con voseo.
+- Never store passwords, tokens, API keys or personal brokerage records in the repository.
+- Never operate on production data or connect tests to live-order endpoints. Use isolated directories and fake servers.
+- Preserve real-account permissions, order confirmations, sizing, risk controls, and emergency stop behavior. Treat any behavioral change separately from UI translation.
+- Keep trading controls from shifting position as values update. The `trading+jitter` scenario checks size/position stability.
+- Run tests against simulated accounts before considering changes to provider integrations.
+- New user-facing labels, warnings, Markdown guides, and help text in this fork should be in **English**. Do not change serialized keys, API types, test scene identifiers, or previously saved state to translate their names.

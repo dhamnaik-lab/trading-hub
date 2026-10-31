@@ -1,164 +1,138 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Datos
+# Data
 
-La sección **Datos** (⌘3) muestra la historia guardada en tu Mac. Esa historia se usa al abrir gráficos (carga al
-instante), en el replay y en los backtests.
+The **Data** section (Ctrl+3 on Windows or ⌘3 on macOS) manages locally recorded and downloaded history. This data can be reused instantly when opening charts, replaying sessions, and running backtests.
 
-La pantalla tiene tres partes: a la izquierda, **Guardado** (los instrumentos que tenés); en el medio, los **días** del
-instrumento elegido; a la derecha, **Descargar historia**, **Futuros de CME con Databento** e **Importar archivos**.
-Arriba se ve el total («N instrumentos · tamaño»), un botón para actualizar la lista y **Abrir carpeta**.
+The screen shows **Saved** instruments on the left, available days in the center, and history downloads, Databento futures, and file imports on the right. The header includes the total instrument count and stored size, plus **Refresh** and **Open folder**.
 
-![La sección Datos: lo guardado, los días de un instrumento y las tarjetas para descargar historia y Databento](img/datos.png)
+![Historical data screen: saved instruments, daily files, and downloads](img/datos.png)
 
-## De dónde sale la historia
+> Screenshot inherited from the original project; labels may still appear in Spanish. The English fork is being translated in phases.
 
-- **Lo que mirás en vivo se graba solo**, también lo de Rithmic. Se controla en **Ajustes → Datos → Grabar lo que
-  llega en vivo** (viene activado).
-- **Descargas** de días completos, desde archivos públicos o desde la API de tus conexiones.
-- **Archivos importados** (CSV o TXT) de CFDs, forex y otros mercados.
-- **Databento**, para años de futuros de CME.
+## Where historical data comes from
 
-Todo queda como operaciones, en un archivo por conexión, instrumento y día (UTC).
+- **Record live data:** Incoming trades can be saved automatically, including Rithmic feeds. Controlled by **Settings → Data → Record live data**, enabled by default.
+- **Downloads:** Whole trading days acquired from public exchange archives or supported broker APIs.
+- **Imports:** CSV/TXT files containing ticks, bid/ask quotes, or candles.
+- **Databento:** Paid-by-usage CME futures tick history.
 
-## Lo guardado
+Tick files are organized locally by connection, symbol, and UTC day.
 
-En **Guardado** cada instrumento muestra su conexión, cuántos días tiene y cuánto ocupa. Al elegir uno, en el medio
-aparecen sus días, del más nuevo al más viejo, con una barra proporcional al tamaño (más o menos, la cantidad de
-operaciones) y lo que ocupa cada día. Arriba se ve el rango completo («dd/MM/aaaa → dd/MM/aaaa») y el tamaño total.
+## Saved data
 
-Para elegir varios días, usá ⌘ o ⇧ al hacer clic.
+Each saved instrument lists its connection, number of days, and disk usage. Selecting an instrument displays its days from newest to oldest and a size indicator for each day. The summary also shows the complete stored date range.
 
-### Borrar días
+Use Ctrl or Shift (Windows), or Command or Shift (macOS), to select multiple days where supported.
 
-1. Elegí el instrumento en **Guardado**.
-2. Seleccioná uno o más días.
-3. Tocá **Borrar** y confirmá. Se borran esos días de ese instrumento y no se puede deshacer.
+### Delete stored days
+
+1. Choose the instrument in **Saved**.
+2. Select one or more days.
+3. Select **Delete** and confirm.
+
+Deleting saved days is irreversible unless you have separate backups.
 
 ## Replay
 
-El replay reproduce días guardados como si fueran en vivo y te deja operar con la cuenta simulada.
+Replay reconstructs saved trading days as if they were live and allows simulated trading.
 
-1. Elegí el instrumento y un día. Si elegís varios, se reproduce desde el primero hasta el último.
-2. Tocá **Reproducir** (o hacé doble clic en un día).
-3. Se abre una pestaña nueva en Trading, marcada con ▶, que arranca en la primera operación del primer día elegido y
-   termina al final del último. Usa el período del gráfico activo y copia sus indicadores; la historia anterior al
-   inicio se carga de los mismos archivos.
+1. Select an instrument and one or more days.
+2. Choose **Play** (or double-click a day).
+3. Trading Hub opens a new chart tab marked ▶, starting at the earliest selected day's first trade and ending at the final selected day's last trade. The chart inherits the active chart's period and indicators, and earlier warm-up history is read from stored files where available.
 
-Abajo aparece la barra de replay:
-
-| Control | Qué hace |
+| Control | Action |
 |---|---|
-| Play / pausa | Arranca o frena la reproducción. |
-| 1× a 300× | Velocidad: 1×, 2×, 5×, 10×, 30×, 60× o 300× el tiempo real. |
-| Reloj y progreso | El instante que se está reproduciendo; «Terminado» al llegar al final. |
-| +5 min, +30 min, +1 h | Saltan hacia adelante. |
+| Play / Pause | Start or pause the replay |
+| 1×–300× | Playback speed (1, 2, 5, 10, 30, 60, or 300 times real time) |
+| Clock / Progress | Shows replay time and completion status |
+| +5 min / +30 min / +1 h | Advance the replay |
 
-Los dibujos que hagas en un replay no se guardan, y el replay no queda en el espacio de trabajo. Las operaciones que
-hagas sí van al historial de la cuenta simulada.
+Drawings added during replay are not saved; replay tabs are not included in the persistent workspace. Simulated trades are saved to the simulated account history.
 
-## Descargar historia
+## Download history
 
-Baja días completos de un instrumento.
+Downloads complete UTC days for the selected instrument.
 
-1. En **Instrumento**, elegí el instrumento (si el gráfico activo se puede descargar, ya viene propuesto).
-2. En **Cuánto (días UTC)**, tocá un atajo (Ayer, 7 días, 30 días, 90 días, 6 meses, 1 año o 2 años) o cambiá
-   **Desde** y **Hasta**. El día de hoy no se baja porque todavía no terminó.
-3. Leé el resumen debajo de los botones: cuántos días son y de dónde salen.
-4. Tocá **Descargar**. Se ve el día que está bajando, el progreso y cuánto falta. **Cancelar** frena la descarga.
+1. Choose the **Instrument**; the active chart may preselect a supported one.
+2. Choose a quick duration (Yesterday, 7/30/90 days, 6 months, 1 year, or 2 years), or set **From** and **To**. The current UTC day is excluded because it is not complete.
+3. Review the date count and source summary.
+4. Select **Download**. The screen displays progress, current day, and remaining work. **Cancel** stops further downloading.
 
-| Fuente | Qué se baja |
+| Source | Data acquired |
 |---|---|
-| Binance Futures y Spot | Archivos diarios públicos de Binance, sin cuenta. |
-| Bybit | Archivos diarios públicos de Bybit, sin cuenta. |
-| Rithmic | Tick a tick, con el contrato que operaba cada día (por ejemplo ESU6 y después ESZ6). Rithmic guarda solo desde el último vencimiento: no da la historia de los contratos vencidos. |
-| Tradovate | Ticks de Tradovate (hacen falta los datos de CME habilitados para API). |
-| cTrader | Los ticks (bid) del broker por la Open API. |
-| OANDA | Velas de 5 segundos convertidas en operaciones (los CFDs no tienen operaciones reales). |
-| Alpaca | Operaciones de todas las bolsas de EE.UU. (SIP), gratis desde 2016. |
+| Binance Futures / Spot | Public daily archives |
+| Bybit | Public daily archives |
+| Rithmic | Tick history for the relevant futures contract; expired-contract history may no longer be available from the API |
+| Tradovate | Trade history where CME API data entitlement is present |
+| cTrader | Broker bid quote ticks through Open API |
+| OANDA | Five-second candles converted to synthetic trades |
+| Alpaca | US equities ticks subject to account and data-feed entitlements |
 
-- Los días que ya están completos no se vuelven a bajar: si cancelás, la próxima vez sigue donde quedó.
-- Por las APIs (Rithmic, Tradovate, cTrader, OANDA y Alpaca) los sábados no se piden, y el día bajado reemplaza lo que
-  se había grabado en vivo.
-- Un índice como el ES tiene más de un millón de operaciones por día: un rango largo tarda.
-- Si un día no trae nada, el resumen final lo cuenta aparte (feriados, fines de semana o archivos todavía no
-  publicados). Si Rithmic no devuelve un contrato vencido, también lo avisa.
-- Las conexiones que no dan historia para bajar graban sus datos cuando las mirás en vivo.
+Already completed days are skipped where possible; a cancelled job can resume from missing days. For API sources the app skips Saturdays and replaces incomplete local captures with a completed full-day download.
 
-## Importar archivos
+Futures instruments can exceed one million trades per day, so wide historical ranges may take considerable time. Empty days, holidays, unpublished archives, or expired contracts are reported separately. Connections lacking historical APIs still record what they receive live when recording is enabled.
 
-Para CFDs (US100, US500, DAX), forex, oro y otros mercados que no tenés por una conexión. Bajás el CSV de Dukascopy o
-HistData, o lo exportás de MetaTrader o TradingView, y Trading Hub lo convierte en historia para gráficos, replay y
-backtests. El formato se reconoce solo: ticks con bid y ask, velas, o cualquier CSV con fecha y precio u OHLC.
+## Import CSV or TXT
 
-1. Bajá los archivos. Los botones **Dukascopy** e **HistData** abren sus páginas de descarga.
-2. En **Nombre del instrumento**, escribí el símbolo o dejalo vacío para que se deduzca del nombre del archivo.
-3. En **Hora del archivo**, elegí la zona horaria con que viene:
+Import historical prices for CFDs, forex, metals, or instruments that are not available through a connection. Source files may come from Dukascopy, HistData, MetaTrader, TradingView, or other compatible exporters.
 
-   | Opción | Para |
+The importer detects common timestamp/price, bid/ask tick, and OHLC candle formats.
+
+1. Acquire the source files. **Dukascopy** and **HistData** buttons open their download websites.
+2. Set **Instrument name** (or leave blank to infer it from the filename).
+3. Set **File time zone**:
+
+   | Option | Typical source |
    |---|---|
-   | UTC | Dukascopy y TradingView |
-   | Nueva York fija, −5 | HistData |
-   | UTC+2 | MetaTrader en invierno |
-   | UTC+3 | MetaTrader en verano |
+   | UTC | Dukascopy or TradingView |
+   | Fixed New York −5 | HistData |
+   | UTC+2 | MetaTrader winter data |
+   | UTC+3 | MetaTrader summer data |
 
-4. Tocá **Importar archivos…** y elegí uno o varios archivos CSV o TXT.
-5. Al terminar, el resumen dice cuántas operaciones y días se importaron, el rango y el paso de precio detectado. El
-   instrumento aparece en **Guardado** con la conexión «importado» y en los backtests.
+4. Choose **Import files…** and select one or more CSV/TXT files.
+5. Review the summary: imported trade count, day count, date range, and detected minimum price increment.
 
-El nombre se deduce así: USATECH, NAS100, NSX, US100, USTEC o NDX → US100; USA500, SPX o US500 → US500; USA30, US30,
-DJI o WS30 → US30; DEU, GER o DAX → GER40; XAU o GOLD → XAUUSD; y los pares EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD,
-USDCHF, NZDUSD, XAGUSD y BTCUSD por su nombre. Si no reconoce nada, usa la primera palabra del archivo.
+Imported symbols appear in **Saved** and become available for supported backtests.
 
-Los CFDs no tienen volumen real: cada cotización cuenta como una operación (volumen de ticks) y el lado sale de si el
-precio subió o bajó. Sirve para precio, velas y backtests de precio; el footprint y el delta son aproximados. Las velas
-se convierten en operaciones sintéticas.
+Examples of symbol normalization: USATECH/NAS100/NDX/US100 map to US100; USA500/SPX/US500 to US500; USA30/US30/DJI to US30; DEU/GER/DAX to GER40; XAU/GOLD to XAUUSD. Common FX and metal symbols, such as EURUSD, GBPUSD, USDJPY, and XAGUSD, are also recognized.
+
+**CFD limitation:** Quotes do not represent real exchange trades. Quote volume is modeled as one unit, aggressor direction is approximated from the change in price, and OHLC bars are converted into synthetic trades. Use these data for price studies, not as genuine footprint or delta evidence.
 
 ## Databento
 
-Databento vende la historia tick a tick de los futuros de CME desde 2010, con el lado agresor real de cada operación:
-lo que Rithmic no guarda. Es pago por uso (las cuentas nuevas traen créditos gratis), así que Trading Hub siempre
-calcula el costo antes y solo baja si confirmás.
+Databento offers long-range tick-by-tick CME futures history, including aggressor-side data. It is billed by use; promotional credits may be available depending on the customer's account. Trading Hub calculates an estimate and requests confirmation before downloading.
 
-Antes, agregá la conexión **Databento** con tu API key en [Conexiones](conexiones.md#databento). El botón
-**Conexiones** de la tarjeta te lleva ahí.
+First add a **Databento** connection with the API key in [Connections](conexiones.md#databento). The Databento card's **Connections** action opens that screen.
 
-1. En **Contrato continuo**, elegí el mercado: NQ, ES, MNQ, MES, YM, RTY, CL, GC, MCL, MGC, ZN o 6E. Se usa el
-   contrato continuo por volumen, que rola como los gráficos.
-2. Elegí **Desde** y **Hasta** (de entrada, los últimos tres meses).
-3. Elegí si tildás **Bajar también los días que ya tiene Rithmic**:
-   - **sin tildar** (más barato): se saltean los días que Rithmic ya tiene completos, y Databento solo completa los
-     que faltan;
-   - **tildada**: baja todo el rango, para tener la historia de Databento entera.
-4. Tocá **Calcular costo**. Te dice cuántos días hay por bajar, el rango y el costo aproximado en dólares de tus
-   créditos.
-5. Tocá **Descargar** y confirmá en la ventana «Bajar historia de Databento». Si los créditos no alcanzan, Databento
-   cobra la diferencia a tu medio de pago en Databento.
+1. Choose a **Continuous contract** root, such as NQ, ES, MNQ, MES, YM, RTY, CL, GC, MCL, MGC, ZN, or 6E. The app uses volume-based contract rolls.
+2. Set **From** and **To** dates (initially the most recent three months).
+3. Choose whether to **Also download days already present in Rithmic**:
+   - **Unchecked:** Skip completed days from Rithmic, reducing the number of Databento days purchased.
+   - **Checked:** Download the full selected Databento range.
+4. Select **Calculate cost**, then review the days, date range, and approximate USD charge.
+5. Select **Download** and confirm the paid data request. Databento may charge the payment method on file for costs exceeding account credits.
 
-**Descargar** se habilita recién después de calcular el costo. Si cambiás el mercado, las fechas o la casilla, hay que
-volver a calcularlo. Los días que ya tenés de Databento no se vuelven a bajar ni se cobran, los sábados se saltean y
-el rango llega hasta ayer. Los días sin operaciones (feriados) se cuentan aparte. **Cancelar** frena la descarga y lo
-bajado queda guardado.
+Changing the instrument, date range, or skip-existing option invalidates the estimate; recalculate before downloading. Completed Databento days are normally not downloaded or charged again. Saturdays are skipped; the range ends at yesterday. **Cancel** stops new downloads while preserving completed days.
 
-En la misma tarjeta se ve lo que ya bajaste («Ya tenés de Databento: …», con los días y el rango de cada mercado).
+The same card lists downloaded Databento coverage for each instrument.
 
-### Se guarda aparte
+### Separate and combined data sources
 
-Lo de Databento queda separado, como «Databento» en la lista **Guardado**, sin mezclarse con lo que grabó o bajó
-Rithmic. En **Backtesting**, en «Instrumento (datos guardados)», un futuro que tiene historia de las dos fuentes
-aparece tres veces (cada opción termina con la cantidad de días):
+Databento data are stored separately from Rithmic data. Backtesting may present the following selections, with stored day counts:
 
-| Opción | Qué usa |
+| Selection | Meaning |
 |---|---|
-| NQ · Rithmic + Databento | Las dos combinadas: manda Rithmic, y Databento completa los minutos en que Rithmic no tiene ninguna operación (por ejemplo, las horas en que la app estuvo cerrada y no grabó). |
-| NQ · solo Rithmic | Solo lo de Rithmic. |
-| NQ · Databento | Solo lo de Databento. |
+| NQ · Rithmic + Databento | Prefer available Rithmic trades and fill periods with no Rithmic trades from Databento |
+| NQ · Rithmic only | Use only saved Rithmic data |
+| NQ · Databento | Use only Databento data |
 
-Con Tradovate pasa lo mismo: «Tradovate + Databento», «solo Tradovate» y «Databento». Al elegir la combinada, el
-resumen del backtest dice cuántos días aporta cada fuente.
+Tradovate has an analogous combined/alone data-source choice. The backtest summary reports the contribution from each source.
 
-## Dónde quedan los archivos
+**Avoid interpreting synthetic or merged tick data as an exact reconstruction of every exchange execution.** Verify provider coverage, missing days, contract rolls, and overlaps before relying on a backtest.
 
-La historia vive en `~/Library/Application Support/Trading Hub/Ticks`, en una carpeta por conexión («rithmic»,
-«databento», «importado»…) y otra por instrumento, con un archivo por día. **Abrir carpeta** la muestra en el Finder.
-Ver también [Instalación](instalacion.md#where-data-is-stored).
+## Where files are stored
+
+On macOS, the historical ticks live under `~/Library/Application Support/Trading Hub/Ticks`. On Windows, the corresponding location is `%APPDATA%\Trading Hub\Ticks`. The directory is organized by provider and instrument, with one file per UTC day. **Open folder** opens the local directory in Finder or File Explorer.
+
+See [Installation](instalacion.md#where-data-is-stored).

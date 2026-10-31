@@ -1,217 +1,164 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Conexiones
+# Connections
 
-En **Conexiones** (⌘4) configurás de dónde salen los datos de mercado y con qué cuentas operás. A la izquierda está la
-lista de conexiones; a la derecha, el detalle de la que elegiste.
+Use **Connections** (Ctrl+4 on Windows, ⌘4 on macOS) to configure market-data providers and trading accounts. The left pane lists connections; the right pane shows the selected connection's settings.
 
-En la lista, cada conexión muestra un resumen («datos públicos · sin cuenta», «datos + cuenta testnet», el usuario y el
-sistema de Rithmic…) y un punto de color: gris si está desactivada, verde o rojo según el resultado de la última prueba,
-y neutro si todavía no la probaste.
+Each entry has a description and status indicator: inactive, last test succeeded or failed, or not yet tested.
 
-## Agregar y probar una conexión
+## Add and test a connection
 
-1. Tocá **Nueva conexión**, abajo de la lista, y elegí el tipo.
-2. Completá los datos que pide (cambian según el tipo; están más abajo).
-3. Tocá **Probar conexión**. Primero guarda y después prueba; el resultado aparece arriba del formulario.
-4. Si cambiás algo, tocá **Guardar**.
+1. Select **New connection** below the list and choose a provider.
+2. Enter the provider-specific settings.
+3. Select **Test connection**. The application saves the configuration before testing and displays the result.
+4. Select **Save** after changing any other settings.
 
-Arriba del formulario también están:
+The header includes a customizable connection name and an **Enabled / Disabled** switch. A disabled connection does not appear in the instrument selector or offer accounts for trading. **Delete** removes a connection and its associated saved credentials, not recorded market data. Built-in Simulator, Binance, Bybit, and Rithmic connections have restrictions on deleting the last instance of each type.
 
-- el **nombre** de la conexión (lo podés cambiar) y su tipo;
-- el interruptor **Activada / Desactivada**: una conexión desactivada no aparece en el buscador de instrumentos ni da
-  cuentas para operar;
-- **Eliminar**, que borra la conexión y sus secretos del Llavero. Los datos grabados no se tocan. Las de tipo
-  Simulador, Binance, Bybit y Rithmic solo se pueden eliminar si hay más de una del mismo tipo; si no, desactivalas.
+Many providers also offer **History on chart open** (30 minutes through seven days). Locally stored or downloaded data loads first; missing history is requested from the provider. See [Data](datos.md).
 
-Casi todos los tipos tienen además **Historia al abrir un gráfico** (de 30 minutos a 7 días): cuánta historia se pide
-al abrir un instrumento. Lo que ya está grabado o descargado en [Datos](datos.md) carga al instante; el resto se le
-pide a la conexión.
+## Where credentials are stored
 
-## Dónde quedan tus claves
+Passwords, API secrets, access tokens, and the Databento API key use **macOS Keychain** or **Windows Credential Manager**, rather than being stored in plain text in `connections.json`.
 
-Las contraseñas, los secrets de las API keys, los tokens y la API key de Databento se guardan en el **Llavero de
-macOS**, nunca en archivos. En **Acceso a Llaveros** aparecen como contraseñas con el nombre «Trading Hub». Una vez
-guardado, el campo ya no muestra el valor: dice «•••••••• (guardado en el Llavero)». Para reemplazarlo, escribí el
-nuevo y guardá; si lo dejás vacío, queda el que estaba.
+After saving a credential, the field shows a stored-secret indicator. Enter a new value to replace a secret; leaving the field blank generally retains the existing value.
 
-En `connections.json`, dentro de la carpeta de datos, solo quedan datos que no son secretos: el nombre, el usuario, el
-servidor, el identificador público de la API key (por ejemplo, la API key de Binance o el Key ID de Alpaca) y las
-opciones.
+The local `connections.json` contains non-secret connection details such as names, usernames, server identifiers, public API key IDs, and settings. Never commit live credentials or real account records to GitHub.
 
-## Qué da cada tipo
+## Connection capabilities
 
-| Conexión | Qué da | Qué necesitás | Órdenes |
+| Provider | Market data | Requirements | Orders |
 |---|---|---|---|
-| Simulador | Mercado simulado sin internet | Nada | Cuenta simulada |
-| Binance Futures / Binance Spot | Datos de cripto e historia gratis | Nada para datos; API key y secret para operar | Testnet o real |
-| Bybit | Datos de los perpetuos en USDT | Nada | No (solo datos) |
-| Rithmic | Futuros de CME: datos, historia y órdenes | Usuario, contraseña, sistema y servidor | Práctica o real |
-| AMP Futures | Lo mismo que Rithmic | Las credenciales de Rithmic que te manda AMP | Práctica o real |
-| Tradovate | Futuros de CME: cuentas para operar y datos | Usuario, contraseña, CID y secret de la API key | Demo o real |
-| cTrader | CFDs y forex de brokers con cTrader | Una aplicación de la Open API y autorizar tu cuenta | No (solo datos) |
-| OANDA | CFDs de índices, oro y forex | Un token de la API | No (solo datos) |
-| Alpaca | Acciones y ETF de EE.UU. | API key ID y secret key | No (solo datos) |
-| Databento | Historia de futuros de CME desde 2010 | API key (pago por uso) | No (solo historia) |
-| Interactive Brokers | Por ahora, solo prueba de conexión | TWS o IB Gateway con la API habilitada | No |
+| Simulator | Offline simulated market | None | Simulated account |
+| Binance Futures / Spot | Public crypto data and history | None for data; key and secret for trading | Testnet or real, if authorized |
+| Bybit | USDT linear perpetual data | None for public data | Data only |
+| Rithmic | CME futures data, historical ticks, and order routing | Username, password, system/server | Practice or real |
+| AMP Futures | Rithmic-based CME data and accounts | AMP-issued Rithmic credentials | Practice or real |
+| Tradovate | CME futures data and accounts | Username, password, API CID and secret | Demo or real |
+| cTrader | Broker CFD and FX data | Open API application and account authorization | Data only |
+| OANDA | Index/commodity CFDs and FX | API token | Data only |
+| Alpaca | US equities and ETFs | API key ID and secret | Data only |
+| Databento | Historical CME futures tick data | API key, usage-based charges | Historical data only |
+| Interactive Brokers | Connection test | TWS / IB Gateway with API enabled | Connection test only |
 
-Cualquier conexión con datos sirve para operar con la **cuenta simulada**.
+Any provider supplying market data can be used with Trading Hub's simulated account.
 
-## Simulador
+## Simulator
 
-Mercado simulado con libro y operaciones realistas, ideal para probar sin conexión. Trae SIM-BTC, SIM-ETH, SIM-ES y
-SIM-NQ. No necesita configuración.
+The offline simulator provides simulated order book and trade activity for SIM-BTC, SIM-ETH, SIM-ES, and SIM-NQ. No account or internet connection is required.
 
-## Binance Futures y Binance Spot
+## Binance Futures and Binance Spot
 
-Los datos de mercado de Binance son públicos: sin cuenta ya tenés gráficos, DOM, cinta e historia. Para operar, la
-sección **Cuenta para operar** pide:
+Binance public market data requires no account for charts, DOM, time and sales, or available public history. To configure broker trading:
 
-1. Elegir **Testnet (dinero de prueba)** o **Cuenta real**. Viene en testnet.
-2. Pegar la **API key** y el **API secret**. Creá la key solo con permiso de trading, sin retiros. El enlace «¿Cómo
-   creo una API key?» abre la página de testnet o la de tu cuenta real, según lo que elegiste.
-3. Con cuenta real, tildar **Permitir órdenes REALES desde Trading Hub**. Sin esa casilla la cuenta queda como «real
-   (solo lectura)» y no aparece para operar.
-4. Opcional: **Pedir confirmación antes de cada orden real** (viene tildada) y **Cantidad máxima por orden** (0 = sin
-   límite).
+1. Select **Testnet (practice funds)** or **Real account**. Testnet is the default.
+2. Enter the API key and API secret. For a real account, create a key with **trading privileges only; disable withdrawal privileges**. The API-key help link opens the relevant Binance site.
+3. For real accounts, explicitly enable **Allow REAL orders from Trading Hub**. Otherwise the account remains read-only and unavailable for order entry.
+4. Optionally enable per-order confirmation (on by default) and a **Maximum quantity per order**. A value of zero means no application-side maximum.
 
 ## Bybit
 
-Datos públicos de los perpetuos lineales en USDT. Operar con cuenta de Bybit todavía no está disponible.
+Provides public USDT linear perpetual-futures market data. Trading through Bybit accounts is not implemented in this version.
 
 ## Rithmic
 
-Conexión directa por R|Protocol, la API oficial de Rithmic: no hace falta tener R|Trader Pro abierto. Viene
-desactivada; activala cuando cargues tus datos.
+Rithmic uses its official R|Protocol connection, without requiring R|Trader Pro to be open. It starts disabled until configured.
 
-- **Usuario** y **Contraseña** (el botón del ojo muestra lo que escribís). Te los da tu broker o tu prop firm.
-- **Servidor**: al abrir la sección, Trading Hub consulta los servidores de Rithmic y lista cada combinación de
-  sistema y región con su latencia en milisegundos; las más rápidas se ven en verde. El buscador filtra (paper, 01,
-  Frankfurt, el nombre de tu prop firm…) y el botón de recargar vuelve a pedir la lista. Colo 75 solo funciona desde el
-  datacenter de la CME.
-- **Usar un servidor que no está en la lista**: para cargar la dirección (`wss://…`) y el sistema a mano.
-- **Cotizaciones agregadas**: Rithmic junta las actualizaciones del libro que llegan en el mismo instante. Debajo te
-  avisa si el sistema elegido las ofrece; si no, se conecta sin ellas.
-- **Tiempo de espera de conexión (ms)**: 10.000 por defecto.
-- **Avanzado**: el **Nombre de la aplicación** (algunos sistemas exigen uno aprobado) y los **Productos para el
-  buscador** (ES, NQ, MES, MNQ, CL…). De cada producto se busca el contrato del mes, por ejemplo ES → ESZ6.
+- **Username / Password:** Supplied by your broker or proprietary trading firm.
+- **Server:** The app fetches available Rithmic system/region combinations, shows latency, and provides search and refresh. The selected **system** must match the one issued by your broker. Rithmic's Colo 75 endpoint is available only from the CME data center.
+- **Custom server:** Allows a manual `wss://…` address and system identifier.
+- **Aggregated quotes:** Offered only for compatible server systems; the client can connect without them.
+- **Connection timeout:** Defaults to 10,000 ms.
+- **Advanced:** Application name (sometimes requires approval) and the product roots available in the instrument picker (ES, NQ, MES, MNQ, CL, etc.). The app resolves the relevant monthly contract.
 
-Tus cuentas de Rithmic aparecen en el Chart Trader de los gráficos de Rithmic y en Cuenta cuando la conexión está
-activa y la sesión de órdenes termina de conectarse. Rithmic deja una sola sesión por usuario: si entrás con el mismo
-usuario desde otro programa, una de las dos sesiones se corta.
+Rithmic accounts become available after the order session connects. The same username generally cannot maintain competing sessions from R|Trader Pro, ATAS, NinjaTrader, or another client simultaneously.
 
-### Si Rithmic no conecta o no te deja operar
+### Rithmic troubleshooting
 
-- **«Rithmic rechazó el usuario… (permission denied)»**: el **Servidor** tiene que decir el mismo sistema que te dio
-  tu broker o tu prop firm (en ATAS, «Rithmic paper trading» es «Rithmic Paper Trading»; las prop firms tienen el suyo:
-  buscalo por el nombre). Revisá la contraseña con el botón del ojo. Si todo coincide, tu usuario puede no tener
-  habilitado el acceso por API (R|Protocol): eso lo habilita Rithmic o tu broker, y algunos sistemas piden además un
-  **Nombre de la aplicación** aprobado (en **Avanzado**).
-- **Conecta, ves los datos, pero no podés operar tu cuenta** (no aparece en el Chart Trader o en Cuenta dice «solo
-  lectura»): las cuentas de Rithmic 01 y de las prop firms son reales. Tildá **«Permitir órdenes en cuentas reales»**
-  en la conexión y guardá (ver [Cuentas reales y cuentas de prueba](#cuentas-reales-y-cuentas-de-prueba)).
-- **Se desconecta sola**: Rithmic deja una sola sesión por usuario. Cerrá R|Trader Pro, ATAS, NinjaTrader o cualquier
-  otro programa conectado con el mismo usuario.
+- **Permission denied:** Ensure the server system matches the exact broker/prop-firm assignment. Confirm the password, API/R|Protocol entitlement, and any required approved application name.
+- **Data works but orders are unavailable:** The real account may still be **read-only**. Check **Allow orders in real accounts** under the connection and the current trading permissions.
+- **Repeated disconnections:** Another platform using the same Rithmic login may be taking over the session.
+
+Never enable real orders simply to resolve a data-access issue; verify the account's intended purpose first.
 
 ## AMP Futures
 
-AMP opera sobre Rithmic: te manda un usuario y una contraseña de Rithmic. La conexión se crea desactivada, con el
-servidor de Chicago y el sistema «Rithmic Paper Trading» (la demo). Para la cuenta real elegí «Rithmic 01» en el
-servidor más cercano. El resto es igual que en Rithmic.
+AMP supplies a Rithmic username and password. The initial AMP connection uses the demo Rithmic Paper Trading system and is disabled until configured. For real trading select the broker's assigned production system, commonly Rithmic 01, on the appropriate server. Remaining settings follow [Rithmic](#rithmic).
 
 ## Tradovate
 
-Conexión directa a la API oficial de Tradovate.
+1. Select **Demo** or **Real account** (demo is the default).
+2. Enter the Tradovate username and password.
+3. Enter API **CID** and **Secret** from Tradovate's API Access settings.
+4. Review product roots for the instrument picker.
+5. For real orders, explicitly enable **Allow orders in real Tradovate accounts**. A **Maximum quantity per order** is optional.
 
-1. Elegí **Demo (simulada de Tradovate)** o **Cuenta real**. Viene en demo.
-2. Completá **Usuario** y **Contraseña** de Tradovate.
-3. Completá el **CID** y el **Secret** de tu API key. El enlace «¿Dónde saco la API key? (Settings → API Access)» abre
-   Tradovate.
-4. Revisá los **Productos para el buscador** (de cada uno se usa el contrato del mes).
-5. Para operar una cuenta real, tildá **Permitir órdenes en cuentas reales de Tradovate**. Opcional: **Cantidad máxima
-   por orden**.
-
-Tus cuentas aparecen en el Chart Trader y en Cuenta, y se pueden operar desde los gráficos de futuros de CME de
-Tradovate o de Rithmic. Tradovate solo da datos de mercado por API si tu cuenta tiene habilitados los datos de
-CME para API (una licencia aparte); sin eso igual podés operar mirando los gráficos de otra conexión. Tradovate deja
-una sola sesión de datos por usuario: si abrís Tradovate Trader con el mismo usuario, puede cortar la de Trading Hub.
+Accounts can appear in Chart Trader and Accounts for CME futures charts sourced from Tradovate or Rithmic. Tradovate API market data may require an additional CME market-data entitlement. Trading Hub can use another data connection to display a chart while routing to an authorized Tradovate account. Competing Tradovate sessions can interrupt data access.
 
 ## cTrader
 
-Gratis con cualquier broker que tenga cTrader y una cuenta demo: CFDs de índices, forex, oro y petróleo, con historia
-tick a tick.
+Provides CFD/FX market data and tick history through a participating broker's Open API.
 
-1. **Tu aplicación (una sola vez)**: creá una aplicación en openapi.ctrader.com (entrás con tu cTrader ID) y agregale
-   la dirección de redirección que muestra la pantalla (`http://127.0.0.1:53682/ctrader`; el botón «Copiar» la copia).
-   Después pegá acá el **Client ID** y el **Secret**.
-2. **Autorizar tu cuenta**: elegí **Cuenta demo** o **Cuenta real** y tocá **Conectar con cTrader**. Se abre el
-   navegador; entrás con tu cTrader ID y autorizás. Tenés 5 minutos. También podés pegar un token de acceso (el del
-   «Playground» de tu aplicación).
-3. **Número de cuenta**: si el token tiene varias cuentas, el login de la que querés usar (0 = la primera).
+1. At `openapi.ctrader.com`, create an Open API app and register the callback address shown by Trading Hub (for example `http://127.0.0.1:53682/ctrader`).
+2. Enter the app's **Client ID** and **Secret**.
+3. Choose demo or real account and select **Connect with cTrader**. Authorize in your browser within the permitted window. Alternatively supply an access token issued through your app.
+4. If the token contains several accounts, supply the desired cTrader login number; zero selects the first.
 
-Trading Hub guarda el token en el Llavero y lo renueva solo. Los CFDs no tienen operaciones reales: cada cotización
-(bid) cuenta como una operación de volumen 1, así que el footprint y el delta son aproximados.
+The app stores and refreshes the token in the OS credential store. For CFDs, quoted bid changes are approximated as trades of volume one. Footprint and delta therefore represent proxies, not exchange prints.
 
 ## OANDA
 
-Gratis con una cuenta de práctica: CFDs de índices (NAS100_USD, SPX500_USD, US30_USD, DE30_EUR…), oro, petróleo y
-forex, con años de historia en velas de 5 segundos.
+Provides practice or live CFD/FX pricing and historical five-second candles.
 
-- **Cuenta de práctica (gratis)** o **Cuenta real**.
-- **Token**: lo generás en «Manage API Access» (hay enlaces para crear la cuenta y el token).
-- **Cuenta**: el número 101-001-…; vacío usa la primera del token.
+- Choose **Practice account** or **Real account**.
+- Enter an API token created in OANDA's API Access page.
+- Enter the account ID or leave blank to use the first authorized account.
 
-Trading Hub usa el token solo para datos; no manda órdenes a OANDA. Como en cTrader, cada cotización (precio medio)
-cuenta como una operación de volumen 1.
+Trading Hub uses this token for **market data only**, not OANDA orders. Synthetic trade volume is assigned to quotes, so order-flow measures are approximate.
 
 ## Alpaca
 
-Con la cuenta de práctica (gratis, desde cualquier país) tenés la historia tick a tick de todas las bolsas de EE.UU.
-desde 2016, salvo los últimos 15 minutos. Sirve para estudiar los índices a través de SPY, QQQ, IWM y DIA.
+Supplies US stock/ETF data using an Alpaca practice account and an API key ID and secret.
 
-- **API key ID** y **Secret key** de tu cuenta de práctica.
-- **Datos en vivo**: IEX (gratis, una bolsa) o SIP (todas las bolsas, plan pago).
+- **IEX:** Free exchange-limited data.
+- **SIP:** Consolidated exchange data, subject to subscription/entitlements.
 
-Las claves se usan solo para datos; no se mandan órdenes a Alpaca.
+Historical availability and delays depend on the account and entitlement. Trading Hub does not submit Alpaca orders.
 
 ## Databento
 
-Historia tick a tick de los futuros de CME (NQ, ES, MNQ, MES, CL, GC…) desde 2010, con el lado agresor real de cada
-operación. Es pago por uso; las cuentas nuevas traen créditos gratis.
+Provides historical CME futures tick data (for example NQ, ES, MNQ, MES, CL, GC) with aggressor-side fields and long historical coverage. It is **paid by usage**.
 
-- Solo pide la **API key** (`db-…`). Hay enlaces para crear la cuenta y ver los precios.
-- **Probar conexión** muestra desde y hasta qué fecha hay datos y cuánto cuesta un día de NQ tick a tick. No baja nada.
-- No da datos en vivo ni aparece en el buscador de instrumentos: se usa desde **Datos → Futuros de CME con
-  Databento**. Ver [Datos](datos.md#databento).
+- Enter the Databento API key (`db-…`).
+- **Test connection** checks the available date range and estimates the cost of one sample NQ day without downloading the data.
+- Databento does not supply live data to the chart instrument picker in this integration. Use **Data → CME futures with Databento**. See [Data](datos.md#databento).
+
+Review the price estimate before approving any historical download.
 
 ## Interactive Brokers
 
-Abrí TWS o IB Gateway y habilitá la API (Configure → API → Settings). Completá **Host**, **Puerto** (habituales: 7497
-TWS paper, 7496 TWS real, 4002 Gateway paper) y **Client ID**. Por ahora Trading Hub solo verifica la conexión: no da
-datos ni órdenes.
+Open TWS or IB Gateway with the API enabled (Configure → API → Settings). Enter **Host**, **Port**, and **Client ID**. Common ports include 7497 for TWS paper, 7496 for TWS live, and 4002 for Gateway paper. These are defaults, not guarantees.
 
-## Cuentas reales y cuentas de prueba
+This integration currently checks connectivity only; it does not offer IBKR market data or live order execution.
 
-Todas las cuentas para operar aparecen en el selector **Cuenta** del Chart Trader. Siempre está la **Cuenta
-simulada**. Las demás dependen de la conexión:
+## Real and practice accounts
 
-| Conexión | Cuenta de prueba | Cuenta real |
+Chart Trader always includes the simulated account. Other accounts depend on provider credentials and the chart instrument.
+
+| Provider | Practice | Real |
 |---|---|---|
-| Binance | Testnet: opera directo | Con «Permitir órdenes REALES desde Trading Hub» |
-| Rithmic y AMP | Sistemas «Rithmic Paper Trading» y «Rithmic Test»: operan directo | Cualquier otro sistema (Rithmic 01, prop firms…), con «Permitir órdenes en cuentas reales» |
-| Tradovate | Demo: opera directo | Con «Permitir órdenes en cuentas reales de Tradovate» |
+| Binance | Testnet | Requires **Allow REAL orders from Trading Hub** |
+| Rithmic / AMP | Paper/test systems | Requires **Allow orders in real accounts** |
+| Tradovate | Demo | Requires **Allow orders in real Tradovate accounts** |
 
-Sin esa autorización, una cuenta real no aparece en el selector del Chart Trader. Las de Rithmic y Tradovate quedan
-en **solo lectura** en la sección Cuenta: ves el saldo, las posiciones y el historial, pero no podés mandarles
-órdenes. Las cuentas reales se marcan con «— REAL» en el selector y con el aviso «CUENTA REAL».
+Without this authorization, real accounts stay read-only: balances, positions, and history may remain visible, but submitting orders is blocked. The UI marks real accounts with **REAL** warnings.
 
-### Habilitar el dinero real
+### Enable real-money trading safely
 
-1. Probá antes todo con la cuenta simulada o con la cuenta de prueba del broker.
-2. En la conexión, pasá a la cuenta real: en Binance, con el interruptor **Testnet / Cuenta real**; en Tradovate, con
-   **Demo / Cuenta real**; en Rithmic y AMP, eligiendo el sistema real en **Servidor**.
-3. Tildá la casilla de órdenes reales de esa conexión.
-4. Poné una **Cantidad máxima por orden**: Trading Hub bloquea las órdenes más grandes.
-5. Guardá y probá la conexión.
+1. First test the workflow with a simulated or broker practice account.
+2. Switch explicitly to the intended production account/server.
+3. Enable the real-order permission only after verifying account details.
+4. Configure an appropriate **Maximum quantity per order**.
+5. Save and test the connection, then independently check order confirmations and risk controls.
 
-Cómo se confirman las órdenes reales y qué límites hay está en [Operar](operar.md#seguridad).
+See [Trading safety](operar.md#safety) for confirmations and additional controls.

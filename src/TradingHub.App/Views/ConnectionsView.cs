@@ -63,18 +63,18 @@ internal sealed class ConnectionsView : UserControl, IPage
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("320,*") };
 
         // ---- lista
-        var add = new Button { Content = Ui.H(6, Ui.Icon(MaterialIconKind.Plus, 16), new TextBlock { Text = "Nueva conexión" }), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center };
+        var add = new Button { Content = Ui.H(6, Ui.Icon(MaterialIconKind.Plus, 16), new TextBlock { Text = "New connection" }), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center };
         var menu = new MenuFlyout();
         foreach (var kind in Enum.GetValues<ConnectionKind>())
         {
             // qué da cada una, para elegir sin tener que saberlo
             string? hint = kind switch
             {
-                ConnectionKind.Tradovate => "futuros: cuentas para operar y datos",
-                ConnectionKind.CTrader => "CFDs y forex de IC Markets, Pepperstone, FxPro…",
-                ConnectionKind.Oanda => "CFDs de índices, oro y forex (práctica gratis)",
-                ConnectionKind.Alpaca => "acciones y ETFs de EE.UU. (SPY, QQQ) gratis",
-                ConnectionKind.Databento => "historia de futuros de CME desde 2010",
+                ConnectionKind.Tradovate => "futures: trading accounts and market data",
+                ConnectionKind.CTrader => "CFDs and forex from IC Markets, Pepperstone, FxPro…",
+                ConnectionKind.Oanda => "Index, gold and FX CFDs (free practice account)",
+                ConnectionKind.Alpaca => "US stocks and ETFs (SPY, QQQ) with free data",
+                ConnectionKind.Databento => "CME futures history since 2010",
                 _ => null,
             };
             object itemHeader = hint == null ? Ui.EnumName(kind) : Ui.V(1, new TextBlock { Text = Ui.EnumName(kind) }, new TextBlock { Text = hint, Classes = { "faint", "small" } });
@@ -84,7 +84,7 @@ internal sealed class ConnectionsView : UserControl, IPage
         }
 
         add.Flyout = menu;
-        var header = Ui.V(4, Ui.H1("Conexiones"), Ui.Muted("Datos de mercado y cuentas para operar"));
+        var header = Ui.V(4, Ui.H1("Connections"), Ui.Muted("Market data and trading accounts"));
         header.Margin = new Thickness(0, 0, 0, 16);
         var left = new DockPanel { Margin = new Thickness(20, 20, 12, 20) };
         DockPanel.SetDock(header, Dock.Top);
@@ -116,7 +116,7 @@ internal sealed class ConnectionsView : UserControl, IPage
         {
             var dot = new Avalonia.Controls.Shapes.Ellipse { Width = 8, Height = 8, VerticalAlignment = VerticalAlignment.Center };
             dot.Fill = !p.Enabled ? Ui.Text2 : _results.TryGetValue(p.Id, out var r) ? (r.Ok ? Ui.Up : Ui.Down) : Ui.Line;
-            ToolTip.SetTip(dot, !p.Enabled ? "Desactivada" : _results.TryGetValue(p.Id, out var r2) ? r2.Message : "Sin probar");
+            ToolTip.SetTip(dot, !p.Enabled ? "Disabled" : _results.TryGetValue(p.Id, out var r2) ? r2.Message : "Not tested");
             var icon = new Border { Width = 34, Height = 34, CornerRadius = new CornerRadius(8), Background = Ui.Bg3, Child = Ui.Icon(IconOf(p.Kind), 18, p.Enabled ? Ui.Accent : Ui.Text2) };
             string sub = Describe(p);
             var text = Ui.V(1, new TextBlock { Text = p.Name, FontWeight = FontWeight.SemiBold, Opacity = p.Enabled ? 1 : 0.6 }, new TextBlock { Text = sub, Classes = { "muted", "small" } });
@@ -138,20 +138,20 @@ internal sealed class ConnectionsView : UserControl, IPage
     private string Describe(ConnectionProfile p)
     {
         string prefix = p.Name == Ui.EnumName(p.Kind) ? "" : Ui.EnumName(p.Kind) + " · ";
-        if (!p.Enabled) return prefix + "desactivada";
+        if (!p.Enabled) return prefix + "disabled";
         string detail = p.Kind switch
         {
-            ConnectionKind.Simulator => "mercado simulado",
+            ConnectionKind.Simulator => "simulated market",
             ConnectionKind.BinanceFutures or ConnectionKind.BinanceSpot => string.IsNullOrWhiteSpace(p.ApiKey)
-                ? "datos públicos · sin cuenta"
-                : p.Testnet ? "datos + cuenta testnet" : p.AllowRealOrders ? "datos + cuenta REAL" : "datos + cuenta real (solo lectura)",
-            ConnectionKind.Bybit => "datos públicos",
-            ConnectionKind.Rithmic or ConnectionKind.AmpFutures => string.IsNullOrWhiteSpace(p.RithmicUser) ? "sin usuario configurado" : $"{p.RithmicUser} · {p.RithmicSystem}",
-            ConnectionKind.Tradovate => string.IsNullOrWhiteSpace(p.TradovateUser) ? "sin usuario configurado" : $"{p.TradovateUser} · {(p.Testnet ? "demo" : p.AllowRealOrders ? "REAL" : "real (solo lectura)")}",
-            ConnectionKind.CTrader => string.IsNullOrWhiteSpace(p.CTraderClientId) ? "sin aplicación configurada" : $"{(p.Testnet ? "demo" : "real")}{(p.CTraderLogin > 0 ? " · cuenta " + p.CTraderLogin : "")}",
-            ConnectionKind.Oanda => (p.Testnet ? "práctica" : "real") + (string.IsNullOrWhiteSpace(p.OandaAccount) ? "" : " · " + p.OandaAccount),
-            ConnectionKind.Alpaca => string.IsNullOrWhiteSpace(p.ApiKey) ? "sin claves" : $"historia SIP · en vivo {p.AlpacaLiveFeed.ToUpperInvariant()}",
-            ConnectionKind.Databento => "historia de futuros de CME (pago por uso)",
+                ? "public data · no account"
+                : p.Testnet ? "data + testnet account" : p.AllowRealOrders ? "data + REAL account" : "data + real account (read-only)",
+            ConnectionKind.Bybit => "public data",
+            ConnectionKind.Rithmic or ConnectionKind.AmpFutures => string.IsNullOrWhiteSpace(p.RithmicUser) ? "no username configured" : $"{p.RithmicUser} · {p.RithmicSystem}",
+            ConnectionKind.Tradovate => string.IsNullOrWhiteSpace(p.TradovateUser) ? "no username configured" : $"{p.TradovateUser} · {(p.Testnet ? "demo" : p.AllowRealOrders ? "REAL" : "real (solo lectura)")}",
+            ConnectionKind.CTrader => string.IsNullOrWhiteSpace(p.CTraderClientId) ? "no application configured" : $"{(p.Testnet ? "demo" : "real")}{(p.CTraderLogin > 0 ? " · cuenta " + p.CTraderLogin : "")}",
+            ConnectionKind.Oanda => (p.Testnet ? "practice" : "real") + (string.IsNullOrWhiteSpace(p.OandaAccount) ? "" : " · " + p.OandaAccount),
+            ConnectionKind.Alpaca => string.IsNullOrWhiteSpace(p.ApiKey) ? "no credentials" : $"historia SIP · en vivo {p.AlpacaLiveFeed.ToUpperInvariant()}",
+            ConnectionKind.Databento => "CME futures history (pay per use)",
             _ => $"{p.IbHost}:{p.IbPort}",
         };
         return prefix + detail;
@@ -193,9 +193,9 @@ internal sealed class ConnectionsView : UserControl, IPage
     private Control BuildDetail(ConnectionProfile p)
     {
         var name = new TextBox { Text = p.Name, FontSize = 18, FontWeight = FontWeight.SemiBold, MinWidth = 170, MaxWidth = 300 };
-        var enabled = new ToggleSwitch { IsChecked = p.Enabled, OnContent = "Activada", OffContent = "Desactivada" };
+        var enabled = new ToggleSwitch { IsChecked = p.Enabled, OnContent = "Activada", OffContent = "Disabled" };
         var history = new ComboBox { MinWidth = 160 };
-        foreach (var (h, label) in new[] { (0.5, "30 minutos"), (1.0, "1 hora"), (1.5, "1,5 horas"), (3.0, "3 horas"), (6.0, "6 horas"), (12.0, "12 horas"), (24.0, "1 día"), (72.0, "3 días"), (168.0, "7 días") })
+        foreach (var (h, label) in new[] { (0.5, "30 minutos"), (1.0, "1 hora"), (1.5, "1,5 horas"), (3.0, "3 horas"), (6.0, "6 horas"), (12.0, "12 horas"), (24.0, "1 day"), (72.0, "3 days"), (168.0, "7 days") })
             history.Items.Add(new ComboBoxItem { Content = label, Tag = h });
         history.SelectedItem = history.Items.OfType<ComboBoxItem>().OrderBy(i => Math.Abs((double)i.Tag! - p.HistoryHours)).First();
 
@@ -216,23 +216,23 @@ internal sealed class ConnectionsView : UserControl, IPage
         var sections = new StackPanel { Spacing = 16 };
 
         var dataSection = Ui.V(14,
-            Ui.H2("Datos de mercado"),
-            Ui.Field("Historia al abrir un gráfico", history, "Lo grabado o descargado en Datos carga al instante; el resto se pide a la conexión."));
+            Ui.H2("Market data"),
+            Ui.Field("History when opening a chart", history, "Recorded or downloaded history loads immediately; missing history is requested from the connection."));
         sections.Children.Add(Ui.Card(dataSection));
         apply.Add(() => p.HistoryHours = (double)((ComboBoxItem)history.SelectedItem!).Tag!);
 
         switch (p.Kind)
         {
             case ConnectionKind.Simulator:
-                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Mercado simulado con libro y operaciones realistas, ideal para probar sin conexión. No necesita configuración."));
+                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Simulated order book and trades for offline practice. No configuration required."));
                 break;
             case ConnectionKind.BinanceFutures:
             case ConnectionKind.BinanceSpot:
-                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Los datos de mercado de Binance son públicos: no hace falta cuenta para ver gráficos, DOM y cinta."));
+                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Binance market data is public: no account required for charts, DOM or time and sales."));
                 sections.Children.Add(Ui.Card(BinanceAccount(p, apply)));
                 break;
             case ConnectionKind.Bybit:
-                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Datos públicos de los perpetuos lineales (USDT) de Bybit. Operar con cuenta Bybit todavía no está disponible."));
+                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Public USDT linear perpetual data from Bybit. Bybit account order routing is not supported."));
                 break;
             case ConnectionKind.Rithmic:
             case ConnectionKind.AmpFutures:
@@ -245,11 +245,11 @@ internal sealed class ConnectionsView : UserControl, IPage
                 sections.Children.Add(Ui.Card(TradovateSection(p, apply)));
                 break;
             case ConnectionKind.CTrader:
-                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Los CFDs no tienen operaciones reales: cada cotización (bid) cuenta como una operación de volumen 1. Sirve para precio, velas, replay y backtests; el footprint y el delta son aproximados."));
+                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "CFDs have no exchange trade prints: each bid quote is treated as one trade of volume 1. Price charts, replay and backtests are supported; footprint and delta are approximations."));
                 sections.Children.Add(Ui.Card(CTraderSection(p, apply)));
                 break;
             case ConnectionKind.Oanda:
-                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "Los CFDs no tienen operaciones reales: cada cotización (precio medio) cuenta como una operación de volumen 1. Sirve para precio, velas, replay y backtests; el footprint y el delta son aproximados."));
+                dataSection.Children.Add(Note(MaterialIconKind.InformationOutline, "CFDs have no exchange trade prints: each mid-price quote is treated as one trade of volume 1. Price charts, replay and backtests are supported; footprint and delta are approximations."));
                 sections.Children.Add(Ui.Card(OandaSection(p, apply)));
                 break;
             case ConnectionKind.Alpaca:
@@ -262,9 +262,9 @@ internal sealed class ConnectionsView : UserControl, IPage
         }
 
         // ---- encabezado y acciones
-        var test = Ui.Button("Probar conexión", MaterialIconKind.LanConnect, () => { });
-        var save = Ui.Button("Guardar", MaterialIconKind.ContentSaveOutline, () => { }, "primary");
-        var delete = Ui.Button("Eliminar", MaterialIconKind.DeleteOutline, () => { }, "ghost");
+        var test = Ui.Button("Test connection", MaterialIconKind.LanConnect, () => { });
+        var save = Ui.Button("Save", MaterialIconKind.ContentSaveOutline, () => { }, "primary");
+        var delete = Ui.Button("Delete", MaterialIconKind.DeleteOutline, () => { }, "ghost");
         delete.IsVisible = _svc.Connections.Profiles.Count(x => x.Kind == p.Kind) > 1 || p.Kind is ConnectionKind.InteractiveBrokers or ConnectionKind.AmpFutures
             or ConnectionKind.Tradovate or ConnectionKind.CTrader or ConnectionKind.Oanda or ConnectionKind.Alpaca or ConnectionKind.Databento;
 
@@ -276,7 +276,7 @@ internal sealed class ConnectionsView : UserControl, IPage
             _svc.Connections.Save();
             _svc.Connections.Invalidate(p);
             InstrumentPicker.ClearCache(p.Id);
-            _status($"Conexión \"{p.Name}\" guardada");
+            _status($"Connection \"{p.Name}\" saved");
         }
 
         save.Click += (_, _) => Save();
@@ -286,7 +286,7 @@ internal sealed class ConnectionsView : UserControl, IPage
             _testCts?.Cancel();
             _testCts = new CancellationTokenSource(TimeSpan.FromSeconds(25));
             test.IsEnabled = false;
-            ShowResult(true, "Probando…", running: true);
+            ShowResult(true, "Testing…", running: true);
             try
             {
                 var (ok, msg) = await _svc.Connections.TestAsync(p, _testCts.Token);
@@ -302,7 +302,7 @@ internal sealed class ConnectionsView : UserControl, IPage
         delete.Click += async (_, _) =>
         {
             if (TopLevel.GetTopLevel(this) is not Window w) return;
-            if (!await ConfirmDialog.ShowAsync(w, "Eliminar conexión", $"Se borra \"{p.Name}\" y sus secretos {(Os.IsWindows ? "del Administrador de credenciales" : "del Llavero")}. Los datos grabados no se tocan.", "Eliminar", danger: true)) return;
+            if (!await ConfirmDialog.ShowAsync(w, "Delete connection", $"Se borra \"{p.Name}\" y sus secretos {(Os.IsWindows ? "from Credential Manager" : "from Keychain")}. Recorded market data are not deleted.", "Delete", danger: true)) return;
             _svc.Connections.ClearSecrets(p);
             _svc.Connections.Invalidate(p);
             _svc.Connections.Profiles.Remove(p);
@@ -362,12 +362,12 @@ internal sealed class ConnectionsView : UserControl, IPage
 
     private Control BinanceAccount(ConnectionProfile p, List<Action> apply)
     {
-        var testnet = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Testnet (dinero de prueba)", OffContent = "Cuenta real" };
+        var testnet = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Testnet (dinero de prueba)", OffContent = "Real account" };
         var key = new TextBox { Text = p.ApiKey, Watermark = "API key" };
         var secret = new TextBox { PasswordChar = '•', Watermark = string.IsNullOrEmpty(_svc.Connections.GetSecret(p)) ? "API secret" : $"•••••••• (guardado en {Os.SecretStoreShort})" };
-        var allowReal = new CheckBox { Content = "Permitir órdenes REALES desde Trading Hub", IsChecked = p.AllowRealOrders };
-        var confirm = new CheckBox { Content = "Pedir confirmación antes de cada orden real", IsChecked = p.ConfirmOrders };
-        var maxQty = new NumericUpDown { Value = p.MaxOrderQuantity, Minimum = 0, Increment = 0.001m, FormatString = "0.#####", Watermark = "sin límite" };
+        var allowReal = new CheckBox { Content = "Allow REAL orders from Trading Hub", IsChecked = p.AllowRealOrders };
+        var confirm = new CheckBox { Content = "Confirm each real order", IsChecked = p.ConfirmOrders };
+        var maxQty = new NumericUpDown { Value = p.MaxOrderQuantity, Minimum = 0, Increment = 0.001m, FormatString = "0.#####", Watermark = "no limit" };
         var warn = Note(MaterialIconKind.AlertOutline, "Con una cuenta real las órdenes mueven dinero de verdad. Por defecto Trading Hub solo opera en testnet; activá las órdenes reales únicamente si sabés lo que hacés.");
         void UpdateEnabled()
         {
@@ -393,13 +393,13 @@ internal sealed class ConnectionsView : UserControl, IPage
             p.MaxOrderQuantity = maxQty.Value ?? 0;
         });
 
-        var help = new Button { Content = "¿Cómo creo una API key?", Classes = { "ghost" }, Padding = new Thickness(0), FontSize = 12, Foreground = Ui.Focus };
+        var help = new Button { Content = "How do I create an API key?", Classes = { "ghost" }, Padding = new Thickness(0), FontSize = 12, Foreground = Ui.Focus };
         help.Click += (_, _) => Shell.Open(testnet.IsChecked == true
             ? (p.Kind == ConnectionKind.BinanceFutures ? "https://testnet.binancefuture.com" : "https://testnet.binance.vision")
             : "https://www.binance.com/es/my/settings/api-management");
 
         return Ui.V(14,
-            Ui.H2("Cuenta para operar"),
+            Ui.H2("Trading account"),
             Note(MaterialIconKind.ShieldKeyOutline, "Creá una API key solo con permiso de trading (sin retiros). El secret se guarda en " + (Os.IsWindows ? "el Administrador de credenciales de Windows." : "el Llavero de macOS.")),
             testnet,
             TwoColumns(Ui.Field("API key", key), Ui.Field("API secret", secret)),
@@ -407,7 +407,7 @@ internal sealed class ConnectionsView : UserControl, IPage
             Ui.Divider(),
             allowReal,
             confirm,
-            Ui.Field("Cantidad máxima por orden (0 = sin límite)", maxQty),
+            Ui.Field("Maximum order quantity (0 = unlimited)", maxQty),
             warn);
     }
 
@@ -432,8 +432,8 @@ internal sealed class ConnectionsView : UserControl, IPage
     private Control RithmicSection(ConnectionProfile p, List<Action> apply)
     {
         var servers = LoadRithmicCache();
-        var search = new TextBox { Watermark = "Buscar servidor (paper, 01, Apex, Frankfurt, Sao Paulo…)" };
-        var server = new ComboBox { HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, MaxDropDownHeight = 420, PlaceholderText = "Elegí el servidor" };
+        var search = new TextBox { Watermark = "Search server (paper, 01, Apex, Frankfurt, São Paulo…)" };
+        var server = new ComboBox { HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, MaxDropDownHeight = 420, PlaceholderText = "Select a server" };
         var info = new TextBlock { Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap };
         var refresh = Ui.IconButton(MaterialIconKind.Refresh, "Volver a pedir la lista a todos los servidores", () => { }, 16);
         refresh.Margin = new Thickness(6, 0, 0, 0);
@@ -442,8 +442,8 @@ internal sealed class ConnectionsView : UserControl, IPage
         // servidor a mano (por si Rithmic agrega uno nuevo)
         var customUri = new TextBox { Text = p.RithmicUri, Watermark = "wss://servidor:443" };
         var customSystem = new TextBox { Text = p.RithmicSystem, Watermark = "Sistema (ej. Rithmic 01)" };
-        var customToggle = new CheckBox { Content = "Usar un servidor que no está en la lista" };
-        var customPanel = TwoColumns(Ui.Field("Dirección", customUri), Ui.Field("Sistema", customSystem));
+        var customToggle = new CheckBox { Content = "Use a server not in the list" };
+        var customPanel = TwoColumns(Ui.Field("Address", customUri), Ui.Field("Sistema", customSystem));
         customPanel.IsVisible = false;
         customToggle.IsCheckedChanged += (_, _) => customPanel.IsVisible = customToggle.IsChecked == true;
 
@@ -489,8 +489,8 @@ internal sealed class ConnectionsView : UserControl, IPage
         {
             var known = servers.FirstOrDefault(x => x.System == selSystem && x.Uri == selUri);
             aggNote.Text = known == null ? ""
-                : known.Aggregated ? "Este sistema ofrece cotizaciones agregadas."
-                : "Este sistema no ofrece cotizaciones agregadas: se conecta sin ellas (pedirlas igual hace que Rithmic rechace el login).";
+                : known.Aggregated ? "This system supports aggregated quotes."
+                : "This system does not support aggregated quotes: connect without them (requesting them causes Rithmic to reject login).";
         }
 
         server.SelectionChanged += (_, _) =>
@@ -506,7 +506,7 @@ internal sealed class ConnectionsView : UserControl, IPage
 
         async Task DiscoverAsync()
         {
-            info.Text = "Consultando los servidores de Rithmic…";
+            info.Text = "Checking Rithmic servers…";
             refresh.IsEnabled = false;
             try
             {
@@ -530,12 +530,12 @@ internal sealed class ConnectionsView : UserControl, IPage
                 UpdateAggregated();
                 var best = servers.GroupBy(x => x.Gateway).Select(g => g.First()).OrderBy(x => x.LatencyMs).FirstOrDefault();
                 info.Text = servers.Count == 0
-                    ? "No respondió ningún servidor (¿sin internet?)."
+                    ? "No server responded (check internet access)."
                     : $"{servers.Count} combinaciones en {servers.Select(x => x.Uri).Distinct().Count()} servidores. Lo más rápido desde acá: {best?.Gateway} ({best?.LatencyMs} ms). Colo 75 solo funciona desde el datacenter de la CME.";
             }
             catch (Exception ex)
             {
-                info.Text = "No se pudo consultar: " + ex.Message;
+                info.Text = "Unable to query servers: " + ex.Message;
             }
             finally
             {
@@ -549,10 +549,10 @@ internal sealed class ConnectionsView : UserControl, IPage
         serverRow.Children.Add(refresh);
         serverRow.Children.Add(server);
 
-        var user = new TextBox { Text = p.RithmicUser, Watermark = "usuario (Login)" };
-        var pass = new TextBox { PasswordChar = '•', RevealPassword = false, Watermark = string.IsNullOrEmpty(_svc.Connections.GetSecret(p)) ? "contraseña" : $"•••••••• (guardada en {Os.SecretStoreShort})" };
+        var user = new TextBox { Text = p.RithmicUser, Watermark = "username (Login)" };
+        var pass = new TextBox { PasswordChar = '•', RevealPassword = false, Watermark = string.IsNullOrEmpty(_svc.Connections.GetSecret(p)) ? "password" : $"•••••••• (saved in {Os.SecretStoreShort})" };
         var reveal = new ToggleButton { Content = Ui.Icon(MaterialIconKind.EyeOutline, 15), Padding = new Thickness(6, 2), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
-        ToolTip.SetTip(reveal, "Mostrar lo que escribís");
+        ToolTip.SetTip(reveal, "Show entered password");
         reveal.IsCheckedChanged += (_, _) => pass.RevealPassword = reveal.IsChecked == true;
         var passRow = new DockPanel();
         DockPanel.SetDock(reveal, Dock.Right);
@@ -560,15 +560,15 @@ internal sealed class ConnectionsView : UserControl, IPage
         passRow.Children.Add(reveal);
         passRow.Children.Add(pass);
 
-        var aggregated = new CheckBox { Content = "Cotizaciones agregadas", IsChecked = p.RithmicAggregatedQuotes };
+        var aggregated = new CheckBox { Content = "Aggregated quotes", IsChecked = p.RithmicAggregatedQuotes };
         ToolTip.SetTip(aggregated, "Rithmic junta las actualizaciones del libro que llegan en el mismo instante (menos mensajes, mismo precio). Igual que la opción de ATAS.");
         var timeout = new NumericUpDown { Value = p.RithmicTimeoutMs, Minimum = 2000, Maximum = 120000, Increment = 1000, FormatString = "0", Width = 140 };
         var app = new TextBox { Text = p.RithmicAppName, Watermark = "TradingHub" };
         var products = new TextBox { Text = string.Join(", ", p.RithmicProducts), Watermark = "ES, NQ, MES, MNQ, CL…" };
 
         // órdenes: las cuentas de práctica operan siempre; las reales (Rithmic 01, prop firms) solo si se habilita acá
-        var allowReal = new CheckBox { Content = "Permitir órdenes en cuentas reales (Rithmic 01, prop firms…)", IsChecked = p.AllowRealOrders };
-        var confirm = new CheckBox { Content = "Confirmar cada orden real", IsChecked = p.ConfirmOrders };
+        var allowReal = new CheckBox { Content = "Allow orders on real accounts (Rithmic 01, prop firms…)", IsChecked = p.AllowRealOrders };
+        var confirm = new CheckBox { Content = "Confirm each real order", IsChecked = p.ConfirmOrders };
         var maxQty = new NumericUpDown { Value = p.MaxOrderQuantity, Minimum = 0, Maximum = 10000, Increment = 1, FormatString = "0", Width = 140 };
 
         apply.Add(() =>
@@ -599,23 +599,23 @@ internal sealed class ConnectionsView : UserControl, IPage
         Fill();
         Dispatcher.UIThread.Post(() => _ = DiscoverAsync(), DispatcherPriority.Background);
         return Ui.V(14,
-            Ui.H2(p.Kind == ConnectionKind.AmpFutures ? "Cuenta AMP Futures" : "Cuenta Rithmic"),
+            Ui.H2(p.Kind == ConnectionKind.AmpFutures ? "AMP Futures account" : "Rithmic account"),
             Note(MaterialIconKind.InformationOutline, p.Kind == ConnectionKind.AmpFutures
                 ? "AMP Futures opera sobre Rithmic: AMP te manda usuario y contraseña de Rithmic. Para la demo elegí «Rithmic Paper Trading» y para la cuenta real «Rithmic 01», en el servidor más cercano. Trading Hub se conecta directo por R|Protocol (no hace falta tener R|Trader Pro abierto)."
                 : "Conexión directa por R|Protocol, la API oficial de Rithmic (no hace falta R|Trader Pro). Elegí el servidor como en ATAS: sistema (Paper Trading, Rithmic 01, tu prop firm) y región."),
-            Ui.H3("Conexión"),
-            TwoColumns(Ui.Field("Usuario", user), Ui.Field("Contraseña", passRow)),
+            Ui.H3("Connection"),
+            TwoColumns(Ui.Field("Usuario", user), Ui.Field("Password", passRow)),
             Ui.Field("Servidor", Ui.V(8, search, serverRow, info)),
             customToggle,
             customPanel,
-            Ui.H3("Datos de mercado"),
-            TwoColumns(Ui.V(4, aggregated, aggNote), Ui.Field("Tiempo de espera de conexión (ms)", timeout)),
-            Ui.H3("Operar"),
+            Ui.H3("Market data"),
+            TwoColumns(Ui.V(4, aggregated, aggNote), Ui.Field("Connection timeout (ms)", timeout)),
+            Ui.H3("Trading"),
             Note(MaterialIconKind.ShieldCheckOutline, "Tus cuentas de Rithmic aparecen en el Chart Trader («Cuenta») cuando la conexión está activa. Las de práctica (Paper Trading) operan directo; las reales necesitan esta autorización y piden confirmación."),
             allowReal,
-            TwoColumns(confirm, Ui.Field("Cantidad máxima por orden (0 = sin límite)", maxQty)),
+            TwoColumns(confirm, Ui.Field("Maximum order quantity (0 = unlimited)", maxQty)),
             Ui.H3("Avanzado"),
-            TwoColumns(Ui.Field("Nombre de la aplicación", app, "Algunos sistemas exigen un nombre de app aprobado."), Ui.Field("Productos para el buscador", products, "Se busca el contrato del mes de cada producto (ej. ES → ESZ6).")));
+            TwoColumns(Ui.Field("Application name", app, "Algunos sistemas exigen un nombre de app aprobado."), Ui.Field("Instrument picker products", products, "Se busca el contrato del mes de cada producto (ej. ES → ESZ6).")));
     }
 
     /// <summary>Campo de secreto: no muestra lo guardado, solo avisa que está en el Llavero (o en Windows).</summary>
@@ -633,14 +633,14 @@ internal sealed class ConnectionsView : UserControl, IPage
     /// <summary>Tradovate: usuario, contraseña y API key (CID + secret); demo o real; productos.</summary>
     private Control TradovateSection(ConnectionProfile p, List<Action> apply)
     {
-        var demo = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Demo (simulada de Tradovate)", OffContent = "Cuenta real" };
+        var demo = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Demo (simulada de Tradovate)", OffContent = "Real account" };
         var user = new TextBox { Text = p.TradovateUser, Watermark = "usuario de Tradovate" };
-        var pass = SecretBox(p, null, "contraseña");
+        var pass = SecretBox(p, null, "password");
         var cid = new TextBox { Text = p.TradovateCid, Watermark = "CID (número)" };
         var sec = SecretBox(p, "apisecret", "secret de la API key");
         var products = new TextBox { Text = string.Join(", ", p.TradovateProducts), Watermark = "ES, NQ, MES, MNQ, CL…" };
-        var allowReal = new CheckBox { Content = "Permitir órdenes en cuentas reales de Tradovate", IsChecked = p.AllowRealOrders };
-        var confirm = new CheckBox { Content = "Pedir confirmación antes de cada orden real", IsChecked = p.ConfirmOrders };
+        var allowReal = new CheckBox { Content = "Allow orders on real Tradovate accounts", IsChecked = p.AllowRealOrders };
+        var confirm = new CheckBox { Content = "Confirm each real order", IsChecked = p.ConfirmOrders };
         var maxQty = new NumericUpDown { Value = p.MaxOrderQuantity, Minimum = 0, Maximum = 10000, Increment = 1, FormatString = "0", Width = 140 };
         void Update()
         {
@@ -666,18 +666,18 @@ internal sealed class ConnectionsView : UserControl, IPage
             p.MaxOrderQuantity = maxQty.Value ?? 0;
         });
         return Ui.V(14,
-            Ui.H2("Cuenta Tradovate"),
+            Ui.H2("Tradovate account"),
             Note(MaterialIconKind.InformationOutline, "Conexión directa a la API oficial de Tradovate. Tus cuentas aparecen en el Chart Trader y en Cuenta, y se pueden operar desde cualquier gráfico de futuros de CME (también desde uno de Rithmic). Las demo operan directo; las reales necesitan la autorización de abajo."),
             Note(MaterialIconKind.AlertOutline, "Datos de mercado por API: Tradovate solo los da si tu cuenta tiene habilitados los datos de CME para API (una licencia aparte de la CME). Sin eso igual podés operar, con los gráficos de Rithmic u otra conexión."),
             demo,
-            TwoColumns(Ui.Field("Usuario", user), Ui.Field("Contraseña", pass)),
-            TwoColumns(Ui.Field("CID de la API key", cid), Ui.Field("Secret de la API key", sec)),
-            Ui.H(16, Link("¿Dónde saco la API key? (Settings → API Access)", "https://trader.tradovate.com/"), Link("Documentación de la API", "https://partner.tradovate.com")),
-            Ui.Field("Productos para el buscador", products, "Se usa el contrato del mes de cada uno (ES → ESZ6)."),
+            TwoColumns(Ui.Field("Usuario", user), Ui.Field("Password", pass)),
+            TwoColumns(Ui.Field("API key CID", cid), Ui.Field("API key secret", sec)),
+            Ui.H(16, Link("Where do I find the API key? (Settings → API Access)", "https://trader.tradovate.com/"), Link("API documentation", "https://partner.tradovate.com")),
+            Ui.Field("Instrument picker products", products, "Se usa el contrato del mes de cada uno (ES → ESZ6)."),
             Ui.Divider(),
             allowReal,
             confirm,
-            Ui.Field("Cantidad máxima por orden (0 = sin límite)", maxQty),
+            Ui.Field("Maximum order quantity (0 = unlimited)", maxQty),
             Note(MaterialIconKind.ShieldCheckOutline, "Tradovate deja una sola sesión de datos por usuario: si abrís Tradovate Trader con el mismo usuario, puede cortar la de Trading Hub (y al revés)."));
     }
 
@@ -685,25 +685,25 @@ internal sealed class ConnectionsView : UserControl, IPage
     private Control CTraderSection(ConnectionProfile p, List<Action> apply)
     {
         const string redirect = "http://127.0.0.1:53682/ctrader";
-        var demo = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Cuenta demo", OffContent = "Cuenta real" };
-        var clientId = new TextBox { Text = p.CTraderClientId, Watermark = "Client ID de tu aplicación" };
-        var secret = SecretBox(p, null, "Secret de tu aplicación");
-        var token = SecretBox(p, "token", "token de acceso (o tocá «Conectar con cTrader»)");
+        var demo = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Demo account", OffContent = "Real account" };
+        var clientId = new TextBox { Text = p.CTraderClientId, Watermark = "Your app Client ID" };
+        var secret = SecretBox(p, null, "Your app secret");
+        var token = SecretBox(p, "token", "access token (or select Connect with cTrader)");
         var login = new NumericUpDown { Value = p.CTraderLogin, Minimum = 0, Maximum = 999999999999, FormatString = "0", Watermark = "la primera", HorizontalAlignment = HorizontalAlignment.Stretch };
         var oauthStatus = new TextBlock { Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap };
-        var connect = Ui.Button("Conectar con cTrader", MaterialIconKind.Login, () => { }, "primary");
+        var connect = Ui.Button("Connect with cTrader", MaterialIconKind.Login, () => { }, "primary");
         connect.Click += async (_, _) =>
         {
             string id = (clientId.Text ?? "").Trim();
             string sec = !string.IsNullOrWhiteSpace(secret.Text) ? secret.Text.Trim() : _svc.Connections.GetSecret(p);
             if (id.Length == 0 || sec.Length == 0)
             {
-                oauthStatus.Text = "Primero completá el Client ID y el Secret de tu aplicación.";
+                oauthStatus.Text = "Enter your application's Client ID and Secret first.";
                 return;
             }
 
             connect.IsEnabled = false;
-            oauthStatus.Text = "Se abrió el navegador: entrá con tu cTrader ID y autorizá a Trading Hub. Esperando…";
+            oauthStatus.Text = "Browser opened: sign in with your cTrader ID and authorize Trading Hub. Waiting…";
             try
             {
                 var (access, refresh) = await CTraderOAuthAsync(id, sec, redirect);
@@ -714,18 +714,18 @@ internal sealed class ConnectionsView : UserControl, IPage
                 _svc.Connections.Save();
                 _svc.Connections.Invalidate(p);
                 token.Watermark = $"•••••••• (guardado en {Os.SecretStoreShort})";
-                oauthStatus.Text = "Listo: Trading Hub quedó autorizado. Tocá «Probar conexión».";
+                oauthStatus.Text = "Trading Hub authorized successfully. Select Test connection.";
             }
             catch (Exception ex)
             {
-                oauthStatus.Text = "No se pudo autorizar: " + ex.Message;
+                oauthStatus.Text = "Authorization failed: " + ex.Message;
             }
             finally
             {
                 connect.IsEnabled = true;
             }
         };
-        var copy = Ui.Button("Copiar", MaterialIconKind.ContentCopy, () =>
+        var copy = Ui.Button("Copy", MaterialIconKind.ContentCopy, () =>
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } cb) _ = cb.SetTextAsync(redirect);
         }, "ghost");
@@ -742,15 +742,15 @@ internal sealed class ConnectionsView : UserControl, IPage
         return Ui.V(14,
             Ui.H2("cTrader Open API"),
             Note(MaterialIconKind.InformationOutline, "Gratis con cualquier broker que tenga cTrader (IC Markets, Pepperstone, FxPro, Fusion Markets…) y una cuenta demo: CFDs de índices (US100/NAS100, US500, GER40…), forex, oro y petróleo, con historia tick a tick de años."),
-            Ui.H3("1 · Tu aplicación (una sola vez)"),
+            Ui.H3("1 · Your application (one-time setup)"),
             Note(MaterialIconKind.ShieldKeyOutline, "Creá una aplicación en openapi.ctrader.com (entrás con tu cTrader ID) y agregá esta dirección de redirección. Después copiá acá el Client ID y el Secret."),
-            Ui.H(8, new TextBlock { Text = redirect, FontFamily = Ui.MonoFont, VerticalAlignment = VerticalAlignment.Center }, copy, Link("Abrir openapi.ctrader.com", "https://openapi.ctrader.com/apps")),
+            Ui.H(8, new TextBlock { Text = redirect, FontFamily = Ui.MonoFont, VerticalAlignment = VerticalAlignment.Center }, copy, Link("Open openapi.ctrader.com", "https://openapi.ctrader.com/apps")),
             TwoColumns(Ui.Field("Client ID", clientId), Ui.Field("Secret", secret)),
-            Ui.H3("2 · Autorizar tu cuenta"),
+            Ui.H3("2 · Authorize your account"),
             Ui.H(10, connect, demo),
             oauthStatus,
             Ui.Field("O pegá un token de acceso (el del «Playground» de tu aplicación)", token),
-            Ui.Field("Número de cuenta (login de cTrader)", login, "Si el token tiene varias cuentas, la que querés usar. 0 = la primera demo/real."));
+            Ui.Field("Account number (cTrader login)", login, "If the token grants multiple accounts, select the account to use. 0 = first demo/real account."));
     }
 
     /// <summary>OAuth de cTrader: abre el navegador y espera el código en la dirección local de redirección.</summary>
@@ -762,7 +762,7 @@ internal sealed class ConnectionsView : UserControl, IPage
         listener.Start();
         Shell.Open(TradingHub.Feeds.CTrader.CTraderAuth.AuthorizeUrl(clientId, redirect));
         var wait = listener.GetContextAsync();
-        if (await Task.WhenAny(wait, Task.Delay(TimeSpan.FromMinutes(5))) != wait) throw new TimeoutException("no llegó la autorización (5 minutos)");
+        if (await Task.WhenAny(wait, Task.Delay(TimeSpan.FromMinutes(5))) != wait) throw new TimeoutException("Authorization did not arrive within 5 minutes");
         var ctx = await wait;
         string? code = ctx.Request.QueryString["code"];
         string? error = ctx.Request.QueryString["error"] ?? ctx.Request.QueryString["error_description"];
@@ -772,7 +772,7 @@ internal sealed class ConnectionsView : UserControl, IPage
         ctx.Response.ContentType = "text/html; charset=utf-8";
         await ctx.Response.OutputStream.WriteAsync(html);
         ctx.Response.Close();
-        if (code == null) throw new InvalidOperationException(error ?? "cTrader no mandó el código");
+        if (code == null) throw new InvalidOperationException(error ?? "cTrader did not return an authorization code");
         var (access, refresh, _) = await TradingHub.Feeds.CTrader.CTraderAuth.ExchangeAsync(clientId, secret, code, redirect, CancellationToken.None);
         return (access, refresh);
     }
@@ -780,7 +780,7 @@ internal sealed class ConnectionsView : UserControl, IPage
     /// <summary>OANDA: token personal y cuenta de práctica (gratis) o real.</summary>
     private Control OandaSection(ConnectionProfile p, List<Action> apply)
     {
-        var practice = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Cuenta de práctica (gratis)", OffContent = "Cuenta real" };
+        var practice = new ToggleSwitch { IsChecked = p.Testnet, OnContent = "Practice account (free)", OffContent = "Real account" };
         var token = SecretBox(p, null, "token de la API (Manage API Access)");
         var account = new TextBox { Text = p.OandaAccount, Watermark = "101-001-… (vacío = la primera)" };
         apply.Add(() =>

@@ -24,7 +24,7 @@ The application data folder also contains Claude conversations, the laboratory's
 - Removing a connection through the application is designed to remove its associated secrets.
 - Development tools and reports should not read or export stored credentials.
 
-On macOS, the application uses the system Keychain; Windows uses Windows Credential Manager. Review [Connections](conexiones.md#dónde-quedan-tus-claves) for provider-specific behavior. Do not assume an imported or copied data directory also safely transfers credentials between machines.
+On macOS, the application uses the system Keychain; Windows uses Windows Credential Manager. Review [Connections](conexiones.md#where-credentials-are-stored) for provider-specific behavior. Do not assume an imported or copied data directory also safely transfers credentials between machines.
 
 ## Network access
 
@@ -52,7 +52,7 @@ See [Claude integration](asistente-claude.md) for details. Never paste broker cr
 ## Real-money account safety
 
 - The application starts with a **simulated account**. Live orders require configuring a supported broker and allowing real order placement for that connection.
-- Manual real-account orders can require confirmation, depending on [Trading](operar.md#seguridad) and connection settings.
+- Manual real-account orders can require confirmation, depending on [Trading](operar.md#safety) and connection settings.
 - Starting or manually resuming a real-money strategy has a separate confirmation flow. Automatic resumption does not prompt on startup; therefore auto-resumption of **real-account strategies is disabled by default**.
 - Live strategies expose position sizing, daily-loss and drawdown controls. The **Stop all** action stops running strategies.
 - The Claude risk agent should not automatically apply size changes to a portfolio that includes real accounts.

@@ -131,7 +131,7 @@ In **Settings → Keyboard shortcuts** you can customize actions affecting the a
 
 Availability may depend on OS shortcut handling and focused controls. Use the Settings screen to confirm actual assignments. Click a binding to change it; Esc cancels and Backspace clears it. **Restore defaults** resets the bindings.
 
-**Trading shortcuts are intentionally unassigned by default** (buy, sell, close, reverse, cancel, partial exit, breakeven, etc.). See [Trading safety](operar.md#seguridad).
+**Trading shortcuts are intentionally unassigned by default** (buy, sell, close, reverse, cancel, partial exit, breakeven, etc.). See [Trading safety](operar.md#safety).
 
 In chart mode, Esc cancels selection or drawing, Delete removes selected drawings, arrow keys pan when supported, and +/− adjust chart scale.
 

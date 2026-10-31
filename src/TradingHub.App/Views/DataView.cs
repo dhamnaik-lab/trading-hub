@@ -57,8 +57,8 @@ internal sealed class DataView : UserControl, IPage
             _picker.SetCurrent(profileId, inst);
             UpdateDownloadHint();
         };
-        _download = Ui.Button("Descargar", MaterialIconKind.CloudDownloadOutline, () => _ = DownloadAsync(), "primary");
-        _cancel = Ui.Button("Cancelar", MaterialIconKind.Close, () => _cts?.Cancel());
+        _download = Ui.Button("Download", MaterialIconKind.CloudDownloadOutline, () => _ = DownloadAsync(), "primary");
+        _cancel = Ui.Button("Cancel", MaterialIconKind.Close, () => _cts?.Cancel());
         _cancel.IsVisible = false;
         var today = DateTime.UtcNow.Date;
         _from.SelectedDate = today.AddDays(-7);
@@ -88,13 +88,13 @@ internal sealed class DataView : UserControl, IPage
 
     private Control Build()
     {
-        var openFolder = Ui.Button("Abrir carpeta", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.Ticks));
-        var refresh = Ui.IconButton(MaterialIconKind.Refresh, "Actualizar", Refresh);
+        var openFolder = Ui.Button("Open folder", MaterialIconKind.FolderOpenOutline, () => Shell.OpenFolder(AppPaths.Ticks));
+        var refresh = Ui.IconButton(MaterialIconKind.Refresh, "Refresh", Refresh);
         var header = new DockPanel { Margin = new Thickness(0, 0, 0, 18) };
         var actions = Ui.H(8, _totals, refresh, openFolder);
         DockPanel.SetDock(actions, Dock.Right);
         header.Children.Add(actions);
-        header.Children.Add(Ui.V(4, Ui.H1("Datos"), Ui.Muted($"Historia guardada en tu {Os.Device}. Se usa al abrir gráficos, en el replay y en los backtests.")));
+        header.Children.Add(Ui.V(4, Ui.H1("Data"), Ui.Muted($"History saved on your {Os.Device}. Used to open charts, replay sessions and run backtests.")));
 
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("340,16,*,16,360") };
 
@@ -132,7 +132,7 @@ internal sealed class DataView : UserControl, IPage
     private Control BuildDaysPanel()
     {
         var replay = Ui.Button("Reproducir", MaterialIconKind.PlayCircleOutline, () => _ = ReplaySelectedAsync());
-        ToolTip.SetTip(replay, "Abrir el día seleccionado como replay en Trading (operás con la cuenta simulada)");
+        ToolTip.SetTip(replay, "Replay the selected day in Trading (uses the simulated account)");
         var delete = Ui.Button("Borrar", MaterialIconKind.DeleteOutline, () => _ = DeleteSelectedAsync(), "ghost");
         var actions = Ui.H(8, delete, replay);
         var head = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
@@ -154,7 +154,7 @@ internal sealed class DataView : UserControl, IPage
         // cuánto bajar: atajos o cualquier rango con Desde / Hasta
         var presets = new WrapPanel { ItemSpacing = 6, LineSpacing = 6 };
         var chips = new List<Avalonia.Controls.Primitives.ToggleButton>();
-        foreach (var (days, label) in new[] { (1, "Ayer"), (7, "7 días"), (30, "30 días"), (90, "90 días"), (182, "6 meses"), (365, "1 año"), (730, "2 años") })
+        foreach (var (days, label) in new[] { (1, "Ayer"), (7, "7 days"), (30, "30 days"), (90, "90 days"), (182, "6 meses"), (365, "1 year"), (730, "2 years") })
         {
             var b = new Avalonia.Controls.Primitives.ToggleButton { Content = label, Padding = new Thickness(10, 3), MinHeight = 26, FontSize = 12, IsChecked = days == 7 };
             b.Click += (_, _) =>
@@ -186,16 +186,16 @@ internal sealed class DataView : UserControl, IPage
         _cancel.IsVisible = true;
         _cancel.IsEnabled = false;
         return Ui.V(14,
-            Ui.H2("Descargar historia"),
+            Ui.H2("Download history"),
             new TextBlock { Text = "Días completos: de los archivos públicos (Binance, Bybit) o por la API de tus conexiones (Rithmic, Tradovate, cTrader, OANDA, Alpaca). En futuros, con el contrato que operaba cada día.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
             Ui.Field("Instrumento", _picker),
-            Ui.Field("Cuánto (días UTC)", presets),
-            Ui.Row(10, Ui.Field("Desde", _from), Ui.Field("Hasta", _to)),
+            Ui.Field("Range (UTC days)", presets),
+            Ui.Row(10, Ui.Field("From", _from), Ui.Field("To", _to)),
             buttons,
             _progress,
             _dlStatus,
             Ui.Divider(),
-            Note(MaterialIconKind.RecordCircleOutline, "Todo lo que mirás en vivo se graba solo, también Rithmic. Los días ya bajados no se vuelven a bajar: si cancelás, la próxima vez sigue donde quedó."));
+            Note(MaterialIconKind.RecordCircleOutline, "Live trades are recorded automatically, including Rithmic. Already completed downloads are skipped, so cancelled downloads can resume."));
     }
 
     // ===================================================================== importar
@@ -220,9 +220,9 @@ internal sealed class DataView : UserControl, IPage
         _importZone.SelectedIndex = 0;
         _importButton = Ui.Button("Importar archivos…", MaterialIconKind.FileImportOutline, () => _ = ImportAsync(), "primary");
         var duka = Ui.Button("Dukascopy", MaterialIconKind.OpenInNew, () => Shell.Open("https://www.dukascopy.com/swiss/english/marketwatch/historical/"));
-        ToolTip.SetTip(duka, "Historia gratis (con cuenta gratis): US100 = USA Tech, US500, US30, DAX, oro, forex… Elegí ticks o velas de 1 minuto y exportá en CSV");
+        ToolTip.SetTip(duka, "Free history with a free account: US100/USA Tech, US500, US30, DAX, gold and FX. Export tick data or one-minute candles as CSV.");
         var histdata = Ui.Button("HistData", MaterialIconKind.OpenInNew, () => Shell.Open("https://www.histdata.com/download-free-forex-data/"));
-        ToolTip.SetTip(histdata, "Forex e índices (NSXUSD = Nasdaq 100, SPXUSD = S&P 500) en velas de 1 minuto o ticks, gratis");
+        ToolTip.SetTip(histdata, "Free FX and index history (NSXUSD = Nasdaq 100, SPXUSD = S&P 500) in one-minute candles or ticks.");
         return Ui.V(14,
             Ui.H2("Importar archivos"),
             new TextBlock { Text = "Para CFDs (US100, US500, DAX), forex, oro… Bajá el CSV gratis de Dukascopy o HistData, o exportalo de MetaTrader o TradingView, y Trading Hub lo convierte en historia para gráficos, replay y backtests. El formato se reconoce solo.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
@@ -242,7 +242,7 @@ internal sealed class DataView : UserControl, IPage
     private readonly CalendarDatePicker _dbTo = new() { HorizontalAlignment = HorizontalAlignment.Stretch };
     private readonly TextBlock _dbStatus = new() { Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap };
     private readonly ProgressBar _dbProgress = new() { Minimum = 0, Maximum = 1, Height = 6, IsVisible = false };
-    private readonly CheckBox _dbAlsoRithmic = new() { Content = "Bajar también los días que ya tiene Rithmic" };
+    private readonly CheckBox _dbAlsoRithmic = new() { Content = "Also download days already stored by Rithmic" };
     private readonly TextBlock _dbHave = new() { Classes = { "small" }, TextWrapping = TextWrapping.Wrap };
     private Button? _dbCost, _dbDownload, _dbCancel;
     private decimal? _dbQuote;
@@ -261,15 +261,15 @@ internal sealed class DataView : UserControl, IPage
         _dbFrom.SelectedDate = today.AddMonths(-3);
         _dbTo.SelectedDate = today.AddDays(-1);
         _dbCost = Ui.Button("Calcular costo", MaterialIconKind.Calculator, () => _ = DatabentoQuoteAsync());
-        _dbDownload = Ui.Button("Descargar", MaterialIconKind.CloudDownloadOutline, () => _ = DatabentoDownloadAsync(), "primary");
-        _dbCancel = Ui.Button("Cancelar", MaterialIconKind.Close, () => _dbCts?.Cancel());
+        _dbDownload = Ui.Button("Download", MaterialIconKind.CloudDownloadOutline, () => _ = DatabentoDownloadAsync(), "primary");
+        _dbCancel = Ui.Button("Cancel", MaterialIconKind.Close, () => _dbCts?.Cancel());
         _dbDownload.IsEnabled = false;
         _dbCancel.IsVisible = false;
         void Reset()
         {
             _dbQuote = null;
             if (_dbDownload != null) _dbDownload.IsEnabled = false;
-            _dbStatus.Text = DatabentoProfile == null ? "Primero agregá la conexión «Databento» (con tu API key) en Conexiones." : "Calculá el costo del rango antes de bajar.";
+            _dbStatus.Text = DatabentoProfile == null ? "First add a Databento connection with your API key under Connections." : "Calculate the date-range cost before downloading.";
         }
 
         _dbRoot.SelectionChanged += (_, _) => Reset();
@@ -277,14 +277,14 @@ internal sealed class DataView : UserControl, IPage
         _dbTo.SelectedDateChanged += (_, _) => Reset();
         _dbAlsoRithmic.IsCheckedChanged += (_, _) => Reset();
         ToolTip.SetTip(_dbAlsoRithmic, "Sin tildar, Databento solo completa lo que le falta a Rithmic (más barato). Tildado, baja todo el rango para tener la historia de Databento entera.");
-        var configure = Ui.Button("Conexiones", MaterialIconKind.LanConnect, () => _main.Navigate("connections"), "ghost");
+        var configure = Ui.Button("Connections", MaterialIconKind.LanConnect, () => _main.Navigate("connections"), "ghost");
         Reset();
         return Ui.V(14,
             Ui.H2("Futuros de CME con Databento"),
             new TextBlock { Text = "Años de historia tick a tick (desde 2010) con el lado agresor real de cada operación: lo que Rithmic no guarda. Es pago por uso (las cuentas nuevas traen créditos gratis): Trading Hub calcula el costo antes y solo baja si confirmás.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
             _dbHave,
             Ui.Field("Contrato continuo", _dbRoot),
-            Ui.Row(10, Ui.Field("Desde", _dbFrom), Ui.Field("Hasta", _dbTo)),
+            Ui.Row(10, Ui.Field("From", _dbFrom), Ui.Field("To", _dbTo)),
             _dbAlsoRithmic,
             new WrapPanel { ItemSpacing = 8, LineSpacing = 8, Children = { _dbCost, _dbDownload, _dbCancel, configure } },
             _dbProgress,
@@ -343,14 +343,14 @@ internal sealed class DataView : UserControl, IPage
     {
         if (DatabentoProfile is not { } profile)
         {
-            _dbStatus.Text = "Primero agregá la conexión «Databento» (con tu API key) en Conexiones.";
+            _dbStatus.Text = "First add a Databento connection with your API key under Connections.";
             return;
         }
 
         var days = DatabentoDays();
         if (days.Count == 0)
         {
-            _dbStatus.Text = "Ya tenés completos todos los días de ese rango.";
+            _dbStatus.Text = "Every day in that range is already complete.";
             return;
         }
 
@@ -364,7 +364,7 @@ internal sealed class DataView : UserControl, IPage
             _dbQuote = total;
             _dbQuoteKey = $"{DbRoot}|{days.First()}|{days.Last()}|{days.Count}";
             _dbDownload!.IsEnabled = true;
-            _dbStatus.Text = $"{DbRoot}: {days.Count} día(s) por bajar ({days.First():dd/MM/yyyy} → {days.Last():dd/MM/yyyy}) · costo ≈ US$ {total.ToString("0.00", CultureInfo.InvariantCulture)} de tus créditos de Databento.";
+            _dbStatus.Text = $"{DbRoot}: {days.Count} day(s) to download ({days.First():dd/MM/yyyy} → {days.Last():dd/MM/yyyy}) · costo ≈ US$ {total.ToString("0.00", CultureInfo.InvariantCulture)} from your Databento credits.";
         }
         catch (Exception ex)
         {
@@ -382,14 +382,14 @@ internal sealed class DataView : UserControl, IPage
         var days = DatabentoDays();
         if (days.Count == 0 || $"{DbRoot}|{days.First()}|{days.Last()}|{days.Count}" != _dbQuoteKey)
         {
-            _dbStatus.Text = "El rango cambió: volvé a calcular el costo.";
+            _dbStatus.Text = "Date range changed: calculate the cost again.";
             _dbDownload!.IsEnabled = false;
             return;
         }
 
         string cost = quote.ToString("0.00", CultureInfo.InvariantCulture);
         if (!await ConfirmDialog.ShowAsync(_main, "Bajar historia de Databento",
-                $"Se bajan {days.Count} día(s) de {DbRoot} tick a tick. Databento cobra ≈ US$ {cost} de tus créditos (si no te alcanzan, a tu medio de pago en Databento).",
+                $"Downloading {days.Count} day(s) of {DbRoot} tick by tick. Databento charges ≈ US$ {cost} de tus créditos (si no te alcanzan, a tu medio de pago en Databento).",
                 $"Bajar (≈ US$ {cost})")) return;
 
         var inst = CmeInstrument(DbRoot);
@@ -418,18 +418,18 @@ internal sealed class DataView : UserControl, IPage
                     continue;
                 }
 
-                _dbStatus.Text = $"{DbRoot} {day:dd/MM/yyyy}: guardando {list.Count:N0} operaciones…";
+                _dbStatus.Text = $"{DbRoot} {day:dd/MM/yyyy}: saving {list.Count:N0} operaciones…";
                 await Task.Run(() => HistoricalData.WriteDay(AppPaths.Ticks, inst, day, list, replace: true), ct);
                 trades += list.Count;
                 done++;
             }
 
-            _dbStatus.Text = $"Listo: {done} día(s) de {DbRoot} ({trades:N0} operaciones con su lado agresor)" + (empty > 0 ? $", {empty} sin operaciones (feriados)" : "") + ".";
+            _dbStatus.Text = $"Completed: {done} day(s) of {DbRoot} ({trades:N0} trades with aggressor side)" + (empty > 0 ? $", {empty} without trades (holidays)" : "") + ".";
             _status(_dbStatus.Text);
         }
         catch (OperationCanceledException)
         {
-            _dbStatus.Text = $"Cancelado. Se guardaron {done} día(s).";
+            _dbStatus.Text = $"Cancelled. Saved {done} día(s).";
         }
         catch (Exception ex)
         {
@@ -467,7 +467,7 @@ internal sealed class DataView : UserControl, IPage
         if (TopLevel.GetTopLevel(this) is not { } top) return;
         var files = await top.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
         {
-            Title = "Elegí los archivos de historia (CSV o TXT)",
+            Title = "Select history files (CSV or TXT)",
             AllowMultiple = true,
             FileTypeFilter = new[] { new Avalonia.Platform.Storage.FilePickerFileType("Historia (CSV, TXT)") { Patterns = new[] { "*.csv", "*.txt" } } },
         });
@@ -562,14 +562,14 @@ internal sealed class DataView : UserControl, IPage
     {
         if (_dlInstrument == null)
         {
-            _dlStatus.Text = "Elegí un instrumento de Binance, Bybit, Rithmic, Tradovate, cTrader, OANDA o Alpaca.";
+            _dlStatus.Text = "Select an instrument from Binance, Bybit, Rithmic, Tradovate, cTrader, OANDA, or Alpaca.";
             return;
         }
 
         _download.IsEnabled = CanDownload;
         if (!CanDownload)
         {
-            _dlStatus.Text = "Esta conexión no da historia para bajar: sus datos se graban cuando los mirás en vivo.";
+            _dlStatus.Text = "This connection does not support history downloads. Data are recorded when you view the market live.";
             return;
         }
 
@@ -611,8 +611,8 @@ internal sealed class DataView : UserControl, IPage
     {
         var have = _index.Where(s => s.FeedId == HistorySources.Databento).OrderBy(s => s.Symbol).ToList();
         _dbHave.Text = have.Count == 0
-            ? "Todavía no bajaste nada de Databento."
-            : "Ya tenés de Databento: " + string.Join(" · ", have.Select(s => $"{s.Symbol} {s.Days.Count} día{(s.Days.Count == 1 ? "" : "s")} ({s.First:dd/MM/yyyy} → {s.Last:dd/MM/yyyy})"));
+            ? "No Databento history downloaded yet."
+            : "Databento already stored: " + string.Join(" · ", have.Select(s => $"{s.Symbol} {s.Days.Count} día{(s.Days.Count == 1 ? "" : "s")} ({s.First:dd/MM/yyyy} → {s.Last:dd/MM/yyyy})"));
     }
 
     private void Refresh()
@@ -636,7 +636,7 @@ internal sealed class DataView : UserControl, IPage
         }
 
         if (_index.Count == 0)
-            _symbols.Items.Add(new ListBoxItem { Content = new TextBlock { Text = "Todavía no hay datos guardados. Abrí un gráfico o descargá días.", TextWrapping = TextWrapping.Wrap, Classes = { "muted", "small" } }, IsEnabled = false });
+            _symbols.Items.Add(new ListBoxItem { Content = new TextBlock { Text = "No stored data yet. Open a chart or download historical days.", TextWrapping = TextWrapping.Wrap, Classes = { "muted", "small" } }, IsEnabled = false });
 
         _symbols.SelectedItem = _symbols.Items.OfType<ListBoxItem>().FirstOrDefault(i => i.Tag is SymbolData sd && keep != null && sd.FeedId == keep.FeedId && sd.Symbol == keep.Symbol)
                                 ?? _symbols.Items.OfType<ListBoxItem>().FirstOrDefault(i => i.Tag is SymbolData);
@@ -649,8 +649,8 @@ internal sealed class DataView : UserControl, IPage
         _daysPanel.IsVisible = true;
         if (_selected == null)
         {
-            _daysTitle.Text = "Días";
-            _daysInfo.Text = "Elegí un instrumento";
+            _daysTitle.Text = "Days";
+            _daysInfo.Text = "Choose an instrument";
             return;
         }
 
@@ -661,7 +661,7 @@ internal sealed class DataView : UserControl, IPage
         {
             var date = new TextBlock { Text = d.Day.ToDateTime(TimeOnly.MinValue).ToString("ddd dd/MM/yyyy", CultureInfo.GetCultureInfo("es-AR")), Width = 130, VerticalAlignment = VerticalAlignment.Center };
             var bar = new Border { Height = 6, CornerRadius = new CornerRadius(3), Background = Ui.Accent, Opacity = 0.75, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, Width = Math.Max(4, 220.0 * d.Bytes / Math.Max(1, max)) };
-            ToolTip.SetTip(bar, "Tamaño relativo (≈ cantidad de operaciones)");
+            ToolTip.SetTip(bar, "Relative size (≈ number of trades)");
             var size = new TextBlock { Text = Size(d.Bytes), Classes = { "muted", "small" }, Width = 70, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Right };
             var row = new DockPanel { Margin = new Thickness(2, 3) };
             DockPanel.SetDock(date, Dock.Left);
@@ -680,13 +680,13 @@ internal sealed class DataView : UserControl, IPage
         var days = SelectedDays();
         if (_selected == null || days.Count == 0)
         {
-            _status(Os.IsWindows ? "Elegí uno o más días para borrar (Ctrl o Shift para seleccionar varios)." : "Elegí uno o más días para borrar (⌘ o ⇧ para seleccionar varios).");
+            _status(Os.IsWindows ? "Choose one or more days to delete (Ctrl or Shift for multiple selections)." : "Choose one or more days to delete (⌘ or ⇧ for multiple selections).");
             return;
         }
 
-        if (!await ConfirmDialog.ShowAsync(_main, "Borrar datos", $"Se borran {days.Count} día(s) de {_selected.Symbol} ({Size(days.Sum(d => d.Bytes))}). No se puede deshacer.", "Borrar", danger: true)) return;
+        if (!await ConfirmDialog.ShowAsync(_main, "Delete data", $"Deleting {days.Count} day(s) of {_selected.Symbol} ({Size(days.Sum(d => d.Bytes))}). This cannot be undone.", "Borrar", danger: true)) return;
         HistoricalData.DeleteDays(AppPaths.Ticks, _selected.FeedId, _selected.Symbol, days.Select(d => d.Day));
-        _status($"Borrados {days.Count} día(s) de {_selected.Symbol}");
+        _status($"Deleted {days.Count} day(s) of {_selected.Symbol}");
         Refresh();
     }
 
@@ -695,7 +695,7 @@ internal sealed class DataView : UserControl, IPage
         var days = SelectedDays();
         if (_selected == null || days.Count == 0)
         {
-            _status("Elegí el día que querés reproducir.");
+            _status("Select a day to replay.");
             return;
         }
 
@@ -720,7 +720,7 @@ internal sealed class DataView : UserControl, IPage
 
         if (inst == null)
         {
-            _status($"No pude obtener la ficha de {_selected.Symbol} (¿la conexión está activa?).");
+            _status($"Unable to get instrument details for {_selected.Symbol} (is the connection active?).");
             return;
         }
 
@@ -752,7 +752,7 @@ internal sealed class DataView : UserControl, IPage
         var days = RangeDays();
         if (days.Count == 0)
         {
-            _dlStatus.Text = "El rango no tiene días completos (el de hoy todavía no terminó).";
+            _dlStatus.Text = "The range has no complete days (today is not complete yet).";
             return;
         }
 
@@ -808,7 +808,7 @@ internal sealed class DataView : UserControl, IPage
                     continue;
                 }
 
-                _dlStatus.Text = $"{inst.Symbol} {day:dd/MM/yyyy}{contract}: guardando {list.Count:N0} operaciones…";
+                _dlStatus.Text = $"{inst.Symbol} {day:dd/MM/yyyy}{contract}: saving {list.Count:N0} operaciones…";
                 bool replace = downloader != null; // el día bajado por la API viene completo: reemplaza lo grabado en vivo
                 await Task.Run(() => HistoricalData.WriteDay(AppPaths.Ticks, inst, day, list, replace), ct);
                 trades += list.Count;
@@ -816,7 +816,7 @@ internal sealed class DataView : UserControl, IPage
                 _progress.Value = (i + 1.0) / days.Count;
             }
 
-            _dlStatus.Text = $"Listo: {done} día(s) descargados ({trades:N0} operaciones)" +
+            _dlStatus.Text = $"Completed: {done} día(s) descargados ({trades:N0} operaciones)" +
                              (skipped > 0 ? $", {skipped} ya estaban" : "") +
                              (missing > 0 ? rithmic != null ? $", {missing} sin operaciones en Rithmic (feriados o fuera de lo que guarda)" : downloader != null ? $", {missing} sin datos (feriados o fin de semana)" : $", {missing} todavía no publicados" : "") + "." +
                              (lastProblem != null ? " " + lastProblem : "");
@@ -826,7 +826,7 @@ internal sealed class DataView : UserControl, IPage
         }
         catch (OperationCanceledException)
         {
-            _dlStatus.Text = $"Cancelado. Se guardaron {done} día(s).";
+            _dlStatus.Text = $"Cancelled. Saved {done} día(s).";
         }
         catch (Exception ex)
         {

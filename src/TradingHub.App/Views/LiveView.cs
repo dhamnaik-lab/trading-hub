@@ -49,11 +49,11 @@ internal sealed partial class LiveView : UserControl, IPage
         _window = window;
         _tabs = new Ui.Segmented<string>(new[]
         {
-            ("strategies", "Estrategias", (string?)"Todas las estrategias en vivo: las de esta sección y las de los gráficos"),
-            ("market", "Mercado", (string?)"Rango o tendencia (alcista o bajista) y volatilidad de cada mercado, y qué estrategias operan con eso"),
-            ("portfolios", "Portafolios", (string?)"Estrategias que corren juntas: estadísticas, correlación y agente de riesgo"),
-            ("trades", "Operaciones", (string?)"Todas las operaciones cerradas en vivo con MAE, MFE y todo el detalle"),
-            ("proposals", "Propuestas", (string?)"Cambios de tamaño sugeridos (reglas, Claude o el agente de riesgo): se aplican solo si los aprobás"),
+            ("strategies", "Estrategias", (string?)"All live strategies, including those started from charts"),
+            ("market", "Market", (string?)"Each market's range/trend and volatility regime, and which strategies allow entries"),
+            ("portfolios", "Portafolios", (string?)"Strategies grouped for statistics, correlation and risk management"),
+            ("trades", "Operaciones", (string?)"All completed live trades with MAE, MFE and full details"),
+            ("proposals", "Propuestas", (string?)"Suggested size changes from rules, Claude or the risk agent, requiring your approval"),
         });
         _tabs.SelectionChanged += ShowTab;
         _pages["strategies"] = BuildStrategiesPage();
@@ -78,11 +78,11 @@ internal sealed partial class LiveView : UserControl, IPage
 
     private Control Build()
     {
-        var title = Ui.H(10, Ui.Icon(MaterialIconKind.AccessPoint, 22, Ui.Accent), Ui.H2("En vivo"));
-        var launch = Ui.Button("Nueva estrategia en vivo", MaterialIconKind.Play, () => OpenLaunch(), "primary");
-        ToolTip.SetTip(launch, "Lanzar una estrategia en tiempo real en una cuenta (simulada, testnet o real)");
+        var title = Ui.H(10, Ui.Icon(MaterialIconKind.AccessPoint, 22, Ui.Accent), Ui.H2("Live"));
+        var launch = Ui.Button("New live strategy", MaterialIconKind.Play, () => OpenLaunch(), "primary");
+        ToolTip.SetTip(launch, "Start a strategy on a simulated, testnet or real account");
         var kill = Ui.Button("Frenar todo", MaterialIconKind.OctagonOutline, () => _ = KillAllAsync(), "danger");
-        ToolTip.SetTip(kill, "Kill switch: detiene todas las estrategias en vivo, cancela sus órdenes y cierra sus posiciones");
+        ToolTip.SetTip(kill, "Emergency stop: stops all live strategies, cancels their orders, and closes positions");
         var header = new DockPanel { Margin = new Thickness(24, 12, 24, 12) };
         var right = Ui.H(12, _tabs, kill, launch);
         DockPanel.SetDock(right, Dock.Right);
@@ -149,10 +149,10 @@ internal sealed partial class LiveView : UserControl, IPage
     private async Task KillAllAsync()
     {
         if (!await ConfirmDialog.ShowAsync(_window, "Frenar todo",
-                "Se detienen TODAS las estrategias en vivo (las de esta sección y las de los gráficos), se cancelan sus órdenes y se cierran sus posiciones a mercado.",
+                "ALL live strategies will stop, including chart strategies. Their orders will be cancelled and their positions closed at market.",
                 "Frenar todo", danger: true))
             return;
-        int n = await _svc.Live.KillAllAsync("lo activaste vos desde En vivo");
+        int n = await _svc.Live.KillAllAsync("you started it from Live");
         _status($"Frenaste todo: {n} estrategia(s) detenidas y sus posiciones cerradas");
         Refresh(force: true);
     }
@@ -209,7 +209,7 @@ internal sealed partial class LiveView : UserControl, IPage
             },
         }, 12);
 
-        var intro = Ui.Faint("Todo lo que corre en tiempo real, se haya lanzado desde acá o desde un gráfico. Tocá una para gestionarla: riesgo, parámetros, pausa, detener o borrar.");
+        var intro = Ui.Faint("All running real-time strategies, including those launched from charts. Select one to manage risk, parameters, pause, stop or delete.");
         intro.TextWrapping = TextWrapping.Wrap;
         var root = Ui.V(16, intro, _notice, _kpis, Ui.Card(_rows, 10));
         root.Margin = new Thickness(24, 18, 24, 28);
@@ -242,9 +242,9 @@ internal sealed partial class LiveView : UserControl, IPage
         int pending = LiveStore.LoadProposals().Sum(p => p.Items.Count(i => i.Status == "pending"));
         _kpis.Children.Add(Kpi("Resultado", Money(net), $"abierto {Money(open)}", net >= 0 ? Ui.Up : Ui.Down));
         _kpis.Children.Add(Kpi("Hoy", Money(today), "cerrado + abierto de las que corren", today >= 0 ? Ui.Up : Ui.Down));
-        _kpis.Children.Add(Kpi("En vivo", running.Count.ToString(Inv), paused > 0 ? $"{paused} pausada(s) o frenada(s)" : $"{entries.Count} en total", running.Count > 0 ? Ui.Accent : null));
-        _kpis.Children.Add(Kpi("Operaciones cerradas", trades.ToString(Inv), "tocá para ver todas con su detalle", null, () => OpenTrades(), "Todas las operaciones con MAE, MFE, tamaño y más; tocá una para verla en el gráfico"));
-        _kpis.Children.Add(Kpi("Cambios pendientes", pending.ToString(Inv), "esperan tu aprobación", pending > 0 ? Ui.Warn : null, pending > 0 ? () => Select("proposals") : null));
+        _kpis.Children.Add(Kpi("Live", running.Count.ToString(Inv), paused > 0 ? $"{paused} pausada(s) o frenada(s)" : $"{entries.Count} en total", running.Count > 0 ? Ui.Accent : null));
+        _kpis.Children.Add(Kpi("Operaciones cerradas", trades.ToString(Inv), "select to view all details", null, () => OpenTrades(), "All trades with MAE, MFE and size; select a trade to view it on the chart"));
+        _kpis.Children.Add(Kpi("Cambios pendientes", pending.ToString(Inv), "awaiting approval", pending > 0 ? Ui.Warn : null, pending > 0 ? () => Select("proposals") : null));
 
         // la tabla solo se rehace si cambió algo visible
         string key = string.Join("|", entries.Select(e => $"{e.Key}:{e.StateLabel}:{OutOfContext(e)}:{e.Ledger.Fills.Count}:{e.Ledger.Position}:{(e.Runner?.SizeMultiplier ?? e.Info.Size)}:{_svc.Live.PlanOf(e).Text}:{Math.Round(e.OpenPnL, 0)}:{(e.Runner?.MaxDailyLoss ?? e.Info.MaxDailyLoss)}:{(e.Runner?.MaxDrawdown ?? e.Info.MaxDrawdown)}"));
@@ -252,7 +252,7 @@ internal sealed partial class LiveView : UserControl, IPage
         _rowsKey = key;
         _rows.Children.Clear();
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions(RowColumns), Margin = new Thickness(10, 4, 10, 8) };
-        string[] titles = { "Estrategia", "Estado", "Tamaño", "Posición", "Hoy", "Neto", "Ops", "PF", "DD actual", "Límites (día / DD)", "" };
+        string[] titles = { "Estrategia", "Estado", "Size", "Position", "Hoy", "Neto", "Ops", "PF", "DD actual", "Limits (day / DD)", "" };
         for (int i = 0; i < titles.Length; i++)
         {
             var t = new TextBlock { Text = titles[i], Classes = { "h3" }, HorizontalAlignment = i >= 2 && i <= 8 ? HorizontalAlignment.Right : HorizontalAlignment.Left, Margin = new Thickness(6, 0) };
@@ -264,8 +264,8 @@ internal sealed partial class LiveView : UserControl, IPage
         if (entries.Count == 0)
         {
             var empty = Ui.V(10,
-                new TextBlock { Text = "Todavía no hay estrategias en vivo.", Classes = { "muted" } },
-                Ui.Faint("Lanzá una con «Nueva estrategia en vivo» o ponela a ejecutar desde un gráfico (menú de estrategias del gráfico)."));
+                new TextBlock { Text = "No live strategies yet.", Classes = { "muted" } },
+                Ui.Faint("Start one with New live strategy, or enable execution from a chart's strategy menu."));
             empty.Margin = new Thickness(10, 8, 10, 12);
             _rows.Children.Add(empty);
             return;
@@ -333,7 +333,7 @@ internal sealed partial class LiveView : UserControl, IPage
         {
             if (ev.GetCurrentPoint(row).Properties.IsLeftButtonPressed) OpenManage(e);
         };
-        ToolTip.SetTip(row, "Gestionar: riesgo, parámetros, pausa, detener o borrar");
+        ToolTip.SetTip(row, "Manage risk, parameters, pause, stop or delete");
         return row;
     }
 
@@ -349,7 +349,7 @@ internal sealed partial class LiveView : UserControl, IPage
         var note = new TextBlock { Text = "en pausa por contexto", Foreground = Ui.Warn, FontSize = 11, TextWrapping = TextWrapping.Wrap };
         var cell = Ui.V(1, state, note);
         ToolTip.SetTip(cell, $"Opera en: {FilterText(s)}. Ahora hay {MarketContextTracker.Label(s.Regime, s.MarketDirection).ToLowerInvariant()}" +
-                             (s.VolatilityRank is { } vr ? $" con volatilidad en el percentil {vr:0}" : "") + ": no abre nada nuevo hasta que el mercado sea el suyo (en Mercado se ve el detalle).");
+                             (s.VolatilityRank is { } vr ? $" con volatilidad en el percentil {vr:0}" : "") + ": new entries blocked until market context matches (details under Market).");
         cell.Cursor = new Cursor(StandardCursorType.Hand);
         cell.PointerPressed += (_, ev) =>
         {
@@ -375,8 +375,8 @@ internal sealed partial class LiveView : UserControl, IPage
             Foreground = plan.Micro ? Ui.Accent : Ui.Text2,
         };
         var cell = Ui.V(1, top, contract);
-        ToolTip.SetTip(cell, plan.Units <= 0 ? "Tamaño en cero: no abre operaciones nuevas"
-            : $"Cada orden manda {plan.Text}{(plan.Detail.Length > 0 ? $" ({plan.Detail})" : "")}");
+        ToolTip.SetTip(cell, plan.Units <= 0 ? "Size is zero: no new positions will be opened"
+            : $"Each order sends {plan.Text}{(plan.Detail.Length > 0 ? $" ({plan.Detail})" : "")}");
         return cell;
     }
 
@@ -385,14 +385,14 @@ internal sealed partial class LiveView : UserControl, IPage
     private Control BuildProposalsPage()
     {
         var rules = Ui.Button("Sugerir con reglas", MaterialIconKind.ScaleBalance, SuggestByRules);
-        ToolTip.SetTip(rules, "Propone subir el tamaño de las que rinden (PF reciente alto, drawdown bajo) y bajar o pausar las que no. Nada se aplica sin tu aprobación.");
-        var claude = Ui.Button("Pedir análisis a Claude", MaterialIconKind.Creation, AskClaude, "primary");
-        ToolTip.SetTip(claude, "Claude analiza la cartera en vivo en el laboratorio de Backtesting y deja propuestas que aprobás una por una");
+        ToolTip.SetTip(rules, "Suggest increasing sizes for strategies with strong recent profit factor and low drawdown, and reducing or pausing weaker ones. Changes require your approval.");
+        var claude = Ui.Button("Ask Claude to analyze", MaterialIconKind.Creation, AskClaude, "primary");
+        ToolTip.SetTip(claude, "Claude analyzes the live portfolio through the Backtesting laboratory and creates proposals for individual approval");
         var head = new DockPanel();
         var buttons = Ui.H(8, rules, claude);
         DockPanel.SetDock(buttons, Dock.Right);
         head.Children.Add(buttons);
-        head.Children.Add(Ui.V(4, Ui.H2("Propuestas de tamaño"),
+        head.Children.Add(Ui.V(4, Ui.H2("Size proposals"),
             Ui.Faint("De las reglas, de Claude o del agente de riesgo de cada portafolio. Nada cambia hasta que lo apruebes (salvo un portafolio con el agente en automático, que solo opera cuentas simuladas).").Also(t => t.TextWrapping = TextWrapping.Wrap)));
         var root = Ui.V(16, head, _proposals);
         root.Margin = new Thickness(24, 18, 24, 28);
@@ -413,7 +413,7 @@ internal sealed partial class LiveView : UserControl, IPage
 
         LiveStore.AddProposal(p);
         RefreshProposals();
-        _status("Hay cambios sugeridos: revisalos y aprobá los que quieras");
+        _status("Suggested changes are available: review and approve those you want");
     }
 
     private void AskClaude()
@@ -429,7 +429,7 @@ internal sealed partial class LiveView : UserControl, IPage
         var list = LiveStore.LoadProposals().OrderByDescending(p => p.CreatedUtc).ToList();
         if (list.Count == 0)
         {
-            _proposals.Children.Add(new TextBlock { Text = "No hay propuestas. Usá «Sugerir con reglas», «Pedir análisis a Claude» o activá el agente de riesgo de un portafolio.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap });
+            _proposals.Children.Add(new TextBlock { Text = "No proposals yet. Use Suggest with rules, Ask Claude to analyze, or enable a portfolio risk agent.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap });
             return;
         }
 
@@ -444,7 +444,7 @@ internal sealed partial class LiveView : UserControl, IPage
         {
             "claude" => "Propuesta de Claude",
             "agente" => $"Agente de riesgo · {p.PortfolioName}",
-            "agente (automático)" => $"Agente de riesgo · {p.PortfolioName} (aplicado solo)",
+            "agent (automatic)" => $"Agente de riesgo · {p.PortfolioName} (aplicado solo)",
             _ => "Propuesta de las reglas",
         };
         var title = Ui.H(8,
@@ -485,7 +485,7 @@ internal sealed partial class LiveView : UserControl, IPage
 
         if (p.Items.Count(i => i.Status == "pending") > 1)
         {
-            var all = Ui.Button("Aprobar todos", MaterialIconKind.CheckAll, () => _ = ApproveAllAsync(proposal, refresh));
+            var all = Ui.Button("Approve all", MaterialIconKind.CheckAll, () => _ = ApproveAllAsync(proposal, refresh));
             all.HorizontalAlignment = HorizontalAlignment.Right;
             box.Children.Add(all);
         }
@@ -498,7 +498,7 @@ internal sealed partial class LiveView : UserControl, IPage
         var pending = p.Items.Where(i => i.Status == "pending").ToList();
         var entries = _svc.Live.Entries();
         if (pending.Any(i => entries.FirstOrDefault(e => e.Key == i.Key)?.Info.IsReal == true) &&
-            !await ConfirmDialog.ShowAsync(_window, "Aprobar cambios en cuentas REALES", $"Hay {pending.Count} cambios y alguno es de una cuenta real. Se aplican a las próximas órdenes.", "Aprobar todos", danger: true))
+            !await ConfirmDialog.ShowAsync(_window, "Aprobar cambios en cuentas REALES", $"There are {pending.Count} proposed changes, including a real account. Changes affect subsequent orders.", "Approve all", danger: true))
             return;
         foreach (var it in pending) await DecideAsync(p, it, true, null, confirmed: true);
         refresh();
@@ -512,13 +512,13 @@ internal sealed partial class LiveView : UserControl, IPage
             var e = _svc.Live.Entries().FirstOrDefault(x => x.Key == item.Key);
             if (e == null)
             {
-                _status($"{item.Strategy} ya no está en En vivo: se registra como rechazado");
+                _status($"{item.Strategy} is no longer running in Live: proposal marked rejected");
                 approve = false;
             }
             else
             {
                 if (!confirmed && e.Info.IsReal &&
-                    !await ConfirmDialog.ShowAsync(_window, "Aprobar cambio en cuenta REAL", $"{item.Strategy}: ×{item.CurrentSize:0.##} → ×{item.ProposedSize:0.##}.\n{item.Reason}", "Aprobar y aplicar", danger: true))
+                    !await ConfirmDialog.ShowAsync(_window, "Approve REAL-account change", $"{item.Strategy}: ×{item.CurrentSize:0.##} → ×{item.ProposedSize:0.##}.\n{item.Reason}", "Aprobar y aplicar", danger: true))
                     return;
                 _svc.Live.ApplyRisk(e, item.ProposedSize, item.ProposedMaxDailyLoss ?? (e.Runner?.MaxDailyLoss ?? e.Info.MaxDailyLoss),
                     item.ProposedMaxDrawdown ?? (e.Runner?.MaxDrawdown ?? e.Info.MaxDrawdown), e.Runner?.CloseOnLimit ?? e.Info.CloseOnLimit);
@@ -531,7 +531,7 @@ internal sealed partial class LiveView : UserControl, IPage
         var storedItem = stored?.Items.FirstOrDefault(i => i.Key == item.Key && i.ProposedSize == item.ProposedSize && i.Status == "pending");
         if (storedItem != null) storedItem.Status = item.Status;
         LiveStore.SaveProposals(list);
-        _status(approve ? $"Aplicado: {item.Strategy} ahora con tamaño ×{item.ProposedSize:0.##}" : $"Rechazado: {item.Strategy}");
+        _status(approve ? $"Applied: {item.Strategy} now has size ×{item.ProposedSize:0.##}" : $"Rechazado: {item.Strategy}");
         refresh?.Invoke();
     }
 }
