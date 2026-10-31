@@ -260,7 +260,7 @@ internal sealed class DataView : UserControl, IPage
         var today = DateTime.UtcNow.Date;
         _dbFrom.SelectedDate = today.AddMonths(-3);
         _dbTo.SelectedDate = today.AddDays(-1);
-        _dbCost = Ui.Button("Calcular costo", MaterialIconKind.Calculator, () => _ = DatabentoQuoteAsync());
+        _dbCost = Ui.Button("Calculate cost", MaterialIconKind.Calculator, () => _ = DatabentoQuoteAsync());
         _dbDownload = Ui.Button("Download", MaterialIconKind.CloudDownloadOutline, () => _ = DatabentoDownloadAsync(), "primary");
         _dbCancel = Ui.Button("Cancel", MaterialIconKind.Close, () => _dbCts?.Cancel());
         _dbDownload.IsEnabled = false;
@@ -388,14 +388,14 @@ internal sealed class DataView : UserControl, IPage
         }
 
         string cost = quote.ToString("0.00", CultureInfo.InvariantCulture);
-        if (!await ConfirmDialog.ShowAsync(_main, "Bajar historia de Databento",
+        if (!await ConfirmDialog.ShowAsync(_main, "Download Databento history",
                 $"Downloading {days.Count} day(s) of {DbRoot} tick by tick. Databento charges ≈ US$ {cost} from your Databento credits (additional charges may apply).",
                 $"Bajar (≈ US$ {cost})")) return;
 
         var inst = CmeInstrument(DbRoot);
         _dbCts = new CancellationTokenSource();
         var ct = _dbCts.Token;
-        using var job = BackgroundWork.Begin($"bajando historia de {DbRoot} de Databento");
+        using var job = BackgroundWork.Begin($"Downloading {DbRoot} history from Databento");
         _dbDownload!.IsEnabled = false;
         _dbCost!.IsEnabled = false;
         _dbCancel!.IsVisible = true;
