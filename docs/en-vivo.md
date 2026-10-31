@@ -1,170 +1,131 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# En vivo
+# Live strategies
 
-La sección **En vivo** (⌘7) junta todas las estrategias que corren en tiempo real, se hayan lanzado desde acá, desde
-Backtesting o desde un gráfico. Tiene las pestañas **Estrategias**, **Mercado**, **Portafolios**, **Operaciones** y
-**Propuestas**, y arriba los botones **Nueva estrategia en vivo** y **Frenar todo**. Probá siempre primero en la cuenta
-simulada.
+**Live** (Ctrl+7 on Windows or ⌘7 on macOS) manages real-time strategies started from Live, Backtesting, or a chart. Tabs include **Strategies**, **Market**, **Portfolios**, **Trades**, and **Proposals**, with **New live strategy** and **Stop all** controls.
 
-## Cuentas: simulada, de prueba y reales
+Start with the **Simulated account** and a fully verified strategy. The platform can submit real-money orders when a compatible broker account has been explicitly authorized.
 
-- La **cuenta simulada** está siempre. Sus órdenes se llenan con la cola del libro y el tape real del mercado.
-- Las cuentas testnet de Binance, demo de Tradovate y de práctica de Rithmic tampoco operan dinero real.
-- Las cuentas **reales** aparecen solo si activaste «Permitir órdenes reales» en esa conexión y se ven en rojo, con
-  «— REAL» (ver [Conexiones](conexiones.md#cuentas-reales-y-cuentas-de-prueba)).
-- Al lanzar o reanudar a mano una estrategia en una cuenta real, Trading Hub te pide confirmarlo una vez. Después manda
-  sus órdenes sin confirmar cada una: la seguridad va por el tamaño y los límites de riesgo. La reanudación automática
-  al abrir no pregunta; por eso, para las cuentas reales viene apagada.
+## Simulated, practice, and real accounts
 
-## Lanzar una estrategia
+- The built-in simulated account models fills using available order book and trade information.
+- Binance testnet, Tradovate demo, and Rithmic practice systems do not risk real money.
+- Real accounts are available only when the connection explicitly permits real orders, and are clearly marked **REAL**. See [Connections](conexiones.md#real-and-practice-accounts).
+- Starting or manually resuming a strategy on a real account requires confirmation. The individual strategy orders then run without further confirmation; review position sizing and risk limits first.
+- **Automatic startup resumption does not prompt.** Auto-resume for real accounts is therefore disabled by default and should usually remain so.
 
-### Desde Backtesting o desde En vivo
+## Start a strategy
 
-1. En **Backtesting → Backtest**, tarjeta «Llevar a vivo», tocá **Ejecutar en vivo…** (lleva la estrategia y sus
-   parámetros), o en **En vivo** tocá **Nueva estrategia en vivo**.
-2. **Qué y dónde**: la estrategia, el instrumento, la cuenta y las velas (M1, M2, M3, M5, M10, M15, M30, H1, H4 o el
-   período de su backtest).
-3. **Parámetros**: vienen de lo último que configuraste en su backtest.
-4. **Condición de mercado**: en qué mercado abre operaciones (rango, mixto, tendencia alcista, tendencia bajista) y con
-   qué volatilidad (baja, normal, alta frente al último mes). Es el filtro de contexto de la estrategia.
-5. **Riesgo**: tamaño (×), pérdida máxima del día y drawdown máximo (en dinero; 0 = sin límite), y si al tocar un
-   límite también cierra su posición.
-6. **Portafolio**: uno tuyo o ninguno (va al automático).
-7. **Iniciar en vivo**.
+### From Backtesting or Live
 
-La zona y el inicio de sesión son los de su backtest: definen el «día» de la pérdida máxima del día. Antes de operar, la
-estrategia arma sus velas e indicadores con la historia que ya tiene cargada ese instrumento (las horas de historia de
-la conexión, o lo que cargó un gráfico), sin mandar órdenes, y su contexto de mercado se completa con el último mes por
-hora. Si necesita más velas que las cargadas, sus indicadores tardan en estar listos. La misma estrategia no puede
-correr dos veces en el mismo instrumento y la misma cuenta. En futuros, un aviso dice cuántos contratos y de cuál manda
-cada orden.
+1. From **Backtesting → Backtest**, choose **Run live…** from the live deployment card, or select **New live strategy** in Live.
+2. Under **What and where**, choose strategy, instrument, account, and bar period (`M1`, `M2`, `M3`, `M5`, `M10`, `M15`, `M30`, `H1`, `H4`, or the prior backtest period).
+3. Review parameters inherited from the most recently configured backtest.
+4. Choose an **entry context filter** for market regime (range, mixed, rising/falling trend) and volatility (low, normal, high relative to recent history).
+5. Set **Risk**: multiplier, maximum daily loss and maximum drawdown (amounts, with 0 meaning no limit), and whether hitting a threshold should also close the position.
+6. Choose an existing portfolio or let the strategy join the automatic one.
+7. Confirm the account and choose **Start live**.
 
-### Desde un gráfico
+The session time zone and start hour follow the strategy's backtest configuration and determine the daily-loss session boundary. Before placing orders, the strategy warms bars and indicators from existing history without trading. Market-context history is prepared from recent hourly candles. If there are too few bars, indicators may need additional time to become ready.
 
-En la barra del gráfico, el botón del robot lista tus estrategias (también podés usar **Poner en el gráfico activo**
-desde Backtesting). La estrategia arranca **solo visual**: marca dónde habría entrado y salido sobre la historia del
-gráfico (un backtest sin comisiones ni deslizamiento) y sigue en vivo con una cuenta simulada propia, «Visual», que no
-toca la tuya. En su configuración (desde el mismo menú o la leyenda del gráfico) elegís **Ejecutar en vivo con una
-cuenta**, la cuenta y **Aplicar**. Desde ahí aparece en En vivo con el origen «Gráfico» y se gestiona como las demás. Si
-cambiás el instrumento del gráfico, las que ejecutan se pausan; si la quitás del gráfico, se detiene y su posición queda
-como está. Más en [Gráficos](graficos.md#estrategias-en-el-gráfico).
+The same strategy cannot run twice simultaneously on the same instrument and account. For futures, the launch confirmation identifies the contract and quantity to be sent.
 
-## Tamaño y contrato inteligente
+### From a chart
 
-- El **tamaño** multiplica las órdenes de la estrategia (1 = como la programaste; 0 = no abre nada nuevo). La estrategia
-  sigue viendo su posición en sus propias unidades: cada orden manda la diferencia entre lo que corresponde con el
-  tamaño actual y lo que tiene, así una salida cierra justo lo abierto aunque hayas cambiado el tamaño en el medio.
-- Se redondea hacia abajo al paso del instrumento, pero si la estrategia quiere estar en el mercado manda al menos una
-  unidad.
-- **Contrato inteligente** (en Ajustes, activado): en futuros con micro (NQ → MNQ, ES → MES, YM → MYM, RTY → M2K,
-  GC → MGC, CL → MCL, entre otros), si el tamaño pide una fracción del mini, las órdenes van al micro con la misma
-  exposición: ×0,5 de 1 NQ son 5 MNQ. Con minis enteros usa el mini. Con una posición abierta sigue en su contrato y
-  cambia cuando queda plana (se reinicia sola, con la misma contabilidad).
-- En la tabla, la ficha, la barra de menú y la leyenda del gráfico siempre se ve cuántos contratos y de cuál manda cada
-  orden, por ejemplo «5 MNQ · micro».
+The chart's robot icon lists strategies from Backtesting. **Add to active chart** is another entry route.
 
-## Límites de riesgo y pausa
+A newly attached chart strategy begins in **Visual only** mode, showing hypothetical historical entry/exit markers and running against its own visual simulation account without changing your actual simulated account. Its chart-history visualization does not include the same full commissions and slippage model as a normal backtest.
 
-| Límite | Al tocarlo |
+From the chart's strategy settings you can choose **Run live with an account**, select an account, and apply. Once enabled, it appears in **Live** with origin **Chart**. Changing the chart's instrument pauses an executing chart strategy; removing it stops that strategy, leaving its current position unchanged unless you separately close it.
+
+See [Strategies on a chart](graficos.md#strategies-on-a-chart).
+
+## Sizing and intelligent futures contracts
+
+- **Size multiplier:** 1 uses programmed quantity; 0 prevents new position entries. The strategy retains its own logical position units while translating order deltas into scaled physical orders.
+- Quantity is rounded down to instrument step size. The implementation can send at least one whole unit when a position is intended, so do not assume a small multiplier means zero orders.
+- **Intelligent contract selection** in Settings (enabled by default) can replace fractional mini futures exposure with equivalent micros: for example 0.5 × 1 NQ becomes 5 MNQ. Other examples include ES/MES, YM/MYM, RTY/M2K, GC/MGC and CL/MCL.
+- An open position stays on the current contract until flat. The live strategy then transitions to the appropriate contract as specified by the saved settings.
+
+The strategy table, detail view, system tray/menu bar, and chart legend display the contract and quantity being routed.
+
+## Risk limits and pausing
+
+| Limit | When reached |
 |---|---|
-| Pérdida máxima del día | Cuando lo cerrado en el día de la sesión más lo abierto llega a −límite, cancela sus entradas pendientes y no abre nada más hasta la próxima sesión («Frenada por hoy»). |
-| Drawdown máximo | Cuando la caída desde el máximo de su curva (contando lo abierto) llega al límite, se detiene. |
+| Maximum daily loss | Closed-session P&L plus open P&L reaches the negative threshold: cancel pending entries and block new entries until the next session |
+| Maximum drawdown | Equity declines by the configured amount from its peak, including open P&L: stop the strategy |
 
-Con «Al tocar un límite, cerrar también su posición» (activado por defecto), además cierra lo que tenga abierto. Cada
-límite tocado deja un aviso arriba de la tabla y en la barra de estado. **Pausar** es distinto: no abre posiciones
-nuevas, cancela sus entradas pendientes y sigue gestionando la que tenga abierta hasta cerrarla.
+**Close position when a limit is reached** is enabled by default. The application issues visible warnings when a limit is triggered.
 
-## Estrategias: la tabla y la ficha
+**Pause** is different from Stop: it prevents new entries and cancels pending entry orders while continuing to manage an already open position until it closes.
 
-Arriba: **Resultado**, **Hoy**, cuántas hay **En vivo**, **Operaciones cerradas** (tocá para ver todas) y **Cambios
-pendientes**. La tabla muestra estrategia, estado (con «en pausa por contexto» cuando su filtro no la deja abrir),
-tamaño y contrato, posición, hoy, neto, operaciones, profit factor, drawdown actual y límites. Tocando una se abre su
-ficha:
+**Stop all** is the emergency action: after confirmation, it stops all running strategies, cancels their orders, and requests that their positions be closed at market. Verify fills and remaining exposure at the broker, particularly during outages.
 
-- **Acciones**: Pausar o Reanudar, Cerrar posición, Detener, Detener y cerrar, Volver a arrancar (o Reanudar en el
-  gráfico), Ver en el gráfico, Ver operaciones, Empezar de cero (borra su historial, solo sin posición) y Borrar.
-- **Riesgo**: tamaño y límites, con **Aplicar riesgo** (el tamaño nuevo rige desde la próxima orden).
-- **Condición de mercado**: se aplica ya, sin reiniciar, y muestra si con el mercado de ahora abriría operaciones.
-- **Parámetros**: **Aplicar y reiniciar** (vuelve a calentar con la historia; si tiene posición, la sigue gestionando).
-- **Portafolio** y **Actividad** (lo que va haciendo y lo que escribe con `Log`).
+## Strategies list and details
 
-Cada estrategia lleva su propia contabilidad, aunque comparta la cuenta con otras o con tus operaciones manuales. Si
-vuelve a arrancar con una posición en su contabilidad y la cuenta la tiene, la sigue gestionando y le vuelve a poner el
-stop y el objetivo (sin duplicarlos si ya estaban en el broker); si la cuenta no la tiene, la cierra en su contabilidad
-al último precio. Con un broker externo espera hasta 45 segundos a que informe la posición antes de decidir.
+Summary tiles include total result, today, active strategy count, closed trades, and pending changes. The strategy table shows account, state (including paused by market context), scaled contract size, current position, net and daily P&L, profit factor, drawdown, and limits.
 
-**Frenar todo** es el botón de emergencia: después de confirmar, detiene todas las estrategias en vivo (las de esta
-sección y las de los gráficos), cancela sus órdenes y cierra sus posiciones a mercado.
+Selecting a strategy opens its detail panel:
 
-## Operaciones
+- **Actions:** Pause/Resume, Close position, Stop, Stop and close, Restart, View on chart, View trades, Reset history (flat only), Delete.
+- **Risk:** Adjust size and thresholds. Changes to size affect subsequent orders.
+- **Market context:** Update entry filters immediately without restarting, showing whether current conditions permit entries.
+- **Parameters:** Apply and restart with data warm-up; open positions continue to be managed.
+- **Portfolio / Activity:** Assigned group and strategy logs.
 
-Todas las operaciones cerradas en vivo: estrategia, mercado, lado, entrada y salida con su precio, duración, cantidad,
-puntos, resultado, MAE, MFE y «Captura» (cuánto del mejor momento se llevó). Se filtran por estrategia, se ordenan
-(recientes, viejas, mejor o peor resultado, peor MAE) y tocando una se ve en el gráfico. Tené en cuenta que la
-contabilidad de cada estrategia anota cada llenado al último precio de mercado del momento (no el que informa el
-broker) y no descuenta comisiones.
+Each strategy maintains its own execution ledger even if multiple strategies and manual orders share the broker account. On restart, if its ledger and broker position agree, it attempts to resume position management and stops/targets without duplicating existing protective orders. If they disagree, the implementation reconciles its ledger. With an external broker it may wait up to 45 seconds for position reports.
 
-## Portafolios
+**Always reconcile the application's position against the broker after restart or connection loss.**
 
-- El **automático** («Automático · todas en vivo») junta las que corren sin un portafolio tuyo. Con **Nuevo
-  portafolio** armás otros con nombre, capital de referencia (25.000 por defecto) y estrategias; cada estrategia está en
-  un solo portafolio tuyo.
-- Cada uno muestra resultado (cerrado y abierto), operaciones, profit factor, drawdown máximo, Sharpe (con más de una
-  semana de datos), correlación media entre sus estrategias, la curva conjunta, una tabla por estrategia y la matriz de
-  correlación del resultado diario (rojo: ganan y pierden los mismos días; verde: se compensan).
-- Botones: **Agregar estrategia nueva**, **Iniciar todas** (confirma si hay cuentas reales), **Detener todas** (las
-  posiciones quedan como están), **Editar** y **Borrar** (sus estrategias siguen y pasan al automático).
+## Trades
 
-## El agente de riesgo
+The live trades page lists closed strategy trades: strategy, market, side, timestamps/prices, duration, quantity, points, P&L, MAE, MFE, and capture of favorable excursion. You can filter, sort and jump to the relevant chart.
 
-Cada portafolio puede tener un agente de riesgo: Claude mira el resultado, la racha reciente, el drawdown contra su
-historia, la volatilidad del resultado diario y la correlación de cada estrategia, y reparte el riesgo proponiendo el
-tamaño de cada una y, si hace falta, su pérdida máxima del día y su drawdown máximo.
+The strategy ledger can record fills at the contemporaneous last market price rather than the broker-reported execution price, and the original documentation states that this ledger does **not** deduct broker commissions. Use broker statements for realized-account reconciliation.
 
-| Opción | Por defecto |
+## Portfolios
+
+- The **Automatic** portfolio groups running strategies not assigned to a user-created portfolio.
+- **New portfolio** creates a named group with reference capital (default 25,000) and selected strategies. A strategy belongs to at most one user-created portfolio.
+- Portfolio analytics include realized/open P&L, trade count, profit factor, drawdown, Sharpe (with sufficient data), inter-strategy daily-P&L correlations, a combined equity curve, and a correlation matrix.
+- Actions include add strategy, start all (extra confirmation for real accounts), stop all (positions remain as they are under that action), edit, and delete (strategies continue under the automatic group).
+
+## Claude risk agent
+
+Each portfolio can configure a Claude risk agent that reviews performance, recent losses, drawdown, daily-result volatility, and strategy correlation. It **proposes** strategy size multipliers and, where appropriate, daily-loss and drawdown limits.
+
+| Option | Documented initial setting |
 |---|---|
-| Modo | **Propone**: cada cambio lo aprobás vos. **Automático**: aplica solo, y solo si ninguna estrategia del portafolio opera una cuenta real |
-| Riesgo diario (% del capital) y drawdown máximo del portafolio (%) | 2 % y 10 % |
-| Tamaño mínimo y máximo por estrategia | ×0,25 y ×3 (0 para que no abra nada nuevo) |
-| Revisar cada (min) | 60 (como mínimo 10), si hubo al menos 3 operaciones nuevas, y cada 8 horas aunque no haya |
-| Modelo y esfuerzo | Opus 5.5 con esfuerzo Extra; también Sonnet 5.5, Haiku 5.5 o Fable 5.1, de Bajo a Máximo |
-| Indicaciones | Texto libre: «priorizá las de NQ», «nunca más de ×2 en cripto»… |
+| Mode | **Propose** by default; **Automatic** applies only where no strategy in the portfolio trades a real account |
+| Portfolio daily risk / drawdown budget | 2% / 10% of reference capital |
+| Minimum / maximum strategy size | ×0.25 / ×3; size 0 blocks new entries |
+| Review cadence | 60 minutes (minimum 10), subject to trade-count and periodic review conditions |
+| Model and effort | Configurable in the UI; available models may differ from those named by older source documentation |
+| Instructions | Free text for desired limits, priorities and restrictions |
 
-**Revisar ahora** lo corre en el momento. Como mucho hace 8 revisiones automáticas por día, cada una con 12 minutos y
-un tope de uso de US$ 2 (si tu Claude Code admite esa opción); no tiene herramientas, solo los números que le pasa
-Trading Hub. Lo que propone queda dentro de tus topes y aparece debajo del portafolio y en **Propuestas**. La tarjeta
-del agente muestra su última revisión, el resumen y el costo estimado acumulado. Cómo se conecta con tu cuenta de
-Claude: [Claude](asistente-claude.md).
+**Review now** runs a manual review. The original implementation describes a maximum of eight automatic reviews daily, with a time and cost budget where supported by the Claude CLI. The agent receives portfolio metrics and no direct order-routing tools. Suggestions appear in **Proposals** for approval.
 
-## Propuestas
+See [Claude integration](asistente-claude.md).
 
-Los cambios de tamaño sugeridos esperan tu aprobación, uno por uno o con **Aprobar todos**; los de cuentas reales piden
-confirmación y rigen desde la próxima orden. Vienen de tres lados:
+## Proposals
 
-- **Sugerir con reglas**: con 10 operaciones o más y mirando el profit factor de las últimas 20, propone pausar (×0) si
-  es menor a 0,7 con el drawdown cerca de su peor y al menos 15 operaciones recientes, reducir a la mitad si es menor a
-  0,9 o el drawdown está cerca de su peor, y subir 25 % (hasta ×3) si es de 1,5 o más con expectativa positiva y poco
-  drawdown.
-- **Pedir análisis a Claude**: abre el laboratorio en Backtesting y le pide revisar la cartera en vivo y proponer.
-- El **agente de riesgo** de cada portafolio.
+Suggested position-size changes wait for explicit approval individually or through **Approve all**. Real-account proposals require an additional confirmation and apply to subsequent orders. Proposal sources include:
 
-## Mercado
+- **Rule-based suggestions:** With enough trade history (at least ten trades), a recent profit-factor and drawdown heuristic may suggest pausing, halving risk, or increasing size by up to 25% within an upper cap.
+- **Ask Claude:** Opens the research assistant to analyze the running portfolio.
+- **Portfolio risk agent:** Periodic or manual risk proposals.
 
-Para cada mercado de las estrategias que corren: su **condición** (rango, mixto o tendencia alcista o bajista, con la
-eficiencia de las últimas 24 horas y desde hace cuánto), su **volatilidad** (percentil del último mes), una tira con las
-últimas 48 horas y qué estrategias operan ahí y si su filtro las deja abrir. Al final, una tabla dice en qué
-condiciones opera cada estrategia, con la de ahora marcada. Se recalcula cada 30 segundos con los cierres por hora del
-último mes, con la misma medida que usan los filtros de contexto.
+A proposal is not independent proof that the suggested size is safe or profitable.
 
-## Al cerrar la ventana y al abrir
+## Market conditions
 
-- **Barra de menú**: con la opción activada (lo está por defecto), cerrar la ventana deja a Trading Hub corriendo en la
-  barra de menú de la Mac, con las estrategias trabajando. Su menú muestra las estrategias en vivo y las posiciones
-  abiertas, y el panel tiene más detalle. Para cerrarlo del todo: ⌘Q o «Salir de Trading Hub». Ver
-  [Primeros pasos](primeros-pasos.md#system-tray-and-menu-bar).
-- **Reanudación automática**: unos segundos después de abrir, vuelven a arrancar solas las estrategias que corrían al
-  cerrar (o al apagarse la Mac), con sus parámetros, tamaño y límites; las pausadas vuelven pausadas. Las de cuentas
-  reales esperan que las reanudes, salvo que actives también esa opción. Un aviso resume qué se reanudó.
-- **Modo sin dormir**: mientras haya estrategias en vivo o el agente de riesgo trabajando, la Mac no se duerme por
-  inactividad, y si lo activás sigue con la tapa cerrada. Ver [Ajustes](ajustes.md).
+The Market page summarizes each active instrument's regime (range/mixed/uptrend/downtrend), recent trend efficiency, volatility rank versus the previous month, and the last 48 hours of conditions. It also shows which strategies permit entries under their configured filters. The model is recalculated periodically from completed hourly candles.
+
+## Closing and reopening
+
+- **Tray/menu-bar behavior:** With the default setting, closing the main window leaves the application and live strategies running in the Windows system tray or macOS menu bar. Use **Quit Trading Hub** to exit fully. See [Getting started](primeros-pasos.md#system-tray-and-menu-bar).
+- **Auto-resume:** Running strategies can resume a few seconds after reopening with their saved size and risk settings; paused strategies remain paused. Real-money strategies are held for manual resume unless explicitly authorized otherwise.
+- **Sleep prevention:** The application can prevent idle sleep while strategies or agents are running, and optional Mac closed-lid operation is configurable under [Settings](ajustes.md).
+
+**Before leaving a trading system unattended, verify broker session stability, order-state reconciliation, hard limits, and external emergency controls.**
