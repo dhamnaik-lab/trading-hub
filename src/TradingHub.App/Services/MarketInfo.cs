@@ -72,10 +72,10 @@ public static class MarketInfo
         var (feed, sym) = Split(market);
         if (IsCrypto(feed)) return feed == "binance-spot" ? "cripto spot de Binance, 24/7" : feed == "bybit-linear" ? "futuro perpetuo de Bybit, 24/7" : "futuro perpetuo de Binance, 24/7";
         if (IsFutures(feed)) return (TradingHub.Market.FuturesCatalog.Find(sym) is { } p ? $"futuro {p.Name} ({p.Exchange}, horario Globex)" : "futuro de CME Group") + FuturesSource(feed);
-        if (feed == CsvImport.FeedId) return "CFD importado de archivos (velas de 1 minuto convertidas en operaciones: sin volumen ni lado agresor reales, no sirve para flujo de órdenes)";
-        if (feed == TradingHub.Feeds.Oanda.OandaFeed.FeedId) return "CFD/forex de OANDA (velas de 5 segundos convertidas en operaciones: sin volumen ni lado agresor reales, no sirve para flujo de órdenes)";
-        if (feed.StartsWith(TradingHub.Feeds.CTrader.CTraderFeed.FeedId, StringComparison.Ordinal)) return "CFD/forex de un broker de cTrader (ticks bid: sin volumen ni lado agresor reales, no sirve para flujo de órdenes)";
-        if (IsStocks(feed)) return "acción/ETF de EE.UU. por Alpaca (operaciones reales de todas las bolsas, lado por regla del tick; horario 9:30-16:00 de Nueva York más pre y post)";
+        if (feed == CsvImport.FeedId) return "Imported CFD history (1-minute bars converted to synthetic trades; no real trade volume or aggressor side; unsuitable for order-flow analysis)";
+        if (feed == TradingHub.Feeds.Oanda.OandaFeed.FeedId) return "OANDA CFD/FX (5-second bars converted to synthetic trades; no real trade volume or aggressor side; unsuitable for order-flow analysis)";
+        if (feed.StartsWith(TradingHub.Feeds.CTrader.CTraderFeed.FeedId, StringComparison.Ordinal)) return "cTrader broker CFD/FX (bid ticks lack real trade volume and aggressor side; unsuitable for order-flow analysis)";
+        if (IsStocks(feed)) return "US stocks/ETFs via Alpaca (reported trades from multiple venues, direction inferred by tick rule; New York regular session 09:30–16:00 plus extended hours)";
         return feed;
     }
 
@@ -170,7 +170,7 @@ public static class MarketInfo
         };
         if (c.CommissionPerUnit > 0)
             parts.Add($"commission_per_unit {c.CommissionPerUnit.ToString(Inv)}" +
-                      (!IsFutures(feed) ? "" : Commission(symbol).Confirmed ? " (la real: la confirmó el trader)" : " (estimada: el trader todavía no la confirmó; no se la preguntes)"));
+                      (!IsFutures(feed) ? "" : Commission(symbol).Confirmed ? " (actual: trader confirmed)" : " (estimated: not yet confirmed by trader; do not ask)"));
         parts.Add($"slippage_ticks {c.SlippageTicks}");
         parts.Add(c.TimeZoneId != null ? $"timezone {c.TimeZoneId} · session_start_hour {c.SessionStartHours.ToString(Inv)}" : "timezone UTC");
         return string.Join(" · ", parts);
