@@ -207,7 +207,7 @@ public sealed class PropertyGrid : UserControl
         }
         catch (Exception ex)
         {
-            TradingHub.Common.Logging.LoggingExtensions.LogWarn(this, $"No se pudo cambiar {p.Name}: {ex.InnerException?.Message ?? ex.Message}");
+            TradingHub.Common.Logging.LoggingExtensions.LogWarn(this, $"Unable to update {p.Name}: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
@@ -431,7 +431,7 @@ public sealed class PropertyGrid : UserControl
         var flyoutContent = new StackPanel { Spacing = 8, Margin = new Thickness(12), Children = { view } };
         if (allowAuto)
         {
-            var auto = new Button { Content = "Automático (color del tema)" };
+            var auto = new Button { Content = "Automatic (theme color)" };
             auto.Click += (_, _) =>
             {
                 swatch.Background = Brushes.Transparent;
