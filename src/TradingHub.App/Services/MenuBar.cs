@@ -123,7 +123,7 @@ internal sealed class MenuBar
             string side = pos == 0 ? "flat" : $"{(pos > 0 ? "long" : "short")} {Math.Abs(pos).ToString("0.####", Es)} {e.Ledger.OpenSymbol ?? plan.Symbol}";
             string state = e.Paused ? " · paused" : r.DailyLimitActive ? " · stopped for today" : "";
             string each = plan.Units <= 0 ? "no entry" : $"{plan.Text} per order{(plan.Micro ? " (micro)" : "")}";
-            lines.Add(new MenuLine($"s:{e.Key}", $"   {e.Info.Strategy} · {r.Data.Instrument.Symbol} · {each} · {side} · abierta {Money(e.OpenPnL)} · hoy {Money(r.TodayPnL)}{state}", true, ShowPanel));
+            lines.Add(new MenuLine($"s:{e.Key}", $"   {e.Info.Strategy} · {r.Data.Instrument.Symbol} · {each} · {side} · open {Money(e.OpenPnL)} · today {Money(r.TodayPnL)}{state}", true, ShowPanel));
         }
 
         if (running.Count == 0) lines.Add(new MenuLine("live-none", "   None running"));
