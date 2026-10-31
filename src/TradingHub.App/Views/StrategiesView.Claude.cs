@@ -22,7 +22,7 @@ internal sealed partial class StrategiesView
         TextWrapping = TextWrapping.Wrap,
         MinHeight = 64,
         MaxHeight = 160,
-        Watermark = "Pedile a Claude una estrategia nueva o un cambio en la abierta…",
+        Watermark = "Ask Claude for a new strategy or changes to the current one…",
     };
     private readonly TextBlock _claudeStatus = new() { Classes = { "faint", "small" }, TextTrimming = TextTrimming.CharacterEllipsis };
     private Button _sendButton = null!;
@@ -56,14 +56,14 @@ internal sealed partial class StrategiesView
             ShowSuggestions();
         }, 17);
         var history = new Button { Content = Ui.Icon(MaterialIconKind.History, 17) }.Classes("icon");
-        ToolTip.SetTip(history, "Historial de conversaciones (se pueden retomar donde quedaron)");
+        ToolTip.SetTip(history, "Conversation history (resume previous chats)");
         history.Click += (_, _) => ShowHistoryMenu(history);
         _claudeDetach = Ui.IconButton(MaterialIconKind.OpenInNew, "Detach chat to another window", ToggleClaudeWindow, 17);
         var title = Ui.V(1, Ui.H(8, Ui.Icon(MaterialIconKind.Creation, 18, Ui.Accent), new TextBlock { Text = "Claude", FontWeight = FontWeight.SemiBold, FontSize = 14 }), _claudeStatus);
         // laboratorio: Claude corre backtests, optimizaciones y walk-forward por su cuenta
-        _labToggle.Content = Ui.H(6, Ui.Icon(MaterialIconKind.FlaskOutline, 15), new TextBlock { Text = "Laboratorio", FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+        _labToggle.Content = Ui.H(6, Ui.Icon(MaterialIconKind.FlaskOutline, 15), new TextBlock { Text = "Laboratory", FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
         _labToggle.Padding = new Thickness(8, 4);
-        ToolTip.SetTip(_labToggle, "Modo laboratorio: Claude puede bajar datos, correr backtests, optimizaciones, walk-forward y Monte Carlo por su cuenta, decidir si la estrategia es ganadora o perdedora y dejar un reporte en la pestaña Reportes.");
+        ToolTip.SetTip(_labToggle, "Laboratory mode: Claude can download data, run backtests, optimization, walk-forward and Monte Carlo analyses, assess the strategy, and save a report under Reports.");
         _labToggle.IsCheckedChanged += (_, _) => UpdateClaudeHint();
         var headRight = Ui.H(6, _labToggle, history, newChat, _claudeDetach);
         var head = new DockPanel { Margin = new Thickness(14, 10, 10, 10) };
@@ -71,9 +71,9 @@ internal sealed partial class StrategiesView
         head.Children.Add(headRight);
         head.Children.Add(title);
 
-        _sendButton = Ui.Button("Enviar", MaterialIconKind.Send, () => _ = SendToClaudeAsync(_prompt.Text ?? ""), "primary");
+        _sendButton = Ui.Button("Send", MaterialIconKind.Send, () => _ = SendToClaudeAsync(_prompt.Text ?? ""), "primary");
         ToolTip.SetTip(_sendButton, Keys.Label("Enter"));
-        _stopButton2 = Ui.Button("Detener", MaterialIconKind.Stop, () => _claude.Cancel());
+        _stopButton2 = Ui.Button("Stop", MaterialIconKind.Stop, () => _claude.Cancel());
         _stopButton2.IsVisible = false;
         _prompt.KeyDown += (_, e) =>
         {
@@ -115,13 +115,13 @@ internal sealed partial class StrategiesView
             ? "Laboratory: Claude runs the research tests (which can take several minutes) and saves a report under Reports."
             : "Uses your Claude Code subscription. File access is restricted to strategy directories.";
         _claudeHint.Foreground = lab ? Ui.Accent : null;
-        _prompt.Watermark = lab ? "Example: research and optimize the open strategy using 60 days of BTCUSDT and assess its robustness" : "Pedile una estrategia o un cambio…";
+        _prompt.Watermark = lab ? "Example: research and optimize the open strategy using 60 days of BTCUSDT and assess its robustness" : "Ask for a strategy or a change…";
     }
 
     private async Task DetectClaudeAsync()
     {
         var v = await ClaudeCodeBridge.VersionAsync();
-        _claudeStatus.Text = v != null ? $"Claude Code {v.Replace("(Claude Code)", "").Trim()} · tu suscripción" : "Claude Code is not installed";
+        _claudeStatus.Text = v != null ? $"Claude Code {v.Replace("(Claude Code)", "").Trim()} · your subscription" : "Claude Code is not installed";
         _sendButton.IsEnabled = v != null;
         if (v == null)
             AddNote(MaterialIconKind.AlertCircleOutline, $"Claude Code was not found on this {Os.Device}. Install it from claude.com/claude-code, sign in, then reopen Trading Hub.", Ui.Warn);
@@ -278,7 +278,7 @@ internal sealed partial class StrategiesView
         {
             string detail = string.Join("\n", (errors.Count > 0 ? errors : res?.Diagnostics.Where(d => d.Severity == "error").ToList() ?? new()).Take(12)
                 .Select(d => $"- {Path.GetFileName(d.File)} line {d.Line}: {d.Message} ({d.Id})"));
-            var fix = Ui.Button("Pedirle que los arregle", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync($"Fix compilation errors in indicator {names} (under the indicators folder):\n{detail}"), "primary");
+            var fix = Ui.Button("Ask Claude to fix", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync($"Fix compilation errors in indicator {names} (under the indicators folder):\n{detail}"), "primary");
             fix.Padding = new Thickness(10, 4);
             int count = errors.Count > 0 ? errors.Count : res?.Diagnostics.Count(d => d.Severity == "error") ?? 0;
             _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CloseCircle, 15, Ui.Down),
@@ -372,7 +372,7 @@ internal sealed partial class StrategiesView
                 var login = Ui.Button("Sign in to Claude Code", MaterialIconKind.Login, ClaudeCodeBridge.OpenLoginTerminal, "primary");
                 var card = Ui.Card(Ui.V(8,
                     new TextBlock { Text = "Claude Code requires you to sign in", FontWeight = FontWeight.SemiBold },
-                    new TextBlock { Text = (Os.IsWindows ? "A terminal window will open" : "Se abre la Terminal") + " for Claude Code: select your subscription account and complete the browser sign-in. Return here and retry.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = (Os.IsWindows ? "A terminal window will open" : "A terminal window will open") + " for Claude Code: select your subscription account and complete the browser sign-in. Return here and retry.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap },
                     login), 12);
                 _chat.Children.Add(card);
             }
@@ -409,11 +409,11 @@ internal sealed partial class StrategiesView
                 _ = RunBacktestAsync();
             });
             test.Padding = new Thickness(10, 4);
-            _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CheckCircle, 15, Ui.Up), new TextBlock { Text = $"{_current.DisplayName} compila sin errores", Classes = { "small" }, Foreground = Ui.Up, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }), test));
+            _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CheckCircle, 15, Ui.Up), new TextBlock { Text = $"{_current.DisplayName} compiled successfully", Classes = { "small" }, Foreground = Ui.Up, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }), test));
         }
         else if (errors > 0)
         {
-            var fix = Ui.Button("Pedirle que los arregle", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync("Fix the compilation errors in the open file."), "primary");
+            var fix = Ui.Button("Ask Claude to fix", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync("Fix the compilation errors in the open file."), "primary");
             fix.Padding = new Thickness(10, 4);
             _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CloseCircle, 15, Ui.Down), new TextBlock { Text = $"{errors} compilation error(s)", Classes = { "small" }, Foreground = Ui.Down }), fix));
         }
@@ -596,6 +596,6 @@ internal sealed partial class StrategiesView
         _labToggle.IsChecked = true;
         _tabs.Select("code");
         ShowTab("code");
-        _ = SendToClaudeAsync("Analyze the live portfolio using live_portfolio (results, trades, drawdown, and recent streaks) and propose size adjustments where warranted con propose_sizing explicando el motivo de cada uno. No apliques nada: yo apruebo cada cambio en Trading Hub (En vivo → Propuestas).");
+        _ = SendToClaudeAsync("Analyze the live portfolio using live_portfolio (results, trades, drawdown, and recent streaks), then propose size adjustments through propose_sizing with an evidence-based reason for each. Do not apply changes: I review and approve each proposal in Trading Hub under Live → Proposals.");
     }
 }
