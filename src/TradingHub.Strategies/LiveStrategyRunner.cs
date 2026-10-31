@@ -300,7 +300,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         HookAccount(true);
         IsRunning = true;
         StartedUtc = DateTime.UtcNow;
-        Log($"Iniciada en {_account.Name} con {WarmupBars} velas de calentamiento{(SizeMultiplier != 1 ? $" · tamaño ×{Qty(SizeMultiplier)}" : "")}" +
+        Log($"Started on {_account.Name} with {WarmupBars} warm-up bars{(SizeMultiplier != 1 ? $" · size ×{Qty(SizeMultiplier)}" : "")}" +
             (CrossExecution ? $" · ejecuta en {ExecInstrument.Symbol} (1 {_data.Instrument.Symbol} = {Qty(ExecRatio)} {ExecInstrument.Symbol})" : ""));
         if (Ledger.Position != 0) CheckInheritedPosition(initial: true);
         Changed?.Invoke();
@@ -670,7 +670,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         decimal closable = Math.Sign(acc) == Math.Sign(own) ? Math.Min(Math.Abs(acc), Math.Abs(own)) : 0;
         decimal excess = Math.Abs(own) - closable;
         if (excess > 0)
-            BookSynthetic(own > 0 ? -excess : excess, $"La cuenta no tenía {Qty(excess)} de la posición de la estrategia: se cerró en su contabilidad al último precio");
+            BookSynthetic(own > 0 ? -excess : excess, $"Account does not have {Qty(excess)} units of the strategy position: closed them in the strategy ledger at last price");
         if (closable <= 0) return;
         var so = new StrategyOrder { Id = _nextId++, Side = own > 0 ? OrderSide.Sell : OrderSide.Buy, Type = StrategyOrderType.Market, Quantity = closable, Name = why, Time = Time, IsProtective = true };
         Place(so, closable);
@@ -812,9 +812,9 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
     {
         decimal qty = filled > 0 ? filled : so.LiveQuantity;
         string what = so.IsProtective ? $" ({so.Name.ToLowerInvariant()})" : "";
-        string micro = CrossExecution && ExecRatio > 0 ? $" · micro: equivale a {Qty(qty / ExecRatio)} {_data.Instrument.Symbol}" : "";
+        string micro = CrossExecution && ExecRatio > 0 ? $" · micro: equivalent to {Qty(qty / ExecRatio)} {_data.Instrument.Symbol}" : "";
         decimal price = _account.LastPrice > 0 ? _account.LastPrice : LastPrice > 0 ? LastPrice : _data.LastPrice;
-        return $"«{StrategyName}» {(so.Side == OrderSide.Buy ? "compró" : "vendió")} {Qty(qty)} {ExecInstrument.Symbol} a {ExecInstrument.FormatPrice(price)}{what} en {_account.Name}{micro}";
+        return $"«{StrategyName}» {(so.Side == OrderSide.Buy ? "bought" : "sold")} {Qty(qty)} {ExecInstrument.Symbol} at {ExecInstrument.FormatPrice(price)}{what} on {_account.Name}{micro}";
     }
 
     private static string Qty(decimal q) => q.ToString("0.########", Inv);
