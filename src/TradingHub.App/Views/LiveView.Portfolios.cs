@@ -69,7 +69,7 @@ internal sealed partial class LiveView
         _agentInstructions.LostFocus += (_, _) => SaveAgent();
         _agentRun = Ui.Button("Revisar ahora", MaterialIconKind.ShieldHalfFull, () => _ = RunAgentAsync(), "primary");
 
-        var intro = Ui.Faint("Estrategias que corren juntas. Si no armaste ninguno, el automático junta todas las que corren en vivo. Cada portafolio puede tener un agente de riesgo (Claude) que reparte el riesgo entre sus estrategias.");
+        var intro = Ui.Faint("Group live strategies in portfolios; unassigned strategies use the automatic portfolio. Claude risk agents que reparte el riesgo entre sus estrategias.");
         intro.TextWrapping = TextWrapping.Wrap;
         var root = Ui.V(16, intro, bar, _portfolioDetail);
         root.Margin = new Thickness(24, 18, 24, 28);
@@ -130,7 +130,7 @@ internal sealed partial class LiveView
 
         // encabezado y acciones
         var actions = new WrapPanel { ItemSpacing = 8, LineSpacing = 8, HorizontalAlignment = HorizontalAlignment.Right };
-        if (!def.Auto) actions.Children.Add(Ui.Button("Agregar estrategia nueva", MaterialIconKind.Play, () => OpenLaunch(portfolioId: def.Id)));
+        if (!def.Auto) actions.Children.Add(Ui.Button("Add new strategy", MaterialIconKind.Play, () => OpenLaunch(portfolioId: def.Id)));
         if (p.Members.Any(x => !x.Running && !x.Locked)) actions.Children.Add(Ui.Button("Iniciar todas", MaterialIconKind.PlayCircleOutline, () => _ = StartAllAsync(p), "primary"));
         if (p.Members.Any(x => x.Running && !x.Locked)) actions.Children.Add(Ui.Button("Detener todas", MaterialIconKind.StopCircleOutline, () => _ = StopAllAsync(p)));
         actions.Children.Add(Ui.Button("Editar", MaterialIconKind.PencilOutline, () => _ = EditPortfolioAsync(def)));
@@ -188,7 +188,7 @@ internal sealed partial class LiveView
         const string cols = "2.4*,1*,0.8*,1*,0.6*,0.7*,1*,0.9*,0.9*";
         var table = new StackPanel();
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions(cols), Margin = new Thickness(6, 2, 6, 8) };
-        string[] titles = { "Estrategia", "Estado", "Size", "Neto", "Ops", "PF", "Max DD", "% del total", "Corr. media" };
+        string[] titles = { "Strategy", "Estado", "Size", "Neto", "Ops", "PF", "Max DD", "% del total", "Corr. media" };
         for (int i = 0; i < titles.Length; i++)
         {
             var t = new TextBlock { Text = titles[i], Classes = { "h3" }, HorizontalAlignment = i >= 2 ? HorizontalAlignment.Right : HorizontalAlignment.Left, Margin = new Thickness(6, 0) };
@@ -433,7 +433,7 @@ internal sealed partial class LiveView
             !await ConfirmDialog.ShowAsync(_window, "Ejecutar en cuentas REALES", $"Some of these {pending.Count} strategies use real accounts. Their orders use real money without per-order confirmation.", "Iniciar todas", danger: true))
             return;
         var errors = await _svc.Live.StartAllAsync(p);
-        _status(errors.Count == 0 ? $"«{p.Def.Name}»: {pending.Count} estrategia(s) corriendo" : "No arrancaron todas: " + string.Join(" · ", errors));
+        _status(errors.Count == 0 ? $"«{p.Def.Name}»: {pending.Count} running strategies" : "No arrancaron todas: " + string.Join(" · ", errors));
         RefreshPortfolios(force: true);
     }
 
