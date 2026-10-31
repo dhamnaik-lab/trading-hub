@@ -275,12 +275,12 @@ public static class Robustness
         return string.Join(" or ", on.Select(Name));
     }
 
-    /// <summary>«only rango, volatility up to percentile 66».</summary>
+    /// <summary>Example: 'range only, volatility up to percentile 66'.</summary>
     public static string DescribeFilter(RegimeFilter regime, int minRank, int maxRank)
     {
         var parts = new List<string>();
         if (DescribeRegimes(MarketContextTracker.SetOf(regime)) is { } r) parts.Add(r);
-        if (minRank > 0 && maxRank < 100) parts.Add($"volatility between percentiles {minRank} y {maxRank}");
+        if (minRank > 0 && maxRank < 100) parts.Add($"volatility between percentiles {minRank} and {maxRank}");
         else if (maxRank < 100) parts.Add(maxRank <= 33 ? "low volatility" : $"volatility up to percentile {maxRank}");
         else if (minRank > 0) parts.Add(minRank >= 67 ? "high volatility" : $"volatility from percentile {minRank}");
         return string.Join(", ", parts);
