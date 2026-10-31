@@ -133,7 +133,7 @@ internal sealed class DataView : UserControl, IPage
     {
         var replay = Ui.Button("Reproducir", MaterialIconKind.PlayCircleOutline, () => _ = ReplaySelectedAsync());
         ToolTip.SetTip(replay, "Replay the selected day in Trading (uses the simulated account)");
-        var delete = Ui.Button("Borrar", MaterialIconKind.DeleteOutline, () => _ = DeleteSelectedAsync(), "ghost");
+        var delete = Ui.Button("Delete", MaterialIconKind.DeleteOutline, () => _ = DeleteSelectedAsync(), "ghost");
         var actions = Ui.H(8, delete, replay);
         var head = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
         DockPanel.SetDock(actions, Dock.Right);
@@ -187,7 +187,7 @@ internal sealed class DataView : UserControl, IPage
         _cancel.IsEnabled = false;
         return Ui.V(14,
             Ui.H2("Download history"),
-            new TextBlock { Text = "Días completos: de los archivos públicos (Binance, Bybit) o por la API de tus conexiones (Rithmic, Tradovate, cTrader, OANDA, Alpaca). En futuros, con el contrato que operaba cada día.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Text = "Complete days from public Binance/Bybit archives or connected APIs (Rithmic, Tradovate, cTrader, OANDA and Alpaca). Futures history uses the contract relevant to each day.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
             Ui.Field("Instrumento", _picker),
             Ui.Field("Range (UTC days)", presets),
             Ui.Row(10, Ui.Field("From", _from), Ui.Field("To", _to)),
@@ -210,8 +210,8 @@ internal sealed class DataView : UserControl, IPage
     {
         ("UTC (Dukascopy, TradingView)", 0),
         ("Nueva York fija, −5 (HistData)", -5),
-        ("UTC+2 (MetaTrader en invierno)", 2),
-        ("UTC+3 (MetaTrader en verano)", 3),
+        ("UTC+2 (MetaTrader winter time)", 2),
+        ("UTC+3 (MetaTrader summer time)", 3),
     };
 
     private Control BuildImportPanel()
@@ -225,14 +225,14 @@ internal sealed class DataView : UserControl, IPage
         ToolTip.SetTip(histdata, "Free FX and index history (NSXUSD = Nasdaq 100, SPXUSD = S&P 500) in one-minute candles or ticks.");
         return Ui.V(14,
             Ui.H2("Importar archivos"),
-            new TextBlock { Text = "Para CFDs (US100, US500, DAX), forex, oro… Bajá el CSV gratis de Dukascopy o HistData, o exportalo de MetaTrader o TradingView, y Trading Hub lo convierte en historia para gráficos, replay y backtests. El formato se reconoce solo.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Text = "For CFDs (US100, US500, DAX), FX and gold, import CSV from Dukascopy, HistData, MetaTrader or TradingView. Trading Hub detects supported formats and converts data for charts, replay and backtests.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
             Ui.H(8, duka, histdata),
             Ui.Field("Nombre del instrumento", _importSymbol),
             Ui.Field("Hora del archivo", _importZone),
             _importButton,
             _importProgress,
             _importStatus,
-            Note(MaterialIconKind.InformationOutline, "Los CFDs no tienen volumen real: cada cotización cuenta como una operación (volumen de ticks) y el lado sale de si el precio subió o bajó. Sirve para precio, velas y backtests de precio; el footprint y el delta son aproximados."));
+            Note(MaterialIconKind.InformationOutline, "CFD quotes are treated as synthetic trades, with direction estimated from price changes. They do not provide real exchange trade volume or aggressor side; footprint and delta are approximations."));
     }
 
     // ===================================================================== Databento (futuros de CME, historia larga)
@@ -276,12 +276,12 @@ internal sealed class DataView : UserControl, IPage
         _dbFrom.SelectedDateChanged += (_, _) => Reset();
         _dbTo.SelectedDateChanged += (_, _) => Reset();
         _dbAlsoRithmic.IsCheckedChanged += (_, _) => Reset();
-        ToolTip.SetTip(_dbAlsoRithmic, "Sin tildar, Databento solo completa lo que le falta a Rithmic (más barato). Tildado, baja todo el rango para tener la historia de Databento entera.");
+        ToolTip.SetTip(_dbAlsoRithmic, "Unchecked: download only days missing from Rithmic. Checked: download the full range separately from Databento; additional usage charges may apply.");
         var configure = Ui.Button("Connections", MaterialIconKind.LanConnect, () => _main.Navigate("connections"), "ghost");
         Reset();
         return Ui.V(14,
-            Ui.H2("Futuros de CME con Databento"),
-            new TextBlock { Text = "Años de historia tick a tick (desde 2010) con el lado agresor real de cada operación: lo que Rithmic no guarda. Es pago por uso (las cuentas nuevas traen créditos gratis): Trading Hub calcula el costo antes y solo baja si confirmás.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
+            Ui.H2("CME futures with Databento"),
+            new TextBlock { Text = "Historical CME futures tick data with aggressor-side information, subject to dataset coverage and usage-based fees. Trading Hub estimates cost and requires confirmation before download.", Classes = { "muted" }, TextWrapping = TextWrapping.Wrap },
             _dbHave,
             Ui.Field("Contrato continuo", _dbRoot),
             Ui.Row(10, Ui.Field("From", _dbFrom), Ui.Field("To", _dbTo)),
@@ -289,7 +289,7 @@ internal sealed class DataView : UserControl, IPage
             new WrapPanel { ItemSpacing = 8, LineSpacing = 8, Children = { _dbCost, _dbDownload, _dbCancel, configure } },
             _dbProgress,
             _dbStatus,
-            Note(MaterialIconKind.InformationOutline, "Se guarda aparte, como «Databento» en la lista de la izquierda. En los backtests elegís solo Databento, solo Rithmic o las dos combinadas (Rithmic primero y Databento completa lo que le falta). Los días que ya tenés completos no se vuelven a bajar ni se cobran."));
+            Note(MaterialIconKind.InformationOutline, "Data are stored separately under Databento. Backtests can use Databento alone, Rithmic alone, or a combined feed that prefers Rithmic and fills missing coverage with Databento. Already completed downloaded days are skipped."));
     }
 
     private string DbRoot => (_dbRoot.SelectedItem as ComboBoxItem)?.Tag as string ?? "NQ";
@@ -355,7 +355,7 @@ internal sealed class DataView : UserControl, IPage
         }
 
         _dbCost!.IsEnabled = false;
-        _dbStatus.Text = "Calculando el costo…";
+        _dbStatus.Text = "Calculating cost…";
         try
         {
             using var client = _svc.Connections.DatabentoOf(profile);
@@ -389,7 +389,7 @@ internal sealed class DataView : UserControl, IPage
 
         string cost = quote.ToString("0.00", CultureInfo.InvariantCulture);
         if (!await ConfirmDialog.ShowAsync(_main, "Bajar historia de Databento",
-                $"Downloading {days.Count} day(s) of {DbRoot} tick by tick. Databento charges ≈ US$ {cost} de tus créditos (si no te alcanzan, a tu medio de pago en Databento).",
+                $"Downloading {days.Count} day(s) of {DbRoot} tick by tick. Databento charges ≈ US$ {cost} from your Databento credits (additional charges may apply).",
                 $"Bajar (≈ US$ {cost})")) return;
 
         var inst = CmeInstrument(DbRoot);
@@ -418,7 +418,7 @@ internal sealed class DataView : UserControl, IPage
                     continue;
                 }
 
-                _dbStatus.Text = $"{DbRoot} {day:dd/MM/yyyy}: saving {list.Count:N0} operaciones…";
+                _dbStatus.Text = $"{DbRoot} {day:dd/MM/yyyy}: saving {list.Count:N0} trades…";
                 await Task.Run(() => HistoricalData.WriteDay(AppPaths.Ticks, inst, day, list, replace: true), ct);
                 trades += list.Count;
                 done++;
@@ -429,7 +429,7 @@ internal sealed class DataView : UserControl, IPage
         }
         catch (OperationCanceledException)
         {
-            _dbStatus.Text = $"Cancelled. Saved {done} día(s).";
+            _dbStatus.Text = $"Cancelled. Saved {done} day(s).";
         }
         catch (Exception ex)
         {
@@ -490,7 +490,7 @@ internal sealed class DataView : UserControl, IPage
                 try
                 {
                     var r = await Task.Run(() => CsvImport.Import(path, symbol, AppPaths.Ticks, offset, null, progress, CancellationToken.None));
-                    lines.Add($"{symbol}: {r.Kind}, {r.Trades:N0} operaciones en {r.Days} día(s)" +
+                    lines.Add($"{symbol}: {r.Kind}, {r.Trades:N0} trades over {r.Days} day(s)" +
                               (r.From is { } f && r.To is { } t ? $" ({f:dd/MM/yyyy} → {t:dd/MM/yyyy})" : "") +
                               (r.BadLines > 0 ? $", {r.BadLines:N0} filas que no se pudieron leer" : "") + $" · paso de precio {r.TickSize.ToString("0.########", CultureInfo.InvariantCulture)}");
                 }
@@ -500,7 +500,7 @@ internal sealed class DataView : UserControl, IPage
                 }
             }
 
-            _importStatus.Text = "Listo. " + string.Join(" · ", lines) + ". Aparece en la lista de la izquierda (conexión «importado») y en los backtests.";
+            _importStatus.Text = "Listo. " + string.Join(" · ", lines) + ". Available in the imported connection on the left and for backtests.";
             _status(_importStatus.Text);
         }
         finally
@@ -580,18 +580,18 @@ internal sealed class DataView : UserControl, IPage
             var contracts = days.Select(d => TradingHub.Feeds.Rithmic.RithmicFeed.ContractNameOn(_dlInstrument, d.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))).Distinct().ToList();
             var since = TradingHub.Feeds.Rithmic.RithmicFeed.CurrentContractSince(_dlInstrument);
             bool older = since is { } sd && days.Count > 0 && days[0].ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) < sd;
-            _dlStatus.Text = $"{_dlInstrument.Symbol} · {days.Count} días tick a tick desde Rithmic · contrato{(contracts.Count > 1 ? "s" : "")} {string.Join(", ", contracts)}" +
-                             (older ? $". Ojo: Rithmic no guarda la historia de los contratos vencidos; lo seguro es desde el {since:dd/MM} (contrato {contracts[^1]}). Lo anterior se intenta igual." : "") +
-                             (days.Count > 60 ? " Un índice como el ES tiene más de un millón de operaciones por día: un rango largo tarda (se puede cancelar y seguir después)." : "");
+            _dlStatus.Text = $"{_dlInstrument.Symbol} · {days.Count} days of tick data from Rithmic · contract{(contracts.Count > 1 ? "s" : "")} {string.Join(", ", contracts)}" +
+                             (older ? $". Rithmic may not provide expired-contract history. Coverage is more reliable from {since:dd/MM} (contract {contracts[^1]}). Older dates will still be attempted." : "") +
+                             (days.Count > 60 ? " High-volume contracts such as ES can produce very large daily datasets. Long requests can be cancelled and resumed." : "");
         }
         else if (Downloader is { } dl)
         {
-            _dlStatus.Text = $"{_dlInstrument.Symbol} · {days.Count} días · {dl.HistoryNote}" +
-                             (days.Count > 30 ? ". Un rango largo tarda: se puede cancelar y seguir después (lo bajado queda)." : "");
+            _dlStatus.Text = $"{_dlInstrument.Symbol} · {days.Count} days · {dl.HistoryNote}" +
+                             (days.Count > 30 ? ". Long requests can be cancelled and resumed; completed days are retained." : "");
         }
         else
         {
-            _dlStatus.Text = $"{_dlInstrument.Symbol} · {days.Count} días · archivos diarios de {_dlInstrument.Exchange}";
+            _dlStatus.Text = $"{_dlInstrument.Symbol} · {days.Count} days · daily files from {_dlInstrument.Exchange}";
         }
     }
 
@@ -612,7 +612,7 @@ internal sealed class DataView : UserControl, IPage
         var have = _index.Where(s => s.FeedId == HistorySources.Databento).OrderBy(s => s.Symbol).ToList();
         _dbHave.Text = have.Count == 0
             ? "No Databento history downloaded yet."
-            : "Databento already stored: " + string.Join(" · ", have.Select(s => $"{s.Symbol} {s.Days.Count} día{(s.Days.Count == 1 ? "" : "s")} ({s.First:dd/MM/yyyy} → {s.Last:dd/MM/yyyy})"));
+            : "Databento already stored: " + string.Join(" · ", have.Select(s => $"{s.Symbol} {s.Days.Count} day{(s.Days.Count == 1 ? "" : "s")} ({s.First:dd/MM/yyyy} → {s.Last:dd/MM/yyyy})"));
     }
 
     private void Refresh()
@@ -626,7 +626,7 @@ internal sealed class DataView : UserControl, IPage
         {
             var text = Ui.V(2,
                 new TextBlock { Text = s.Symbol, FontWeight = FontWeight.SemiBold },
-                new TextBlock { Text = $"{FeedName(s.FeedId)} · {s.Days.Count} día{(s.Days.Count == 1 ? "" : "s")}", Classes = { "muted", "small" } });
+                new TextBlock { Text = $"{FeedName(s.FeedId)} · {s.Days.Count} day{(s.Days.Count == 1 ? "" : "s")}", Classes = { "muted", "small" } });
             var size = new TextBlock { Text = Size(s.Bytes), Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center };
             var row = new DockPanel { Margin = new Thickness(2, 4) };
             DockPanel.SetDock(size, Dock.Right);
@@ -684,7 +684,7 @@ internal sealed class DataView : UserControl, IPage
             return;
         }
 
-        if (!await ConfirmDialog.ShowAsync(_main, "Delete data", $"Deleting {days.Count} day(s) of {_selected.Symbol} ({Size(days.Sum(d => d.Bytes))}). This cannot be undone.", "Borrar", danger: true)) return;
+        if (!await ConfirmDialog.ShowAsync(_main, "Delete data", $"Deleting {days.Count} day(s) of {_selected.Symbol} ({Size(days.Sum(d => d.Bytes))}). This cannot be undone.", "Delete", danger: true)) return;
         HistoricalData.DeleteDays(AppPaths.Ticks, _selected.FeedId, _selected.Symbol, days.Select(d => d.Day));
         _status($"Deleted {days.Count} day(s) of {_selected.Symbol}");
         Refresh();
@@ -791,7 +791,7 @@ internal sealed class DataView : UserControl, IPage
                 if (fetched > 0)
                 {
                     var left = TimeSpan.FromTicks((DateTime.UtcNow - started).Ticks / fetched * (days.Count - i));
-                    eta = left.TotalMinutes < 1 ? " · falta menos de un minuto" : left.TotalHours < 1 ? $" · faltan ~{left.TotalMinutes:0} min" : $" · faltan ~{left.TotalHours:0.#} h";
+                    eta = left.TotalMinutes < 1 ? " · less than a minute remaining" : left.TotalHours < 1 ? $" · faltan ~{left.TotalMinutes:0} min" : $" · faltan ~{left.TotalHours:0.#} h";
                 }
 
                 string contract = rithmic != null ? $" ({TradingHub.Feeds.Rithmic.RithmicFeed.ContractNameOn(inst, day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))})" : "";
@@ -804,11 +804,11 @@ internal sealed class DataView : UserControl, IPage
                 if (list == null)
                 {
                     missing++;
-                    if (rithmic?.LastHistoryError is { } err) lastProblem = $"{day:dd/MM}{contract}: Rithmic respondió {err}";
+                    if (rithmic?.LastHistoryError is { } err) lastProblem = $"{day:dd/MM}{contract}: Rithmic returned {err}";
                     continue;
                 }
 
-                _dlStatus.Text = $"{inst.Symbol} {day:dd/MM/yyyy}{contract}: saving {list.Count:N0} operaciones…";
+                _dlStatus.Text = $"{inst.Symbol} {day:dd/MM/yyyy}{contract}: saving {list.Count:N0} trades…";
                 bool replace = downloader != null; // el día bajado por la API viene completo: reemplaza lo grabado en vivo
                 await Task.Run(() => HistoricalData.WriteDay(AppPaths.Ticks, inst, day, list, replace), ct);
                 trades += list.Count;
@@ -816,17 +816,17 @@ internal sealed class DataView : UserControl, IPage
                 _progress.Value = (i + 1.0) / days.Count;
             }
 
-            _dlStatus.Text = $"Completed: {done} día(s) descargados ({trades:N0} operaciones)" +
+            _dlStatus.Text = $"Completed: {done} day(s) downloaded ({trades:N0} trades)" +
                              (skipped > 0 ? $", {skipped} ya estaban" : "") +
-                             (missing > 0 ? rithmic != null ? $", {missing} sin operaciones en Rithmic (feriados o fuera de lo que guarda)" : downloader != null ? $", {missing} sin datos (feriados o fin de semana)" : $", {missing} todavía no publicados" : "") + "." +
+                             (missing > 0 ? rithmic != null ? $", {missing} without Rithmic trades (holidays or outside available history)" : downloader != null ? $", {missing} without data (holidays or weekends)" : $", {missing} not yet published" : "") + "." +
                              (lastProblem != null ? " " + lastProblem : "");
             if (rithmic?.MissingContracts is { Count: > 0 } gone)
-                _dlStatus.Text += $" Rithmic no devolvió nada de {string.Join(", ", gone)}: no guarda la historia de los contratos vencidos, así que con Rithmic se puede bajar desde el último vencimiento. Lo que bajes o grabes queda guardado en tu {Os.Device}, así que la historia se va juntando.";
+                _dlStatus.Text += $" Rithmic returned no data for {string.Join(", ", gone)}: may not retain expired-contract history. Available Rithmic coverage may start at the latest expiry. Downloads and recordings are saved on your {Os.Device}.";
             _status(_dlStatus.Text);
         }
         catch (OperationCanceledException)
         {
-            _dlStatus.Text = $"Cancelled. Saved {done} día(s).";
+            _dlStatus.Text = $"Cancelled. Saved {done} day(s).";
         }
         catch (Exception ex)
         {
