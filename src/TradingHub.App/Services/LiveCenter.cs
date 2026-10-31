@@ -627,7 +627,7 @@ internal sealed partial class LiveCenter
         return new OrderPlan(units, symbol, info.Symbol, micro, size > 0 && exact < step, micro && ratio > 0 ? units / ratio : 0);
     }
 
-    /// <summary>Cantidad per order que pide la estrategia (su parámetro Quantity, o 1).</summary>
+    /// <summary>Order quantity requested by the strategy (Quantity parameter, or 1).</summary>
     internal static decimal QuantityOf(IReadOnlyDictionary<string, object?> parameters) =>
         parameters.TryGetValue("Quantity", out var q) && Robustness.ToDouble(q) is { } d && d > 0 ? (decimal)d : 1;
 
