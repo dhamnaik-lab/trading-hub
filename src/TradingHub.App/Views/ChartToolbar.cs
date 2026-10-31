@@ -79,8 +79,8 @@ internal sealed class ChartToolbar : UserControl
         RebuildFavorites();
         _styleBox = new ChoiceButton<ChartStyle>(MaterialIconKind.ChartBoxOutline, new[]
         {
-            (ChartStyle.Candles, "Velas"),
-            (ChartStyle.Bars, "Barras"),
+            (ChartStyle.Candles, "Candlesticks"),
+            (ChartStyle.Bars, "OHLC bars"),
             (ChartStyle.Line, "Line"),
             (ChartStyle.HeikinAshi, "Heikin Ashi"),
             (ChartStyle.Footprint, "Footprint"),
@@ -88,11 +88,11 @@ internal sealed class ChartToolbar : UserControl
         _styleBox.Changed += SetStyle;
         _stepBox = new ChoiceButton<int>(MaterialIconKind.FormatLineSpacing,
             new[] { 0, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000 }.Select(n => (n, n == 0 ? "Auto" : $"{n} tick{(n > 1 ? "s" : "")}")),
-            "Ticks por fila del footprint (Auto = se adapta al zoom)");
+            "Footprint ticks per row (Auto adjusts to zoom)");
         _historyBox = new ChoiceButton<double>(MaterialIconKind.History,
             HistoryOptions.Select(h => (h.Hours, h.Label)),
-            "Cuánta historia cargar (hasta todo el historial). Se trae sola del exchange: lo reciente con ticks (footprint) y lo más viejo en velas de 1 minuto, en segundos. Lo bajado en Datos se usa con ticks.",
-            h => h == AllHistory ? "Todo" : HistoryOptions.First(x => x.Hours == h).Label);
+            "Choose history depth. Recent tick history is loaded for footprint; older bars may use one-minute candles. Downloaded history is reused when available.",
+            h => h == AllHistory ? "All" : HistoryOptions.First(x => x.Hours == h).Label);
         Content = Build(rightControls);
         Hook();
         RefreshLayoutBox();
@@ -125,8 +125,8 @@ internal sealed class ChartToolbar : UserControl
 
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Top };
         right.Children.Add(_styleBox);
-        right.Children.Add(Ui.Button("Indicadores", MaterialIconKind.FunctionVariant, () => _host.OpenIndicators(_chart)));
-        right.Children.Add(Ui.IconButton(MaterialIconKind.ViewColumnOutline, "Editar footprint (columnas)", () => _host.OpenFootprintEditor(_chart)));
+        right.Children.Add(Ui.Button("Indicators", MaterialIconKind.FunctionVariant, () => _host.OpenIndicators(_chart)));
+        right.Children.Add(Ui.IconButton(MaterialIconKind.ViewColumnOutline, "Edit footprint columns", () => _host.OpenFootprintEditor(_chart)));
         right.Children.Add(Ui.IconButton(MaterialIconKind.PaletteOutline, "Chart settings: background, candle and axis colors…", () => _host.OpenChartSettings(_chart)));
         Button? strategies = null;
         strategies = Ui.IconButton(MaterialIconKind.RobotOutline, "Chart strategies: mark historical/live entries and exits, visual-only or executing on an account", () => _host.ShowStrategyMenu(_chart, strategies!));
@@ -192,7 +192,7 @@ internal sealed class ChartToolbar : UserControl
             Width = 200,
         };
         var load = Ui.Button("Load", MaterialIconKind.Download, () => { }, "primary");
-        var panel = Ui.V(10, Ui.H3("Load history from"), picker, Ui.Faint("Se trae sola del exchange (velas de 1 minuto para lo viejo)."), load);
+        var panel = Ui.V(10, Ui.H3("Load history from"), picker, Ui.Faint("Older history may use exchange one-minute candles."), load);
         panel.Margin = new Thickness(14);
         var flyout = new Flyout { Content = panel, Placement = PlacementMode.BottomEdgeAlignedLeft };
         load.Click += (_, _) =>
