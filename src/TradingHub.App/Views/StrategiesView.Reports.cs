@@ -16,7 +16,7 @@ internal sealed partial class StrategiesView
     private readonly MarkdownView _reportView = new();
     private readonly TextBlock _reportEmpty = new()
     {
-        Text = "Todavía no hay reportes. En Código, activá «Laboratorio» en el panel de Claude y pedile que investigue y optimice una estrategia: al terminar guarda el reporte acá.",
+        Text = "No reports yet. Open Code, enable Laboratory in the Claude panel, and ask it to research and optimize a strategy. The finished report will appear here.",
         Classes = { "muted" },
         TextWrapping = TextWrapping.Wrap,
         MaxWidth = 460,
@@ -35,11 +35,11 @@ internal sealed partial class StrategiesView
         {
             var html = ReportExport.Export(_report);
             Windows.Shell.Open(html);
-            _status($"Informe exportado: {System.IO.Path.GetFileName(html)} (en el navegador: {(Os.IsWindows ? "Ctrl+P → Guardar como PDF" : "Archivo → Exportar como PDF")})");
+            _status($"Report exported: {System.IO.Path.GetFileName(html)} (en el navegador: {(Os.IsWindows ? "Ctrl+P → Save as PDF" : "File → Export as PDF")})");
         }
         catch (Exception ex)
         {
-            _status("No se pudo exportar: " + ex.Message);
+            _status("Could not export: " + ex.Message);
         }
     }
 
@@ -103,11 +103,11 @@ internal sealed partial class StrategiesView
             HorizontalAlignment = HorizontalAlignment.Center,
             BoxShadow = BoxShadows.Parse("0 6 28 0 #66000000"),
         };
-        var export = Ui.Button("Exportar PDF / HTML", MaterialIconKind.FileExportOutline, ExportReport, "primary");
+        var export = Ui.Button("Export PDF / HTML", MaterialIconKind.FileExportOutline, ExportReport, "primary");
         ToolTip.SetTip(export, Os.IsWindows
-            ? "Guarda el informe como HTML con los gráficos incluidos y lo abre en el navegador (desde ahí: Ctrl+P → Guardar como PDF, o Imprimir)"
-            : "Guarda el informe como HTML con los gráficos incluidos y lo abre en el navegador (desde ahí: Archivo → Exportar como PDF o Imprimir)");
-        var finder = Ui.Button(Os.IsWindows ? "Mostrar en el Explorador" : "Mostrar en Finder", MaterialIconKind.FolderOutline, () =>
+            ? "Saves the report as an HTML file with embedded charts and opens it in your browser (use Ctrl+P to print or save as PDF)."
+            : "Saves the report as HTML with embedded charts and opens it in your browser (use File → Export as PDF or Print).");
+        var finder = Ui.Button(Os.IsWindows ? "Show in File Explorer" : "Show in Finder", MaterialIconKind.FolderOutline, () =>
         {
             if (_report != null) Windows.Shell.Reveal(_report.Path);
         });
@@ -172,7 +172,7 @@ internal sealed partial class StrategiesView
         }
         catch (Exception ex)
         {
-            _reportView.Markdown = "No se pudo leer el reporte: " + ex.Message;
+            _reportView.Markdown = "Unable to read report: " + ex.Message;
         }
 
         _reportEmpty.IsVisible = false;
