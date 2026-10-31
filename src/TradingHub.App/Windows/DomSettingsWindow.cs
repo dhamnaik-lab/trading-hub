@@ -39,7 +39,7 @@ internal sealed class DomSettingsWindow : Window
     {
         var left = Ui.V(12,
             Ui.H2("Columnas"),
-            Ui.Faint("Marcá las que querés ver, ordenalas con las flechas y ajustá su ancho relativo.").Also(t => t.TextWrapping = Avalonia.Media.TextWrapping.Wrap),
+            Ui.Faint("Select the columns to show, reorder them using the arrows, and adjust their relative widths.").Also(t => t.TextWrapping = Avalonia.Media.TextWrapping.Wrap),
             new ScrollViewer { Content = _columns, MaxHeight = 460 });
 
         var right = Ui.V(12, Ui.H2("Aspecto y comportamiento"), _grid);
@@ -100,8 +100,8 @@ internal sealed class DomSettingsWindow : Window
                 c.Width = (double)(width.Value ?? 1);
                 _changed();
             };
-            var up = Ui.IconButton(MaterialIconKind.ChevronUp, "Subir (más a la izquierda)", () => Move(index, -1), 16);
-            var down = Ui.IconButton(MaterialIconKind.ChevronDown, "Bajar (más a la derecha)", () => Move(index, 1), 16);
+            var up = Ui.IconButton(MaterialIconKind.ChevronUp, "Move up (further left)", () => Move(index, -1), 16);
+            var down = Ui.IconButton(MaterialIconKind.ChevronDown, "Move down (further right)", () => Move(index, 1), 16);
             up.IsEnabled = i > 0;
             down.IsEnabled = i < cols.Count - 1;
 
