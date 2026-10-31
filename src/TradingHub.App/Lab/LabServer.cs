@@ -144,11 +144,11 @@ internal static class LabServer
 
         return new JsonArray
         {
-            Tool("list_strategies", "Lista las estrategias (archivos .cs) con su estado de compilación, sus parámetros (con los rangos de [Optimize]) y su calentamiento: " +
-                                    "los indicadores que crea en OnInit con su período (por ejemplo ATR(14), constantes del código incluidas) y las velas que tardan en estar listos " +
-                                    "(con los parámetros por defecto y, si cambia, con los máximos de [Optimize]). Cada ventana del walk-forward arranca sin historia y gasta esas primeras velas en calentar.", Schema()),
+            Tool("list_strategies", "Lists strategy C# files with compile status, parameters (including [Optimize] ranges), and indicator warm-up requirements: " +
+                                    "indicators created in OnInit, including periods (e.g. ATR(14)) and bars until they are ready " +
+                                    "(for defaults and [Optimize] maxima if different). Every walk-forward window begins without history and uses initial bars for warm-up.", Schema()),
             Tool("compile_strategy", "Compiles a strategy and returns errors (line/message), parameters and warm-up requirements (indicators, periods and required bars).", Schema(("file", "string", "Filename without .cs", true))),
-            Tool("chart_snapshot", "Mira el gráfico: corre la estrategia en un rango y guarda una imagen con las velas, sus entradas y salidas, sus dibujos y sus líneas. Devuelve la ruta de la imagen (miralo con Read) y, con hora local, las velas del rango (con los valores de las líneas de la estrategia), las operaciones, los dibujos y su registro. Sirve para entender por qué entró o salió a tal hora.",
+            Tool("chart_snapshot", "Runs the strategy over a selected range and saves a chart image with bars, entries, exits, drawings and strategy plots. Returns the image path (open with Read), time-local bars with plotted values, trades, drawings and log, to investigate entry and exit timing.",
                 Schema(("file", "string", "Strategy filename without .cs", true), ("feed", "string", "Connection ID (as returned by list_data)", true), ("symbol", "string", "Symbol", true),
                     ("period", "string", "Period: M1, M5, M15, H1…", true), ("from", "string", "From, local time: YYYY-MM-DD HH:mm (or date only)", true),
                     ("to", "string", "To, local time: YYYY-MM-DD HH:mm (or date only = full day)", true),
@@ -174,10 +174,10 @@ internal static class LabServer
                     ("top", "integer", "Number of combinations to return (10)", false),
                     ("max_combinations", "integer", "Maximum combinations (5000)", false),
                 }).ToArray())),
-            Tool("run_walk_forward", "Walk-forward: en cada ventana elige parámetros mirando solo esa ventana y los prueba fuera de muestra en la siguiente. Corre cada combinación una sola vez " +
-                                     "sobre toda la historia (ticks repetidos juntados, indicadores calientes como en vivo) y recorta por ventana, busca con la grilla entera si hay ≤ 300 combinaciones " +
-                                     "o con optimización bayesiana (TPE) si hay más, elige la mejor meseta (no el mejor pico) y mide el sobreajuste: PBO y caminos de la validación cruzada " +
-                                     "combinatoria purgada (CPCV). Devuelve el resultado encadenado fuera de muestra. Si lo pedís igual mientras ya corre, espera al que corre (no lo relances).",
+            Tool("run_walk_forward", "Walk-forward optimizes parameters on each in-sample window, then tests the choice on the following out-of-sample window. Each combination runs once " +
+                                     "on the full history (compressing repeated ticks and warming indicators as for live) and is sliced into windows; grid search applies with up to 300 combinations " +
+                                     "or Bayesian TPE search for larger spaces. It favors parameter plateaus over isolated peaks and measures overfitting with PBO and purged combinatorial " +
+                                     "cross-validation (CPCV) paths. Returns stitched out-of-sample results; identical concurrent requests wait for the existing run.",
                 Schema(optimizeProps.Concat(new[]
                 {
                     ("in_sample_days", "integer", "Days per optimization window", true),
@@ -195,13 +195,13 @@ internal static class LabServer
             Tool("suggest_portfolio", "Find a recent-backtest combination with low correlation and improved portfolio Sharpe.",
                 Schema(("max_components", "integer", "Maximum strategies (5)", false), ("max_correlation", "number", "Maximum pairwise strategy correlation (0.5)", false),
                     ("capital", "number", "Portfolio capital (10000)", false))),
-            Tool("live_portfolio", "Cartera en vivo (solo lectura): cada estrategia que opera (o operó) con algoritmos en Trading Hub, con sus parámetros en vivo, tamaño actual, posición, resultado, operaciones, acierto, profit factor (total y de las últimas 20), drawdown actual y máximo, y sus últimas operaciones (con precios y cantidad). " +
-                                   "Dice en qué contrato ejecuta cada una (por ejemplo MNQ para una estrategia del NQ): cantidades y resultado salen en ese contrato.",
+            Tool("live_portfolio", "Read-only live portfolio: each currently or previously active Trading Hub strategy, current parameters and sizing, position, P&L, trade statistics, full/recent profit factor, current and maximum drawdown, and recent fills (with prices and quantities). " +
+                                   "Includes the execution contract (e.g. MNQ for an NQ strategy); quantities and P&L are reported for that contract.",
                 Schema(("recent_trades", "integer", "Recent trades to include per strategy (10)", false))),
             Tool("propose_sizing", "Propose live strategy size adjustments. Does NOT apply changes; proposals await user approval or rejection in Live → Proposals.",
                 Schema(("summary", "string", "Analysis summary in 1–3 lines", true),
                     ("items", "array", "Array of {key (from live_portfolio), proposed_size (multiplier: 1 = normal, 0 = pause, max 3), reason}", true))),
-            Tool("save_report", "Arma y guarda el INFORME PROFESIONAL (lo genera Trading Hub con todas las métricas, tablas y gráficos a partir de las corridas: resumen, datos y supuestos, rentabilidad, operaciones, riesgo, largos/cortos, mensual, por hora y día, drawdowns, optimización con sensibilidad, walk-forward, Monte Carlo y portafolio). Vos aportás el veredicto y los textos de análisis. Se ve en Backtesting → Reportes.",
+            Tool("save_report", "Builds and saves a professional report using saved runs: summary, assumptions, performance, trades, risk, long/short results, monthly/hourly/daily tables, drawdowns, optimization sensitivity, walk-forward, Monte Carlo and portfolio. Provide a verdict and explanatory analysis. View under Backtesting → Reports.",
                 Schema(("title", "string", "Short report title", true),
                     ("verdict", "string", "ganadora, prometedora, perdedora o descartada", true),
                     ("file", "string", "Strategy under review (without .cs); omitted run IDs use latest runs", false),
@@ -377,9 +377,9 @@ internal static class LabServer
                 max[p.Name] = opt.Max;
         if (max.Count > 0 && StrategyWarmup.Measure(t, max) is { Error: null } wm && wm.Bars != w.Bars) o["bars_at_optimize_max"] = wm.Bars;
         // «bars» no es el calentamiento completo: se lo aclara siempre al agente
-        var note = "«bars» cuenta solo los indicadores que la estrategia crea en OnInit: no incluye lo que lea a mano de las velas (Bars[n]) " +
-                   "ni los indicadores que cree más tarde. Si el código hace eso, sumale esas velas.";
-        if (!w.Complete) note = (w.Error != null ? $"No se pudo medir del todo ({w.Error}). " : $"A las {StrategyWarmup.MaxBars} velas todavía no estaban listos. ") + note;
+        var note = "'bars' only counts indicators created in OnInit. It excludes manual historical bar access (Bars[n]) " +
+                   "and indicators created later. Increase warm-up bars accordingly.";
+        if (!w.Complete) note = (w.Error != null ? $"Could not measure completely ({w.Error}). " : $"Indicators were not ready after {StrategyWarmup.MaxBars} bars. ") + note;
         o["note"] = note;
         return o;
     }
