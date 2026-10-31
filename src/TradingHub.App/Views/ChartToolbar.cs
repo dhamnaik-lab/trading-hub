@@ -44,7 +44,7 @@ internal sealed class ChartToolbar : UserControl
         ("Horas", new[] { "H1", "H2", "H4", "H6", "H12" }),
         ("Days", new[] { "Daily", "Weekly", "Monthly" }),
         ("Ticks", new[] { "Tick100", "Tick250", "Tick500", "Tick1000" }),
-        ("Volumen", new[] { "Volume100", "Volume500", "Volume1000" }),
+        ("Volume", new[] { "Volume100", "Volume500", "Volume1000" }),
         ("Rango y otros", new[] { "Range10", "Range20", "Delta50", "Delta100", "Renko10" }),
     };
 
@@ -57,7 +57,7 @@ internal sealed class ChartToolbar : UserControl
     {
         (0.5, "30 min"), (1, "1 h"), (1.5, "1,5 h"), (3, "3 h"), (6, "6 h"), (12, "12 h"), (24, "1 day"), (72, "3 days"), (168, "7 days"),
         (720, "30 days"), (2160, "90 days"), (4380, "6 meses"), (8760, "1 year"), (17520, "2 years"), (43800, "5 years"),
-        (AllHistory, "Todo el historial"), (CustomHistory, "Desde una fecha…"),
+        (AllHistory, "All history"), (CustomHistory, "From a date…"),
     };
 
     public ChartToolbar(TradingView host, bool floating, params Control[] rightControls)
