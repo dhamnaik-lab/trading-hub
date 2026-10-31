@@ -139,7 +139,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
     /// <summary>Pausada: no abre ni agranda posiciones; si tiene una abierta, la sigue gestionando hasta cerrarla.</summary>
     public bool Paused { get; private set; }
 
-    /// <summary>Tocó la pérdida máxima del día: no abre más hasta la próxima sesión.</summary>
+    /// <summary>Maximum daily loss reached: block new entries until the next session.</summary>
     public bool DailyLimitActive => _limitDay != default && _limitDay == _sessionDay;
 
     /// <summary>Se detuvo y está esperando que se ejecute el cierre de su posición.</summary>
@@ -237,7 +237,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         _strategy.MinVolatilityRank = Math.Clamp(minRank, 0, 100);
         _strategy.MaxVolatilityRank = Math.Clamp(Math.Max(maxRank, minRank), 0, 100);
         string what = Robustness.DescribeFilter(filter, _strategy.MinVolatilityRank, _strategy.MaxVolatilityRank);
-        Log($"Condición de mercado: {(what.Length > 0 ? "opera " + what : "opera en cualquier condición")} · ahora {_strategy.Context.Describe()}");
+        Log($"Market condition: {(what.Length > 0 ? "trades under " + what : "trades under any condition")} · now {_strategy.Context.Describe()}");
         Changed?.Invoke();
     }
 
@@ -271,7 +271,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         foreach (var b in _bars.All) tracker.Add(b.Time, b.Close);
         _strategy.Context = tracker;
         ContextDays = (int)Math.Round((before[^1].Time - before[0].Time).TotalDays);
-        Log($"Contexto del mercado con {ContextDays} días de historia por hora: {tracker.Describe()}");
+        Log($"Market context with {ContextDays} days of hourly history: {tracker.Describe()}");
         Changed?.Invoke();
     }
 
@@ -300,7 +300,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         HookAccount(true);
         IsRunning = true;
         StartedUtc = DateTime.UtcNow;
-        Log($"Iniciada en {_account.Name} con {WarmupBars} velas de calentamiento{(SizeMultiplier != 1 ? $" · tamaño ×{Qty(SizeMultiplier)}" : "")}" +
+        Log($"Started on {_account.Name} with {WarmupBars} warm-up bars{(SizeMultiplier != 1 ? $" · size ×{Qty(SizeMultiplier)}" : "")}" +
             (CrossExecution ? $" · ejecuta en {ExecInstrument.Symbol} (1 {_data.Instrument.Symbol} = {Qty(ExecRatio)} {ExecInstrument.Symbol})" : ""));
         if (Ledger.Position != 0) CheckInheritedPosition(initial: true);
         Changed?.Invoke();
@@ -320,7 +320,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         }
         catch (Exception ex)
         {
-            Log("Error en OnStop: " + ex.Message);
+            Log("OnStop error: " + ex.Message);
         }
 
         IsRunning = false;
@@ -335,7 +335,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         }
 
         if (!_closing) HookAccount(false);
-        Log(flatten ? "Detenida y posición cerrada" : "Detenida");
+        Log(flatten ? "Stopped and position closed" : "Stopped");
         Changed?.Invoke();
     }
 
@@ -353,9 +353,9 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         if (paused)
         {
             foreach (var o in _orders.Where(o => !o.IsProtective && Opens(o.Side)).ToList()) Cancel(o);
-            Log("Pausada: no abre operaciones nuevas (si tiene una posición, la sigue gestionando hasta cerrarla)");
+            Log("Paused: no new entries (existing positions remain managed until closed)");
         }
-        else Log("Reanudada: vuelve a operar");
+        else Log("Resumed: trading enabled");
 
         Changed?.Invoke();
     }
@@ -476,7 +476,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
             {
                 _limitDay = default;
                 StopReason = null;
-                Log("Nueva sesión: vuelve a operar después del límite de pérdida del día");
+                Log("New session: trading resumed after the daily loss limit");
             }
         }
 
@@ -523,7 +523,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         if (covered == Math.Abs(own))
         {
             _awaitingAccount = false;
-            Log($"Sigue con su posición abierta: {(own > 0 ? "largo" : "corto")} {Qty(Math.Abs(own))} @ {_data.Instrument.FormatPrice(Ledger.AveragePrice)}");
+            Log($"Continuing to manage an open position: {(own > 0 ? "long" : "short")} {Qty(Math.Abs(own))} @ {_data.Instrument.FormatPrice(Ledger.AveragePrice)}");
             if (ProtectOnStart) ProtectInherited();
             return;
         }
@@ -534,15 +534,15 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
             _awaitingAccount = true;
             _awaitUntil = DateTime.UtcNow.AddSeconds(45);
             _awaitLogged = false;
-            Log($"Tenía una posición ({(own > 0 ? "largo" : "corto")} {Qty(Math.Abs(own))}): espera que {_account.Name} la confirme antes de operar");
+            Log($"Previously held a position ({(own > 0 ? "long" : "short")} {Qty(Math.Abs(own))}): waiting for {_account.Name} confirmation before placing orders");
             return;
         }
 
         if (_awaitingAccount && DateTime.UtcNow < _awaitUntil) return;
         _awaitingAccount = false;
         decimal excess = Math.Abs(own) - covered;
-        BookSynthetic(own > 0 ? -excess : excess, $"La cuenta no tiene {(covered > 0 ? "toda " : "")}la posición que la estrategia tenía ({(own > 0 ? "largo" : "corto")} {Qty(Math.Abs(own))}): " +
-                                                   $"se cerró {Qty(excess)} en su contabilidad al último precio");
+        BookSynthetic(own > 0 ? -excess : excess, $"Account does not have {(covered > 0 ? "all of " : "")}the strategy's recorded position ({(own > 0 ? "long" : "short")} {Qty(Math.Abs(own))}): " +
+                                                   $"closed {Qty(excess)} in the strategy ledger at last price");
         _lastPos = Ledger.Position;
         if (ProtectOnStart && Ledger.Position != 0) ProtectInherited();
     }
@@ -559,7 +559,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
             already = _account.ActiveOrders.Any(o => o.Comment.StartsWith(prefix, StringComparison.Ordinal) && o.Type is OrderTypes.Stop or OrderTypes.Limit && !CanceledOrders.Contains(o.Id));
         if (already)
         {
-            Log("Ya hay órdenes de esta estrategia en la cuenta: no se ponen stop ni objetivo nuevos (revisalas en el Chart Trader)");
+            Log("Strategy orders already exist in this account; no duplicate stop or targets will be placed (review in Chart Trader)");
             return;
         }
 
@@ -670,7 +670,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         decimal closable = Math.Sign(acc) == Math.Sign(own) ? Math.Min(Math.Abs(acc), Math.Abs(own)) : 0;
         decimal excess = Math.Abs(own) - closable;
         if (excess > 0)
-            BookSynthetic(own > 0 ? -excess : excess, $"La cuenta no tenía {Qty(excess)} de la posición de la estrategia: se cerró en su contabilidad al último precio");
+            BookSynthetic(own > 0 ? -excess : excess, $"Account does not have {Qty(excess)} units of the strategy position: closed them in the strategy ledger at last price");
         if (closable <= 0) return;
         var so = new StrategyOrder { Id = _nextId++, Side = own > 0 ? OrderSide.Sell : OrderSide.Buy, Type = StrategyOrderType.Market, Quantity = closable, Name = why, Time = Time, IsProtective = true };
         Place(so, closable);
@@ -799,12 +799,12 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
 
     private string Describe(StrategyOrder so)
     {
-        string type = so.Type switch { StrategyOrderType.Market => "a mercado", StrategyOrderType.Limit => "límite", _ => "stop" };
+        string type = so.Type switch { StrategyOrderType.Market => "at market", StrategyOrderType.Limit => "limit", _ => "stop" };
         string price = so.Type == StrategyOrderType.Market ? "" : " @ " + _data.Instrument.FormatPrice(so.Price);
         string scale = !so.IsProtective && (so.LiveQuantity != so.Quantity || CrossExecution)
-            ? $" (estrategia {Qty(so.Quantity)} {_data.Instrument.Symbol} × tamaño {Qty(SizeMultiplier)}{(CrossExecution ? $" = {Qty(so.LiveQuantity)} {ExecInstrument.Symbol}, micro" : "")})"
+            ? $" (strategy {Qty(so.Quantity)} {_data.Instrument.Symbol} × size {Qty(SizeMultiplier)}{(CrossExecution ? $" = {Qty(so.LiveQuantity)} {ExecInstrument.Symbol}, micro" : "")})"
             : "";
-        return $"{so.Name}: {(so.Side == OrderSide.Buy ? "compra" : "venta")} {type} {Qty(so.LiveQuantity)} {ExecInstrument.Symbol}{price}{scale}";
+        return $"{so.Name}: {(so.Side == OrderSide.Buy ? "buy" : "sell")} {type} {Qty(so.LiveQuantity)} {ExecInstrument.Symbol}{price}{scale}";
     }
 
     /// <summary>El aviso de una orden ejecutada: «Cruce de medias compró 5 MNQ a 20.150,25 (micro: equivale a 0,5 NQ)».</summary>
@@ -812,9 +812,9 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
     {
         decimal qty = filled > 0 ? filled : so.LiveQuantity;
         string what = so.IsProtective ? $" ({so.Name.ToLowerInvariant()})" : "";
-        string micro = CrossExecution && ExecRatio > 0 ? $" · micro: equivale a {Qty(qty / ExecRatio)} {_data.Instrument.Symbol}" : "";
+        string micro = CrossExecution && ExecRatio > 0 ? $" · micro: equivalent to {Qty(qty / ExecRatio)} {_data.Instrument.Symbol}" : "";
         decimal price = _account.LastPrice > 0 ? _account.LastPrice : LastPrice > 0 ? LastPrice : _data.LastPrice;
-        return $"«{StrategyName}» {(so.Side == OrderSide.Buy ? "compró" : "vendió")} {Qty(qty)} {ExecInstrument.Symbol} a {ExecInstrument.FormatPrice(price)}{what} en {_account.Name}{micro}";
+        return $"«{StrategyName}» {(so.Side == OrderSide.Buy ? "bought" : "sold")} {Qty(qty)} {ExecInstrument.Symbol} at {ExecInstrument.FormatPrice(price)}{what} on {_account.Name}{micro}";
     }
 
     private static string Qty(decimal q) => q.ToString("0.########", Inv);
@@ -847,9 +847,9 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         if (MaxDrawdown > 0 && CurrentDrawdown >= MaxDrawdown)
         {
             decimal dd = CurrentDrawdown;
-            StopReason = $"Tocó el drawdown máximo ({Money(-dd)}; límite {Money(-MaxDrawdown)})";
-            string msg = $"{StrategyName}: {StopReason}. Se detuvo{(CloseOnLimit ? " y cierra su posición" : "")}.";
-            Log(StopReason + (CloseOnLimit ? ": se detiene y cierra la posición" : ": se detiene (la posición queda abierta)"));
+            StopReason = $"Maximum drawdown reached ({Money(-dd)}; threshold {Money(-MaxDrawdown)})";
+            string msg = $"{StrategyName}: {StopReason}. Stopped{(CloseOnLimit ? " and closes its position" : "")}.";
+            Log(StopReason + (CloseOnLimit ? ": stops and closes the position" : ": stops (position remains open)"));
             Stop(CloseOnLimit);
             LimitHit?.Invoke(this, msg);
             return;
@@ -860,8 +860,8 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
             decimal today = TodayPnL;
             if (today > -MaxDailyLoss) return;
             _limitDay = _sessionDay;
-            StopReason = $"Tocó la pérdida máxima del día ({Money(today)}; límite {Money(-MaxDailyLoss)})";
-            Log(StopReason + ": no abre más hasta la próxima sesión" + (CloseOnLimit ? " y cierra la posición" : ""));
+            StopReason = $"Maximum daily loss reached ({Money(today)}; threshold {Money(-MaxDailyLoss)})";
+            Log(StopReason + ": no new entries until the next session" + (CloseOnLimit ? " and closes the position" : ""));
             foreach (var o in _orders.Where(o => !o.IsProtective).ToList()) Cancel(o);
             if (CloseOnLimit)
             {
@@ -870,7 +870,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
                 SendClose("Límite del día");
             }
 
-            LimitHit?.Invoke(this, $"{StrategyName}: {StopReason}. No abre más hasta la próxima sesión{(CloseOnLimit ? " y cerró su posición" : "")}.");
+            LimitHit?.Invoke(this, $"{StrategyName}: {StopReason}. No new entries until the next session{(CloseOnLimit ? " and closed its position" : "")}.");
             Changed?.Invoke();
         }
     }
@@ -914,7 +914,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
 
         if (_awaitingAccount)
         {
-            if (!_awaitLogged) Log($"Esperando que {_account.Name} confirme la posición heredada: no se envió {name}");
+            if (!_awaitLogged) Log($"Waiting for {_account.Name} to confirm inherited position: {name} was not sent");
             _awaitLogged = true;
             so.State = StrategyOrderState.Canceled;
             return so;
@@ -927,7 +927,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
             // solo se achica la posición (una vuelta se recorta a cerrar)
             if (Opens(side))
             {
-                Log($"{(Paused ? "Pausada" : "Límite del día tocado")}: no se envió {name}");
+                Log($"{(Paused ? "Paused" : "Daily limit reached")}: {name} was not sent");
                 so.State = StrategyOrderState.Canceled;
                 return so;
             }
@@ -939,7 +939,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         decimal delta = Target(_virtual + sign * q) - own;
         if (delta == 0 || Math.Sign(delta) != Math.Sign(sign))
         {
-            Log(SizeMultiplier <= 0 ? $"Tamaño en cero: no se envió {name}" : $"Con el tamaño ×{Qty(SizeMultiplier)} la orden {name} queda en cero");
+            Log(SizeMultiplier <= 0 ? $"Size is zero: {name} was not sent" : $"At size ×{Qty(SizeMultiplier)}, order {name} rounds to zero");
             so.State = StrategyOrderState.Canceled;
             return so;
         }
@@ -948,7 +948,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         bool reduces = Math.Abs(after) < Math.Abs(own) && (after == 0 || Math.Sign(after) == Math.Sign(own));
         if (!reduces && Guard?.Check(this, side, Math.Abs(delta), after) is { } why)
         {
-            Log($"Limitador de riesgo: {why}. No se envió {name}");
+            Log($"Risk guard: {why}. {name} was not sent");
             so.State = StrategyOrderState.Canceled;
             GuardBlocked?.Invoke(this, why);
             return so;

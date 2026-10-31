@@ -133,7 +133,7 @@ public class ContextTests
         Assert.True(f!.Regime is RegimeFilter.RangeOnly or RegimeFilter.NoTrend, $"régimen {f.Regime}");
         Assert.True(f.MaxVolatilityRank <= 66, $"volatilidad hasta {f.MaxVolatilityRank}");
         Assert.True(f.ProfitFactor >= 1.5m && f.DroppedNet < 0 && f.Trades >= 20);
-        Assert.Contains("rango", f.Description);
+        Assert.Contains("range", f.Description);
 
         // si gana parejo en todos los contextos, no hay nada que filtrar
         var even = trades.Select((t, i) => t with { Pnl = i % 3 == 0 ? -50 : 100 }).ToList();
@@ -237,7 +237,7 @@ public class ContextTests
         var f = Robustness.SuggestContextFilter(trades);
         Assert.NotNull(f);
         Assert.Equal(RegimeFilter.UpTrendOnly, f!.Regime);
-        Assert.Contains("tendencia alcista", f.Description);
+        Assert.Contains("uptrend", f.Description);
 
         var regimes = Robustness.Regimes(trades);
         var up = regimes.Single(r => r.Name == "tendencia alcista");
@@ -267,10 +267,10 @@ public class ContextTests
         Assert.False(MarketContextTracker.RegimeAllows(RegimeFilter.RangeOrUpTrend, MarketRegime.Trend, -1));
         Assert.False(MarketContextTracker.RegimeAllows(RegimeFilter.RangeOrUpTrend, MarketRegime.Mixed, 1));
         Assert.True(MarketContextTracker.RegimeAllows(RegimeFilter.MixedOnly, MarketRegime.Unknown, null)); // sin datos no bloquea
-        Assert.Equal("rango o tendencia alcista", Robustness.DescribeRegimes(RegimeSet.Range | RegimeSet.UpTrend));
-        Assert.Equal("todo menos tendencia bajista", Robustness.DescribeRegimes(RegimeSet.Range | RegimeSet.Mixed | RegimeSet.UpTrend));
-        Assert.Equal("solo en mixto", Robustness.DescribeRegimes(RegimeSet.Mixed));
-        Assert.Equal("solo en rango, volatilidad baja", Robustness.DescribeFilter(RegimeFilter.RangeOnly, 0, 33));
+        Assert.Equal("range or uptrend", Robustness.DescribeRegimes(RegimeSet.Range | RegimeSet.UpTrend));
+        Assert.Equal("everything except downtrend", Robustness.DescribeRegimes(RegimeSet.Range | RegimeSet.Mixed | RegimeSet.UpTrend));
+        Assert.Equal("only mixed", Robustness.DescribeRegimes(RegimeSet.Mixed));
+        Assert.Equal("only range, low volatility", Robustness.DescribeFilter(RegimeFilter.RangeOnly, 0, 33));
     }
 
     [Fact]
