@@ -94,7 +94,7 @@ internal sealed class ChartSettingsWindow : Window
             ColorRow("Desequilibrio vendedor", nameof(ChartTheme.ImbalanceBid)),
             ColorRow("Delta positivo", nameof(ChartTheme.DeltaPositiveText)),
             ColorRow("Delta negativo", nameof(ChartTheme.DeltaNegativeText)),
-            ColorRow("Perfil de volumen", nameof(ChartTheme.ProfileBar)),
+            ColorRow("Volume profile", nameof(ChartTheme.ProfileBar)),
             Note("These colors affect the whole chart. Each footprint column (delta, volume, bid/ask ladder, cells, or profile) also has its own colors and text settings in the footprint editor."));
 
         // grosor y trazo de la línea entrada → salida (las operaciones propias y las de las estrategias)
@@ -153,7 +153,7 @@ internal sealed class ChartSettingsWindow : Window
         body.Children.Add(head);
         body.Children.Add(tabs);
 
-        var reset = Ui.Button("Restablecer todo", MaterialIconKind.Restore, () =>
+        var reset = Ui.Button("Reset all", MaterialIconKind.Restore, () =>
         {
             _model.Settings.Colors = null;
             Changed();
@@ -289,7 +289,7 @@ internal sealed class ChartSettingsWindow : Window
             uint c = Get(property);
             Set(property, (c & 0x00FFFFFF) | ((uint)Math.Round(opacity.Value) << 24));
         };
-        var reset = SmallButton("Restablecer", () => Set(property, null));
+        var reset = SmallButton("Reset", () => Set(property, null));
         flyout.Content = Ui.V(10, Ui.H3(label), palette, Ui.H(8, new TextBlock { Text = "Code", Classes = { "muted" }, VerticalAlignment = VerticalAlignment.Center }, hex),
             Ui.H(8, new TextBlock { Text = "Opacidad", Classes = { "muted" }, VerticalAlignment = VerticalAlignment.Center }, opacity, opacityText), reset).Also(v => v.Margin = new Thickness(12));
 
