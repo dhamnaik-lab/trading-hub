@@ -28,9 +28,9 @@ internal sealed partial class LiveView
 
     private Control BuildMarketPage()
     {
-        var intro = Ui.Faint("Cómo está cada mercado con la misma medida que usan los filtros de contexto de las estrategias: la tendencia de las últimas 24 horas " +
-                             "(rango, mixto o tendencia alcista o bajista) y la volatilidad comparada con la del último mes. Debajo de cada mercado, qué estrategias " +
-                             "operan con eso; al final, en qué contextos opera cada una.");
+        var intro = Ui.Faint("Market conditions use the same inputs as strategy entry filters: trend over the last 24 hours " +
+                             "(range, mixed, uptrend or downtrend) and volatility relative to the previous month. For each market, the strategies " +
+                             "eligible to trade are shown, along with each strategy's allowed conditions.");
         intro.TextWrapping = TextWrapping.Wrap;
         var root = Ui.V(16, intro, _marketKpis, _marketCards, _marketMatrix, _marketStamp);
         root.Margin = new Thickness(24, 18, 24, 28);
@@ -116,10 +116,10 @@ internal sealed partial class LiveView
     {
         var r = e.Runner!;
         var s = r.StrategyInstance;
-        if (r.DailyLimitActive) return ("Frenada por hoy (límite de riesgo)", Ui.Warn, false);
+        if (r.DailyLimitActive) return ("Stopped for today (risk limit)", Ui.Warn, false);
         if (e.Paused) return ("Pausada", Ui.Warn, false);
         if (!HasFilter(s)) return ("Opera: no tiene filtro de contexto", Ui.Up, true);
-        if (s.Regime == MarketRegime.Unknown) return ("Opera: todavía sin datos de contexto", Ui.Text1, true);
+        if (s.Regime == MarketRegime.Unknown) return ("Trading: market context not yet available", Ui.Text1, true);
         string now = MarketContextTracker.Label(s.Regime, s.MarketDirection).ToLowerInvariant() + (s.VolatilityRank is { } vr ? $", volatilidad percentil {vr:0}" : "");
         return s.ContextAllowsEntries ? ($"Opera: el contexto le sirve ({now})", Ui.Up, true) : ($"En pausa por contexto: ahora hay {now}", Ui.Warn, false);
     }
@@ -172,16 +172,16 @@ internal sealed partial class LiveView
         int byContext = running.Count(e => !e.Paused && !e.Runner!.DailyLimitActive && HasFilter(e.Runner.StrategyInstance) && !e.Runner.StrategyInstance.ContextAllowsEntries);
         int filtered = running.Count(e => HasFilter(e.Runner!.StrategyInstance));
         _marketKpis.Children.Add(Kpi("Operan ahora", trading.ToString(Inv), $"de {running.Count} en vivo", trading > 0 ? Ui.Up : null,
-            tip: "Estrategias corriendo que pueden abrir operaciones con el contexto de ahora"));
-        _marketKpis.Children.Add(Kpi("En pausa por contexto", byContext.ToString(Inv), "esperan su condición de mercado", byContext > 0 ? Ui.Warn : null,
-            tip: "Tienen un filtro de contexto y el mercado de ahora no es el suyo: no abren nada nuevo (si tienen una posición abierta, la siguen gestionando)"));
+            tip: "Running strategies eligible to open positions under current market conditions"));
+        _marketKpis.Children.Add(Kpi("En pausa por contexto", byContext.ToString(Inv), "waiting for market conditions", byContext > 0 ? Ui.Warn : null,
+            tip: "Current market conditions do not match their filters: no new entries, but existing positions remain managed."));
         _marketKpis.Children.Add(Kpi("Con filtro de contexto", filtered.ToString(Inv), "operan solo en ciertos mercados", null,
             tip: "Estrategias que solo abren en ciertos contextos (por ejemplo, solo en rango o con volatilidad baja)"));
 
         _marketCards.Children.Clear();
         if (markets.Count == 0)
         {
-            _marketCards.Children.Add(Ui.Card(Ui.Faint("No hay estrategias en vivo todavía: cuando haya, aparecen acá sus mercados con su condición."), 16).Also(b => b.Width = 740));
+            _marketCards.Children.Add(Ui.Card(Ui.Faint("No live strategies yet. Their markets and conditions will appear here when started."), 16).Also(b => b.Width = 740));
         }
 
         foreach (var m in markets)
@@ -193,8 +193,8 @@ internal sealed partial class LiveView
 
         _marketMatrix.Content = running.Count > 0 ? ContextMatrix(running) : null;
         _marketStamp.Text = _conditionsLoaded
-            ? $"Actualizado {_conditionsAt.ToLocalTime():HH:mm:ss} · se recalcula cada 30 s con los cierres por hora del último mes (la historia guardada y los datos en vivo de hoy)."
-            : "Calculando con la historia guardada del último mes…";
+            ? $"Updated {_conditionsAt.ToLocalTime():HH:mm:ss} · recalculated every 30 seconds using hourly closes from the previous month (saved history and data from vivo de hoy)."
+            : "Calculating from the previous month's saved history…";
     }
 
     private Control MarketCard(MarketRef m, MarketCondition? c, List<LiveEntry> strategies)
@@ -202,7 +202,7 @@ internal sealed partial class LiveView
         var (_, symbol) = MarketInfo.Split(m.Key);
         var title = Ui.H(8,
             new TextBlock { Text = symbol, FontSize = 16, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center },
-            new TextBlock { Text = FeedLabel(m.Feed) + (m.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) ? "" : $" · datos de {m.Symbol}"), Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center });
+            new TextBlock { Text = FeedLabel(m.Feed) + (m.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) ? "" : $" · {m.Symbol} data"), Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center });
         var head = new DockPanel();
         if (c != null)
         {
@@ -223,14 +223,14 @@ internal sealed partial class LiveView
         var body = Ui.V(14, head);
         if (c == null)
         {
-            body.Children.Add(Ui.Faint(_conditionsLoaded ? "Sin historia guardada de este mercado todavía: se va a ver cuando haya datos (al abrir su gráfico o al bajar historia)." : "Calculando…"));
+            body.Children.Add(Ui.Faint(_conditionsLoaded ? "No saved history for this market. Conditions appear after chart data is recorded or downloaded." : "Calculando…"));
         }
         else
         {
             body.Children.Add(Ui.H(28, RegimeBlock(c), VolatilityBlock(c)).Also(p => p.VerticalAlignment = VerticalAlignment.Top));
             body.Children.Add(Timeline(c));
             if (DateTime.UtcNow - c.DataUntilUtc > TimeSpan.FromMinutes(20))
-                body.Children.Add(Ui.Faint($"Los datos llegan hasta el {c.DataUntilUtc.ToLocalTime():dd/MM HH:mm} (mercado cerrado o sin grabar desde entonces): la condición es la de ese momento."));
+                body.Children.Add(Ui.Faint($"Data is available until {c.DataUntilUtc.ToLocalTime():dd/MM HH:mm} (market closed or no data recorded since then); conditions reflect that timestamp."));
         }
 
         body.Children.Add(StrategiesOf(strategies));
@@ -243,16 +243,16 @@ internal sealed partial class LiveView
         var color = RegimeBrush(c.Regime, c.Direction);
         var label = Ui.H(8, Ui.Icon(RegimeIcon(c.Regime, c.Direction), 22, color),
             new TextBlock { Text = c.RegimeLabel, FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = color, VerticalAlignment = VerticalAlignment.Center });
-        string since = c.RegimeHours >= 47 ? "hace más de 48 h" : c.RegimeHours <= 1 ? "desde la última hora" : $"hace {c.RegimeHours} h";
+        string since = c.RegimeHours >= 47 ? "more than 48 hours ago" : c.RegimeHours <= 1 ? "since the previous hour" : $"hace {c.RegimeHours} h";
         var detail = new TextBlock
         {
-            Text = c.Trend is { } t ? $"Eficiencia de la tendencia {t.ToString("0.00", Es)} · así {since}" : "Todavía sin datos suficientes",
+            Text = c.Trend is { } t ? $"Eficiencia de la tendencia {t.ToString("0.00", Es)} · así {since}" : "Not enough data yet",
             Classes = { "faint", "small" },
         };
         var gauge = Gauge(c.Trend is { } tr ? Math.Clamp(tr, 0, 1) : (double?)null, new[] { MarketContextTracker.RangeLimit, MarketContextTracker.TrendLimit }, color, "rango", "tendencia");
-        var block = Ui.V(6, Ui.H3("Condición"), label, detail, gauge);
-        ToolTip.SetTip(block, "Eficiencia de los cierres por hora de las últimas 24 horas: movimiento neto sobre recorrido total (0 = va y viene, 1 = sube o baja derecho; al azar da ~0,2). " +
-                              "Rango hasta 0,15, tendencia desde 0,35; alcista o bajista según hacia dónde se movió.");
+        var block = Ui.V(6, Ui.H3("Condition"), label, detail, gauge);
+        ToolTip.SetTip(block, "Trend efficiency from hourly closes over the last 24 hours: net movement / total movement (0 = choppy, 1 = straight trend; random movement averages around 2). " +
+                              "Range up to 0.15; trend from 0.35, with direction determined by price movement.");
         block.MinWidth = 260;
         return block;
     }
@@ -264,13 +264,13 @@ internal sealed partial class LiveView
         var detail = new TextBlock
         {
             Text = c.VolatilityRank is { } rank
-                ? $"Percentil {rank:0} del último mes · {c.Volatility?.ToString("0.00", Es)} % por hora"
-                : "Hace falta al menos un día de historia",
+                ? $"Percentile {rank:0} over the previous month · {c.Volatility?.ToString("0.00", Es)} % por hora"
+                : "At least one day of history is required.",
             Classes = { "faint", "small" },
         };
         var gauge = Gauge(c.VolatilityRank / 100, new[] { MarketContextTracker.LowVolatility / 100, MarketContextTracker.HighVolatility / 100 }, color, "baja", "alta");
         var block = Ui.V(6, Ui.H3("Volatilidad"), label, detail, gauge);
-        ToolTip.SetTip(block, "Desvío de los retornos por hora de las últimas 24 horas, comparado con el del último mes: hasta el percentil 33 es baja, desde el 67 es alta.");
+        ToolTip.SetTip(block, "Standard deviation of hourly returns over the last 24 hours, ranked against the previous month (low at or below p33, high at or above p67).");
         block.MinWidth = 260;
         return block;
     }
@@ -329,7 +329,7 @@ internal sealed partial class LiveView
         ends.Children.Add(new TextBlock { Text = c.Recent.Count > 0 ? $"hace {c.Recent.Count} h" : "", FontSize = 10, Foreground = Ui.Text2 });
         ends.Width = c.Recent.Count * 11;
         ends.HorizontalAlignment = HorizontalAlignment.Left;
-        return Ui.V(4, Ui.H3("Últimas 48 horas"), new ScrollViewer { Content = strip, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled }, ends, legend);
+        return Ui.V(4, Ui.H3("Last 48 hours"), new ScrollViewer { Content = strip, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled }, ends, legend);
     }
 
     private static Control Legend(IBrush color, string text) =>
@@ -338,7 +338,7 @@ internal sealed partial class LiveView
 
     private Control StrategiesOf(List<LiveEntry> strategies)
     {
-        var list = Ui.V(6, Ui.H3("Estrategias en este mercado"));
+        var list = Ui.V(6, Ui.H3("Strategies in this market"));
         if (strategies.Count == 0)
         {
             list.Children.Add(Ui.Faint("Ninguna corriendo ahora."));
@@ -358,7 +358,7 @@ internal sealed partial class LiveView
             row.Children.Add(Ui.H(7, dot, name, where));
             row.Children.Add(filter);
             row.Children.Add(status);
-            ToolTip.SetTip(row, "Las salidas siempre pasan: aunque esté en pausa por contexto, si tiene una posición abierta la sigue gestionando hasta cerrarla.");
+            ToolTip.SetTip(row, "Exits remain permitted even when context pauses new entries; an existing position continues to be managed.");
             list.Children.Add(row);
         }
 
@@ -409,7 +409,7 @@ internal sealed partial class LiveView
                     BorderThickness = new Thickness(current ? 1.5 : 0),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                 };
-                if (current) ToolTip.SetTip(mark, "Es la condición de ahora en su mercado");
+                if (current) ToolTip.SetTip(mark, "This is the market's current condition");
                 Cell(mark, i + 1);
             }
 
@@ -421,8 +421,8 @@ internal sealed partial class LiveView
             Cell(new TextBlock { Text = trading ? "Opera" : e.Paused || e.Runner.DailyLimitActive ? "Detenida" : "En pausa", Foreground = color, FontWeight = FontWeight.SemiBold }.Also(t => ToolTip.SetTip(t, text)), 6);
         }
 
-        return Ui.V(10, Ui.H3("En qué contexto opera cada una"),
-            Ui.Faint("✓ = abre operaciones en esa condición (con la volatilidad que diga su filtro). El recuadro marca la condición de ahora de su mercado."),
+        return Ui.V(10, Ui.H3("Conditions allowed for each strategy"),
+            Ui.Faint("✓ = can open under that regime if the volatility filter also matches. The outline marks the current market condition."),
             Ui.Card(grid, 10));
     }
 }
