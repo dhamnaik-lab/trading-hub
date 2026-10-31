@@ -221,14 +221,14 @@ public sealed partial class TradingView
 
         var panel = Ui.V(6,
             qtyRow,
-            Row(B("Comprar MKT", "buy", "Buy market", () => _ = TradeAsync(_active, OrderTypes.Market, OrderDirections.Buy, 0, QtyOf(_active))),
-                B("Vender MKT", "sell", "Sell market", () => _ = TradeAsync(_active, OrderTypes.Market, OrderDirections.Sell, 0, QtyOf(_active)))),
-            Row(B("C. Bid", "buy-soft", "Buy limit at bid (rests on bid)", () => AtBook(OrderDirections.Buy, ask: false)),
-                B("C. Ask", "buy-soft", "Buy limit at ask (marketable, with price cap)", () => AtBook(OrderDirections.Buy, ask: true)),
-                B("V. Bid", "sell-soft", "Sell limit at bid (marketable, with price floor)", () => AtBook(OrderDirections.Sell, ask: false)),
-                B("V. Ask", "sell-soft", "Sell limit at ask (rests on ask)", () => AtBook(OrderDirections.Sell, ask: true))),
-            Row(B("Cancelar", "", "Cancel all orders", () => _ = AccountActionAsync(_active, a => a.CancelAll(), "Orders cancelled")),
-                B("Revertir", "", "Reverse position", () => _ = AccountActionAsync(_active, a => a.Reverse(), "Position reversed")),
+            Row(B("Buy MKT", "buy", "Buy market", () => _ = TradeAsync(_active, OrderTypes.Market, OrderDirections.Buy, 0, QtyOf(_active))),
+                B("Sell MKT", "sell", "Sell market", () => _ = TradeAsync(_active, OrderTypes.Market, OrderDirections.Sell, 0, QtyOf(_active)))),
+            Row(B("B. Bid", "buy-soft", "Buy limit at bid (rests on bid)", () => AtBook(OrderDirections.Buy, ask: false)),
+                B("B. Ask", "buy-soft", "Buy limit at ask (marketable, with price cap)", () => AtBook(OrderDirections.Buy, ask: true)),
+                B("S. Bid", "sell-soft", "Sell limit at bid (marketable, with price floor)", () => AtBook(OrderDirections.Sell, ask: false)),
+                B("S. Ask", "sell-soft", "Sell limit at ask (rests on ask)", () => AtBook(OrderDirections.Sell, ask: true))),
+            Row(B("Cancel", "", "Cancel all orders", () => _ = AccountActionAsync(_active, a => a.CancelAll(), "Orders cancelled")),
+                B("Reverse", "", "Reverse position", () => _ = AccountActionAsync(_active, a => a.Reverse(), "Position reversed")),
                 B("Close", "primary", "Close full position at market and cancel related orders", () => _ = AccountActionAsync(_active, a => a.Flatten(), "Position closed"))));
         panel.Margin = new Thickness(10, 8, 10, 10);
         return new Border { Child = panel, BorderBrush = Ui.Line, BorderThickness = new Thickness(0, 1, 0, 0), Background = Ui.Bg1 };
@@ -236,7 +236,7 @@ public sealed partial class TradingView
 
     private Control BuildTapeSection()
     {
-        var header = SectionHeader("Cinta de operaciones", () => SetPanel("tape", false), BuildDetachButton("tape"));
+        var header = SectionHeader("Time & sales", () => SetPanel("tape", false), BuildDetachButton("tape"));
         _tape.MinHeight = 50;
         var box = new DockPanel();
         DockPanel.SetDock(header, Dock.Top);
@@ -258,11 +258,11 @@ public sealed partial class TradingView
             return mi;
         }
 
-        Toggle("side", "Panel derecho");
+        Toggle("side", "Right panel");
         menu.Items.Add(new Separator());
         Toggle("ticket", "Chart Trader");
         Toggle("dom", "DOM");
-        Toggle("tape", "Cinta de operaciones");
+        Toggle("tape", "Time & sales");
         menu.Items.Add(new Separator());
         var cfg = new MenuItem { Header = "Configurar DOM…", Icon = Ui.Icon(MaterialIconKind.Tune, 15) };
         cfg.Click += (_, _) => OpenDomSettings();
@@ -434,8 +434,8 @@ public sealed partial class TradingView
 
         var actions = Ui.Row(8,
             Small("Close", "Close full position at market and cancel related orders", () => _ = AccountActionAsync(_active, acc => acc.Flatten(), "Position closed")),
-            Small("Revertir", "Reverse position", () => _ = AccountActionAsync(_active, acc => acc.Reverse(), "Position reversed")),
-            Small("Cancelar", "Cancel all orders", () => _ = AccountActionAsync(_active, acc => acc.CancelAll(), "Orders cancelled")));
+            Small("Reverse", "Reverse position", () => _ = AccountActionAsync(_active, acc => acc.Reverse(), "Position reversed")),
+            Small("Cancel", "Cancel all orders", () => _ = AccountActionAsync(_active, acc => acc.CancelAll(), "Orders cancelled")));
 
         // parciales: cierran una parte a mercado; stop y objetivos se ajustan solos
         var partials = Ui.Row(6,
@@ -482,7 +482,7 @@ public sealed partial class TradingView
         Grid.SetColumn(_slTicks, 1);
         slRow.Children.Add(_slTicks);
 
-        var addTarget = Ui.Button("Objetivo", MaterialIconKind.Plus, () => EditTemplate(t =>
+        var addTarget = Ui.Button("Target", MaterialIconKind.Plus, () => EditTemplate(t =>
         {
             if (t.Targets.Count >= 3) return;
             int last = t.Targets.Count > 0 ? t.Targets.Max(x => x.Ticks) : t.StopTicks;
@@ -501,7 +501,7 @@ public sealed partial class TradingView
             _targetRows,
             Ui.H(8, addTarget, apply),
             _beAfterTp1,
-            Ui.Faint("On chart: drag SL / TP controls on positions or pending orders to place them manually. Arrastrá desde la línea de la posición: hacia la ganancia crea un objetivo; hacia la pérdida, el stop."));
+            Ui.Faint("On chart: drag SL / TP controls on positions or pending orders to place them manually. Drag from the position line toward profit to create a target, or toward loss to create a stop."));
         foreach (var tb in content.Children.OfType<TextBlock>()) tb.TextWrapping = TextWrapping.Wrap;
         return new Expander
         {
@@ -892,7 +892,7 @@ public sealed partial class TradingView
                 chart.Quantity = next;
                 chart.Trader?.SyncQuantity();
                 OnChartQuantityChanged(chart);
-                _status($"Cantidad: {next.ToString("0.####", CultureInfo.InvariantCulture)}");
+                _status($"Quantity: {next.ToString("0.####", CultureInfo.InvariantCulture)}");
                 break;
             }
 
@@ -963,7 +963,7 @@ public sealed partial class TradingView
                 MaterialIconKind.CloseCircleOutline, () => _status(br.CancelBracket(order))));
             if (role == BracketRole.Target)
             {
-                var qty = new MenuItem { Header = "Cantidad del objetivo", Icon = Ui.Icon(MaterialIconKind.ScaleBalance, 16) };
+                var qty = new MenuItem { Header = "Target quantity", Icon = Ui.Icon(MaterialIconKind.ScaleBalance, 16) };
                 foreach (var f in new[] { 0.25m, 0.5m, 0.75m, 1m })
                     qty.Items.Add(Item($"{f * 100:0}% of position", null, () => _status(br.SetTargetFraction(order, f))));
                 items.Add(qty);
@@ -1055,7 +1055,7 @@ public sealed partial class TradingView
             items.Add(new Separator());
         }
 
-        items.Add(Item("Indicadores…", MaterialIconKind.FunctionVariant, () => OpenIndicators(tab)));
+        items.Add(Item("Indicators…", MaterialIconKind.FunctionVariant, () => OpenIndicators(tab)));
         items.Add(Item("Editar footprint…", MaterialIconKind.ViewColumnOutline, () => OpenFootprintEditor(tab)));
         items.Add(Item("Chart settings…", MaterialIconKind.PaletteOutline, () => OpenChartSettings(tab)));
         var strategyMenu = new MenuItem { Header = "Chart strategies", Icon = Ui.Icon(MaterialIconKind.RobotOutline, 16) };
@@ -1079,7 +1079,7 @@ public sealed partial class TradingView
 
         LegendToggle("Nombre del instrumento", () => model.Settings.ShowLegendTitle, v => model.Settings.ShowLegendTitle = v);
         LegendToggle("Candle values (O, H, L, C…)", () => model.Settings.ShowLegendValues, v => model.Settings.ShowLegendValues = v);
-        LegendToggle("Nombres de los indicadores", () => model.Settings.ShowIndicatorNames, v => model.Settings.ShowIndicatorNames = v);
+        LegendToggle("Indicator names", () => model.Settings.ShowIndicatorNames, v => model.Settings.ShowIndicatorNames = v);
         items.Add(legend);
         var marks = new MenuItem { Header = "Mark my trades", Icon = model.Settings.ShowTradeMarks ? Ui.Icon(MaterialIconKind.Check, 15, Ui.Accent) : Ui.Icon(MaterialIconKind.SwapVertical, 16) };
         ToolTip.SetTip(marks, "Triangles for fills, with entry-to-exit lines");
