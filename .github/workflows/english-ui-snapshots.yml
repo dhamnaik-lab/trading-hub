@@ -1,0 +1,44 @@
+name: English UI snapshot verification
+
+on:
+  pull_request:
+    paths:
+      - "src/**/*.cs"
+      - "tools/TradingHub.UiSnapshot/**"
+      - ".github/workflows/english-ui-snapshots.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  english-ui-snapshots:
+    name: Capture isolated Windows UI screenshots
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      TRADINGHUB_SLEEP_GUARD: off
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Capture headless English UI scenes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = Join-Path $env:RUNNER_TEMP 'tradinghub-english-snapshots'
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          dotnet run --project tools/TradingHub.UiSnapshot --configuration Release -- $output 3 trading accounts connections settings live strategies+code strategies+history strategies+reports --size 1600x950
+          if ($LASTEXITCODE -ne 0) { throw "UI snapshot runner exited with code $LASTEXITCODE" }
+          $images = @(Get-ChildItem -LiteralPath $output -Filter '*.png' -File)
+          $images | Select-Object Name, Length | Format-Table
+          if ($images.Count -lt 7) { throw "Expected at least 7 PNG screenshots; got $($images.Count)" }
+      - name: Upload isolated UI screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: english-ui-windows-snapshots
+          path: ${{ runner.temp }}/tradinghub-english-snapshots/*.png
+          if-no-files-found: warn
+          retention-days: 14
