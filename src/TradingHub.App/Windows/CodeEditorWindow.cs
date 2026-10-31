@@ -30,7 +30,7 @@ internal sealed class CodeEditorWindow : Window
     public CodeEditorWindow(AppServices svc, CodeKind kind)
     {
         _svc = svc;
-        Title = "Indicadores propios — editor";
+        Title = "Custom indicators — editor";
         Width = 1180;
         Height = 780;
         MinWidth = 820;
@@ -55,7 +55,7 @@ internal sealed class CodeEditorWindow : Window
     private Control Build()
     {
         var add = Ui.Button("New", MaterialIconKind.Plus, () => _ = NewAsync());
-        var folder = Ui.IconButton(MaterialIconKind.FolderOpenOutline, Os.IsWindows ? "Abrir la carpeta en el Explorador de archivos" : "Abrir la carpeta en Finder", () => Shell.OpenFolder(AppPaths.UserIndicators));
+        var folder = Ui.IconButton(MaterialIconKind.FolderOpenOutline, Os.IsWindows ? "Open folder in File Explorer" : "Open folder in Finder", () => Shell.OpenFolder(AppPaths.UserIndicators));
         var head = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
         var acts = Ui.H(4, folder, add);
         DockPanel.SetDock(acts, Dock.Right);
@@ -163,7 +163,7 @@ internal sealed class CodeEditorWindow : Window
         using TradingHub.Indicators.Drawing;
 
         [DisplayName("{{display}}")]
-        [Category("Mis indicadores")]
+        [Category("My indicators")]
         public class {{cls}} : Indicator
         {
             private readonly ValueDataSeries _serie = new("Serie", "Valor") { Color = System.Drawing.Color.Orange, Width = 2 };
