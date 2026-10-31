@@ -70,7 +70,7 @@ internal sealed class CodeEditorWindow : Window
         left.Children.Add(head);
         var note = new TextBlock
         {
-            Text = "API de indicadores de Trading Hub (Indicator, OnCalculate, DataSeries, OnRender…); si pegás código escrito con esta API en otra plataforma, se adapta solo. Al guardar se recompila y queda disponible en Indicadores.",
+            Text = "Trading Hub indicator API (Indicator, OnCalculate, DataSeries, OnRender…). Compatible source from another platform is adapted automatically. Saving recompiles the indicator and makes it available in Indicators.",
             Classes = { "faint", "small" },
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 12, 0, 0),
