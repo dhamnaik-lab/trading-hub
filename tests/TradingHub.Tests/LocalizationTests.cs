@@ -17,6 +17,33 @@ public class LocalizationTests
         Assert.Equal("High/Low", Strings.HighLow);
         Assert.Equal("Bearish color", Strings.BearishColor);
         Assert.Equal("Alert file", Strings.AlertFile);
+        Assert.Equal("Start time", Strings.StartTime);
+        Assert.Equal("Trades", Strings.Trades);
+        Assert.Equal("Volume", Strings.Volume);
+        Assert.Equal("Show value", Strings.ShowValue);
+        Assert.Equal("Font", Strings.Font);
+    }
+
+    [Fact]
+    public void RiskAgentPromptUsesEnglishAndPreservesStructuredOutputAndLimits()
+    {
+        var agent = typeof(StrategyTemplates).Assembly.GetType("TradingHub.App.Services.LiveRiskAgent");
+        Assert.NotNull(agent);
+        var promptField = agent!.GetField("SystemPrompt",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        Assert.NotNull(promptField);
+        var prompt = Assert.IsType<string>(promptField!.GetRawConstantValue());
+
+        Assert.Contains("Respond in clear English", prompt);
+        Assert.Contains("max_daily_loss", prompt);
+        Assert.Contains("max_drawdown", prompt);
+        Assert.Contains("allocations", prompt);
+        Assert.Contains("summary", prompt);
+        Assert.Contains("exact strategy key", prompt);
+        Assert.Contains("±50%", prompt);
+        Assert.Contains("0.6", prompt);
+        Assert.Contains("[[ROL:live-risk]]", prompt);
+        Assert.DoesNotContain("Respondé en español", prompt);
     }
 
     [Fact]
