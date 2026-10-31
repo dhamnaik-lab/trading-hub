@@ -1,178 +1,151 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Primeros pasos
+# Getting started
 
-Un recorrido por la ventana principal para que sepas dónde está cada cosa. Si todavía no la instalaste, empezá por
-[Instalación](instalacion.md).
+This guide introduces the main Trading Hub window and its primary features. If you have not installed the application, start with [Installation](instalacion.md).
 
-## La primera vez
+> Screenshots were inherited from the original project and may still show Spanish labels. The English fork's main navigation now uses **Trading**, **Accounts**, **Backtesting**, **Live**, **Data**, **Connections**, and **Settings**. Some deeper screens are still being localized.
 
-Al abrir Trading Hub por primera vez aparece la sección **Trading** con un gráfico de `SIM-BTC` en 5 minutos, en
-modo footprint, con los indicadores Big Trades y Delta. Ese instrumento sale del **Simulador**, un mercado simulado
-que funciona sin internet y sirve para practicar.
+## First launch
 
-Todo lo que operes va a la **cuenta simulada**. Nada mueve dinero real hasta que lo habilites a mano, conexión por
-conexión, en [Conexiones](conexiones.md).
+On first launch, Trading Hub opens the **Trading** page with a simulated `SIM-BTC` chart on a five-minute period, using a footprint display and Big Trades/Delta indicators. The **Simulator** market is available without an internet connection.
 
-Estas conexiones ya vienen creadas:
+The starting account is **simulated**. Trading with real money requires deliberately configuring and enabling a supported real-account connection in [Connections](conexiones.md).
 
-| Conexión | Al empezar | Qué da |
+Initial providers are described by the original application as:
+
+| Provider | Initial state | Purpose |
 |---|---|---|
-| Simulador | activada | SIM-BTC, SIM-ETH, SIM-ES y SIM-NQ simulados |
-| Binance Futures | activada | datos públicos de cripto, sin cuenta |
-| Binance Spot | activada | datos públicos de cripto, sin cuenta |
-| Bybit | activada | datos públicos de los perpetuos en USDT |
-| Rithmic | desactivada | futuros de CME (necesita tus credenciales) |
+| Simulator | Enabled | Simulated SIM-BTC, SIM-ETH, SIM-ES, and SIM-NQ |
+| Binance Futures | Enabled | Public crypto futures market data |
+| Binance Spot | Enabled | Public crypto spot market data |
+| Bybit | Enabled | Public USDT perpetual-futures market data |
+| Rithmic | Disabled | CME futures, requiring your credentials |
 
-## La ventana principal
+Data access and the ability to submit orders are separate capabilities. Some providers are data-only.
 
-### Las secciones, en la barra de título
+## Main window
 
-La navegación va integrada en la barra de título de macOS, al lado de los botones de la ventana:
+### Navigation
 
-| Sección | Atajo | Para qué |
+On macOS, navigation is integrated into the title bar. Windows uses the corresponding desktop title/navigation area. Use **Ctrl** for the Windows command modifier and **⌘** for macOS:
+
+| Section | Command shortcut | Purpose |
 |---|---|---|
-| Trading | ⌘1 | Gráficos, DOM, cinta de operaciones y Chart Trader. |
-| Cuenta | ⌘5 | Saldo, posiciones, órdenes, ejecuciones, operaciones y estadísticas. |
-| Backtesting | ⌘2 | Estrategias en C#, backtests, optimización y el chat con Claude. |
-| En vivo | ⌘7 | Estrategias automáticas corriendo, portafolios y el botón «Frenar todo». |
-| Datos | ⌘3 | Historia guardada, descargas, importar archivos, Databento y replay. |
-| Conexiones | ⌘4 | Mercados, brokers y cuentas. |
-| Ajustes | ⌘, | Apariencia, zona horaria, atajos, modo sin dormir y carpetas. |
+| Trading | 1 | Charts, DOM, time and sales, Chart Trader |
+| Accounts | 5 | Balances, positions, orders, fills, trades, statistics |
+| Backtesting | 2 | C# strategies, testing, optimization, Claude assistant |
+| Live | 7 | Running strategies, portfolios, Stop All |
+| Data | 3 | Saved history, downloads, imports, Databento, replay |
+| Connections | 4 | Market-data and broker connections |
+| Settings | , | Theme, chart time zone, hotkeys, sleep, directories |
 
-Con la ventana angosta (menos de 1360 píxeles de ancho) la barra muestra solo los íconos; el nombre aparece al pasar
-el mouse. Arrastrando la barra movés la ventana y con doble clic la maximizás.
+The keyboard shortcuts above use the OS command modifier (for example `Ctrl+1` on Windows or `⌘1` on Mac).
 
-### A la derecha de la barra
+At narrower window widths, navigation may collapse to icons; hover to see labels.
 
-- **Simulada 0,00 · 10.000,00**: el resultado del día y el saldo de la cuenta simulada. Hacé clic para ir a Cuenta.
-- **Sol o luna**: pasa a modo claro u oscuro.
-- **Píldora de conexión**: la conexión del gráfico activo y su estado. Un clic abre un menú con «Reconectar ahora» y
-  «Conexiones…».
+### Top bar controls
 
-| Estado | Qué significa |
+- **Simulated P&L and balance:** Displays current-day result and simulator balance. Click to open **Accounts**.
+- **Sun/moon icon:** Switches between dark and light mode.
+- **Connection status:** Shows the active chart's data-provider connection. Click to **Reconnect now** or open **Connections**.
+
+| Status | Meaning |
 |---|---|
-| conectado | Llegan datos. |
-| conectando… / reconectando… (intento N) | Se está conectando; después de un corte, lo que faltó se rellena solo. |
-| sin datos hace N min | La conexión sigue, pero no llega nada hace rato. |
-| mercado cerrado · abre (día y hora) | Futuros fuera de horario: no es un corte, los datos vuelven solos. |
-| error / desconectado | Revisá la conexión en Conexiones. |
+| Connected | Market data is arriving. |
+| Connecting / Reconnecting (attempt N) | Establishing or recovering a connection. |
+| No data for N minutes | Connection may remain active while no new trades arrive. |
+| Market closed; opens day/time | Session is closed; this does not necessarily indicate a connection failure. |
+| Error / Disconnected | Check the connection configuration. |
 
-Si la Mac se durmió, al volver Trading Hub reconecta solo y rellena lo que faltó.
+Trading Hub attempts to reconnect and recover missing data when a suspended computer wakes or a connection recovers.
 
-### La barra de estado
+### Status bar
 
-Abajo de todo. A la izquierda aparece el último aviso: órdenes enviadas, cargas de historia, alertas de precio y
-errores (al pasar el mouse se ve entero). A la derecha, el resumen del gráfico activo: «N operaciones · N velas ·
-desde dd/MM HH:mm», o «Cargando historia N%» mientras carga.
+The bottom status area shows recent notifications such as order submissions, history loads, price alerts, and errors. Hover for longer messages. The chart summary displays trade count, candle count, and earliest loaded time, or a loading percentage while history is being fetched.
 
-## La sección Trading
+## Trading page
 
-![La sección Trading con dos gráficos, el Chart Trader de cada uno y el panel derecho con el DOM y la cinta](img/trading.png)
+![Trading page with charts, order-entry panels, DOM, and time and sales](img/trading.png)
 
-1. **Barra del gráfico**, arriba: instrumento, historia, períodos, tipo de gráfico, indicadores, footprint, colores,
-   estrategias, plantillas, diseño, paneles, ventana aparte y pestaña nueva. Todo se explica en [Gráficos](graficos.md).
-2. **Pestañas**: la tira aparece cuando hay más de una. Cada pestaña puede tener de 1 a 6 gráficos.
-3. **El gráfico**, con su barra de dibujos a la izquierda y su propio Chart Trader a la derecha (se pliega con la
-   flechita).
-4. **Panel derecho**: Chart Trader, DOM y Cinta de operaciones, uno debajo del otro. El ancho se cambia arrastrando el
-   borde y el alto de cada sección, con los divisores. Cada sección se oculta con su cruz o se saca a una ventana aparte.
-5. **Barra de replay**, abajo: aparece cuando el gráfico activo es un replay (ver [Datos](datos.md#replay)).
+1. **Chart toolbar:** Instrument selector, data history, periods, chart style, indicators, footprint, colors, strategies, templates, layouts, panels, detachable windows, and new tabs. See [Charts](graficos.md).
+2. **Tabs and layouts:** Tabs can contain multiple charts. Tabs can be cloned or rearranged with supported layout controls.
+3. **Chart canvas:** Drawing tools appear on the left; the chart's own Chart Trader can appear on the right.
+4. **Right panel:** Can contain Chart Trader, DOM, and time and sales; adjust panel dividers or detach sections as needed.
+5. **Replay toolbar:** Appears when the active chart uses recorded replay data. See [Data](datos.md#replay).
 
-Para operar, mirá [Operar](operar.md).
+For order-entry details and risk controls see [Trading](operar.md).
 
-## La cuenta simulada
+## Simulated account
 
-- Arranca con un saldo de 10.000. Lo cambiás en **Cuenta → Saldo inicial**.
-- Sirve con cualquier mercado: el Simulador o datos reales de Binance, Bybit, Rithmic y las demás conexiones.
-- Llena las órdenes contra el mercado real: a mercado, al mejor bid o ask; las límite, cuando el precio opera a través
-  de tu precio o cuando en tu precio se operó más volumen que el que tenías adelante en la cola al mandarla; las stop,
-  cuando opera el precio de disparo, y ahí llenan a mercado.
-- El saldo y el historial se guardan: no vuelven a cero al cerrar la app. Para empezar de cero, usá «Reiniciar la
-  cuenta simulada» en Cuenta.
+- The documented initial balance is 10,000 in the account's display currency, adjustable in **Accounts**.
+- The simulator can be used with the built-in simulated markets or supported real-time market data.
+- Market orders use the best available bid/ask under the simulator's fill model; limit orders model price crossings and order queue volume; stops trigger when the simulated price condition is reached.
+- Simulator balance and fills are persisted. Closing the app does not reset the account. **Reset simulated account** clears its current history and restores its starting balance.
 
-## Abrir un gráfico
+Simulator results may differ from actual executions because of liquidity, market impact, fees, latency, and exchange-specific rules.
 
-1. En Trading, hacé clic en el selector de instrumento (el primer botón de la barra del gráfico) o tocá ⌘K.
-2. Arriba elegí la conexión, o **Favoritos** para ver solo los marcados.
-3. Escribí para buscar (BTC, ETH, NQ…). Con las flechas te movés por la lista.
-4. Enter o doble clic lo abre en el gráfico activo. ⌘Enter lo abre en una pestaña nueva.
-5. La estrella de cada fila lo marca como favorito.
+## Open a chart
 
-Al abrir, se carga la historia reciente (cuánta, lo define cada conexión). Para ver más hacia atrás usá el botón de
-historia de la barra. Una pestaña nueva se abre con ⌘T o con el botón **+**: copia el gráfico activo, salvo que hayas
-elegido una plantilla para las pestañas nuevas. ⌘W cierra el gráfico activo; siempre queda al menos una pestaña.
+1. In **Trading**, click the instrument selector at the start of the chart toolbar, or use `Ctrl+K` / `⌘K`.
+2. Choose the connection/provider or **Favorites**.
+3. Search for an instrument such as BTC, ETH, or NQ. Use the arrow keys to navigate results.
+4. Press Enter or double-click to open the selected instrument. Use the OS command modifier plus Enter to open it in a new tab where supported.
+5. Click the star next to a symbol to make it a favorite.
 
-Para ver mercados reales con tus cuentas, agregalos en [Conexiones](conexiones.md).
+Recent history is loaded according to the provider's settings. Use the history control to request older data. Create a tab with `Ctrl+T` / `⌘T` or **+**. Close the current chart with `Ctrl+W` / `⌘W`, subject to the app keeping a usable chart/tab available.
 
-## El menú de la Mac
+To connect real-world data sources or supported broker accounts, see [Connections](conexiones.md).
 
-Con Trading Hub al frente, la barra de menú de macOS tiene estos menús:
+## Application menus
 
-| Menú | Opciones |
+The macOS menu bar, and equivalent app commands on Windows, use these names:
+
+| Menu | Functions |
 |---|---|
-| Archivo | Nuevo gráfico (⌘T), Cerrar gráfico (⌘W), Buscar instrumento… (⌘K), Guardar espacio de trabajo (⌘S), Abrir carpeta de datos |
-| Gráfico | Indicadores… (⌘I), Editar footprint… (⇧⌘F), Escala automática (⌥⌘A), Ir al último precio (⌘Fin), Diseño, Sacar gráfico a una ventana (⇧⌘D), Paneles, Configurar DOM… |
-| Ir | Las siete secciones, con sus atajos |
-| Código | Editor de indicadores… (⇧⌘E), Abrir carpeta de indicadores, Recompilar indicadores, Backtesting de estrategias…, Estrategias en vivo…, Abrir carpeta de estrategias |
+| **File** | New chart, Close chart, Find instrument, Save workspace, Open data folder |
+| **Chart** | Indicators, Edit footprint, Auto scale, Go to latest price, Layout, Detach chart, Panels, Configure DOM |
+| **Go** | Open any of the seven primary sections |
+| **Code** | Indicator editor, Open indicators folder, Recompile indicators, Strategy backtesting, Live strategies, Open strategies folder |
 
-El espacio de trabajo (pestañas, gráficos, diseños y paneles) también se guarda solo al cerrar y se recupera al abrir.
+The workspace layout—charts, tabs, and panels—is also saved and restored by the application.
 
-## El ícono en la barra de menú
+## System tray and menu bar
 
-Trading Hub deja un ícono arriba a la derecha, en la barra de menú de macOS. Al tocarlo se abre un menú con:
+Trading Hub can remain active after the main window is closed: in the **Windows system tray** or the **macOS menu bar**, depending on your Settings and platform.
 
-- la conexión del gráfico activo;
-- **Estrategias en vivo (N)**, con el tamaño, la posición y el resultado de cada una;
-- **Posiciones abiertas (N)**;
-- «Ver el panel en vivo…», «Abrir Trading Hub» y «Salir de Trading Hub».
+The menu can show current connection status, running live strategies, and open positions, with actions such as **View live panel**, **Open Trading Hub**, and **Quit Trading Hub**.
 
-El panel en vivo muestra las estrategias y las posiciones en tiempo real, con los mismos botones para abrir o salir.
+**Closing a window is not necessarily quitting the program.** This matters when live strategies are running. On macOS use `⌘Q` or **Quit Trading Hub**; on Windows use the application's exit command or its supported `Alt+F4` exit flow. Check [Settings](ajustes.md#live-strategies) for auto-resume and tray behavior.
 
-**Cerrar no es salir.** El botón rojo de la ventana la oculta y Trading Hub sigue corriendo en la barra de menú, con
-las estrategias trabajando. El ícono y este comportamiento dependen de **Ajustes → Estrategias en vivo → Seguir en la
-barra de menú al cerrar la ventana**, que viene activado; si lo apagás, el ícono desaparece y cerrar la ventana cierra
-la app. Para salir del todo usá ⌘Q o «Salir de Trading Hub». Si la ventana está oculta, tocar el ícono del Dock la
-vuelve a abrir.
+## Keyboard shortcuts
 
-## Atajos de teclado
+In **Settings → Keyboard shortcuts** you can customize actions affecting the active chart, including:
 
-Además de los del menú, en **Ajustes → Atajos de teclado** hay atajos configurables. Funcionan en Trading y en las
-ventanas de gráfico aparte, sobre el gráfico activo. Para cambiar uno, hacé clic en su botón y presioná la
-combinación; Esc cancela y ⌫ lo deja sin asignar. «Restablecer los de fábrica» vuelve a los originales.
-
-| Atajo de fábrica | Acción |
+| Typical shortcut | Action |
 |---|---|
-| ⌥1 a ⌥6 | Período de 1 minuto, 5 minutos, 15 minutos, 1 hora, 4 horas y diario |
-| ⌥H | Dibujar una línea horizontal |
-| ⌥T | Mostrar u ocultar el Chart Trader del gráfico |
-| ⌃Tab / ⌃⇧Tab | Pestaña siguiente / anterior |
+| Alt/Option+1 through Alt/Option+6 | Select 1m, 5m, 15m, 1h, 4h, or daily period |
+| Alt/Option+H | Draw a horizontal line |
+| Alt/Option+T | Show/hide Chart Trader |
+| Ctrl+Tab / Ctrl+Shift+Tab | Next/previous tab |
 
-Los atajos para operar (comprar, vender, cerrar, revertir, cancelar, parciales, breakeven y otros) vienen sin asignar
-a propósito: cada uno elige los suyos. Ver [Operar](operar.md#atajos-para-operar).
+Availability may depend on OS shortcut handling and focused controls. Use the Settings screen to confirm actual assignments. Click a binding to change it; Esc cancels and Backspace clears it. **Restore defaults** resets the bindings.
 
-Sobre el gráfico también funcionan:
+**Trading shortcuts are intentionally unassigned by default** (buy, sell, close, reverse, cancel, partial exit, breakeven, etc.). See [Trading safety](operar.md#seguridad).
 
-| Tecla | Acción |
-|---|---|
-| Esc | Vuelve al cursor, cancela el arrastre de una orden o quita el resaltado de una operación |
-| ⌫ o Supr | Borra los dibujos seleccionados |
-| Inicio o Fin | Vuelve a lo último con escala automática |
-| ← / → | Desplaza el gráfico |
-| + / − | Agranda o achica las velas |
+In chart mode, Esc cancels selection or drawing, Delete removes selected drawings, arrow keys pan when supported, and +/− adjust chart scale.
 
-## Ajustes que conviene mirar
+## Settings worth checking
 
-- **General**: apariencia (oscuro o claro), zona horaria de los gráficos y sonidos de alerta.
-- **Operar**: «Confirmar órdenes reales» (ver [Operar](operar.md#seguridad)).
-- **Estrategias en vivo**: seguir en la barra de menú, reanudar las estrategias al abrir y elegir el contrato solo
-  (minis o micros).
-- **Modo sin dormir**: la Mac no se duerme mientras haya estrategias en vivo; opcionalmente, sigue con la tapa cerrada.
-- **Datos**: «Grabar lo que llega en vivo» y los accesos a las carpetas.
+- **General:** Dark/light theme, chart time zone, alerts.
+- **Trading:** Confirm live orders—review before using a real account.
+- **Live strategies:** Tray/menu-bar operation, automatic resume, and mini/micro selection.
+- **Prevent sleep:** Keep the computer awake during critical work; be cautious with closed laptop lids.
+- **Data:** Record incoming market data and open the data directories.
 
-## Qué sigue
+## Next steps
 
-- [Conexiones](conexiones.md): sumar mercados y brokers.
-- [Gráficos](graficos.md): períodos, footprint, dibujos, indicadores y plantillas.
-- [Operar](operar.md): Chart Trader, DOM, órdenes, stop y objetivos, y la sección Cuenta.
-- [Datos](datos.md): historia guardada, descargas, importación, Databento y replay.
+- [Connections](conexiones.md) — Add markets and data providers.
+- [Charts](graficos.md) — Footprint, indicators, drawings, and templates.
+- [Trading](operar.md) — Chart Trader, DOM, orders, brackets, and accounts.
+- [Data](datos.md) — Historical files, downloads, Databento, and replay.

@@ -1,196 +1,185 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Instalación
+# Installation
 
-Trading Hub se compila en tu propia Mac a partir del código del repositorio. Un script arma la app «Trading Hub.app»,
-la firma y la copia a Aplicaciones. La primera vez tarda unos minutos porque baja los paquetes que necesita.
+This guide covers building the **English fork** of Trading Hub on macOS and Windows. The upstream author's downloadable installers are separate binaries; they do not automatically contain this fork's translations.
 
-## Requisitos
+## Requirements
 
-| Qué | Detalle |
+| Platform | Requirements |
 |---|---|
-| Mac | Apple Silicon (M1 o posterior). Por ahora la app se arma solo para `arm64`. |
-| macOS | 12 o más nuevo. |
-| SDK de .NET 10 | Hace falta solo para compilar. Se instala en `~/.dotnet`, sin contraseña de administrador. |
-| Internet | La primera compilación baja los paquetes NuGet. |
-| Claude Code | Opcional. Solo para las funciones con IA (ver [Claude Code](#claude-code-opcional)). |
+| Windows | Windows 10 or 11, x64 or ARM64; Git, .NET 10 SDK, and NSIS to build an installer |
+| macOS | Apple Silicon (M1 or later), macOS 12 or later; .NET 10 SDK to build |
+| Internet | Needed to download NuGet packages during initial builds |
+| Claude Code | Optional; required only for Claude-powered assistant and risk-agent features |
 
-La app que queda instalada es autocontenida: para usarla no necesitás tener .NET instalado.
+The published application is self-contained, so an end user does not normally need a separate .NET runtime. **Build from this fork** when you want this fork's English changes.
 
-Para revisar tu Mac, abrí la Terminal y corré:
+## Get the correct source
 
 ```bash
-uname -m                 # tiene que decir arm64
-sw_vers -productVersion  # tiene que ser 12 o más
+git clone https://github.com/dhamnaik-lab/trading-hub.git
+cd trading-hub
 ```
 
-Si `uname -m` dice `x86_64`, tu Mac es Intel y por ahora no está soportada.
+You can also download a source ZIP from the fork's GitHub page. Do not clone `ralphtradesz/trading-hub` when your goal is to build the English fork.
 
-## Opción 1: pedírselo a Claude Code
+## Windows installation (x64 and ARM64)
 
-Si usás Claude Code, puede hacer la instalación por vos. El repositorio trae un archivo `CLAUDE.md` con los pasos que
-tiene que seguir.
+1. Install [Git](https://git-scm.com), the [.NET 10 SDK](https://dotnet.microsoft.com/download), and [NSIS](https://nsis.sourceforge.io). Windows users with winget can install NSIS with `winget install NSIS.NSIS`.
+2. Open PowerShell in the repository root.
+3. Run:
 
-1. Instalá Claude Code e iniciá sesión con tu cuenta de Claude.
-2. Abrí una Terminal en la carpeta del repositorio y corré `claude`.
-3. Escribile: «Instalá Trading Hub».
+   ```powershell
+   .\build-windows.ps1
+   ```
 
-Claude Code va a revisar que tu Mac sea compatible, instalar el SDK de .NET 10 en `~/.dotnet` si falta, correr
-`./build-app.sh --install`, verificar que la app encuentre tu Claude Code y abrirla. No te va a pedir datos personales
-ni claves: no hacen falta para instalar. Si en Aplicaciones ya hay otra app llamada «Trading Hub», te tiene que
-preguntar antes de reemplazarla.
+4. Check for a successful build and find the generated installer(s) in `dist`. Install the appropriate architecture build. Do not assume the build passed merely because an output folder exists.
 
-## Opción 2: instalación manual
+The Windows installer is per-user and does not require administrator rights. It places program files in `%LOCALAPPDATA%\Programs\Trading Hub`. User data and credentials are kept elsewhere and are not intentionally deleted by an application update or normal uninstall.
 
-1. Fijate si ya tenés el SDK:
+**Important:** Existing Windows installer packages linked from [the original author's releases](https://github.com/ralphtradesz/trading-hub/releases) are *upstream* builds and may still display Spanish. They are not verified releases of this fork.
+
+## macOS installation (Apple Silicon)
+
+Verify your platform:
+
+```bash
+uname -m                 # must show arm64
+sw_vers -productVersion  # macOS 12 or later
+```
+
+Intel Macs (`x86_64`) are not supported by the existing macOS build script.
+
+### Option 1: Install with Claude Code
+
+If you have Claude Code, open the fork's repository in Terminal, run `claude`, and ask it to install Trading Hub following `CLAUDE.md`. It should verify the Mac, install a user-local .NET 10 SDK if needed, build the application, confirm CLI availability, and launch the app. It must ask before replacing another app with the same name.
+
+See [Install with Claude Code](../INSTALAR_CON_CLAUDE_CODE.md).
+
+### Option 2: Manual installation
+
+1. Check the .NET SDK:
+
    ```bash
    ~/.dotnet/dotnet --list-sdks
    ```
-   Si aparece una línea que empieza con `10.`, pasá al paso 3.
-2. Instalá el SDK de .NET 10 en `~/.dotnet`:
+
+   If a 10.x SDK is available, continue to step 3.
+
+2. Install the .NET 10 SDK locally if needed:
+
    ```bash
    curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
    bash /tmp/dotnet-install.sh --channel 10.0
+   ~/.dotnet/dotnet --list-sdks
    ```
-   Después volvé a correr `~/.dotnet/dotnet --list-sdks` para confirmar.
-3. Desde la carpeta del repositorio, compilá e instalá:
+
+3. From the repository root, build and install:
+
    ```bash
    ./build-app.sh --install
    ```
-4. Abrí la app desde Aplicaciones o con:
+
+4. After a successful build and installation, open:
+
    ```bash
    open "/Applications/Trading Hub.app"
    ```
 
-No hace falta agregar `~/.dotnet` al `PATH`: el script lo agrega solo mientras corre.
+The build script adds the local .NET SDK to its own environment when needed. The installed Mac application is self-contained.
 
-### Qué hace `build-app.sh`
+### What the macOS build script does
 
-- Publica la app en modo Release para `osx-arm64`, autocontenida.
-- Arma el paquete en una carpeta temporal, fuera del Escritorio: iCloud le agrega atributos a los archivos que rompen
-  la firma.
-- Firma la app y deja una copia en `dist/Trading Hub.app`, dentro del repositorio.
-- Con `--install`, borra `/Applications/Trading Hub.app` si existe, copia la nueva y verifica la firma. Si todo salió
-  bien, termina con «Instalado en /Applications/Trading Hub.app».
+- Publishes a Release application for `osx-arm64`.
+- Creates the app bundle outside Desktop/iCloud-managed paths to avoid signing attributes.
+- Signs the app and stages a copy at `dist/Trading Hub.app`.
+- With `--install`, replaces an existing application at `/Applications/Trading Hub.app` and verifies its signature.
 
-Sin `--install` solo arma `dist/Trading Hub.app` y no toca Aplicaciones.
+Without `--install`, the script builds `dist/Trading Hub.app` without replacing the app in Applications.
 
-## Firma ad hoc
+### Code signing
 
-Si no tenés un certificado de desarrollador, el script firma la app «ad hoc» (lo vas a ver como «Firmada ad hoc»).
-En la Mac donde la compilaste abre sin avisos.
+The build script can use an ad-hoc signature when you do not have a developer certificate. On another Mac, the first launch may require right-clicking the app and selecting **Open**. A locally ignored `build.local.env` can configure a signing certificate:
 
-- Si copiás la app a otra Mac, la primera vez abrila con clic derecho → **Abrir**.
-- Si tenés un certificado de firma, creá un archivo `build.local.env` en la carpeta del repositorio. El script lo lee
-  solo y git lo ignora:
-  ```bash
-  SIGN_IDENTITY="nombre del certificado"
-  BUNDLE_ID="com.tu-dominio.tradinghub"
-  ```
-  `SIGN_IDENTITY` tiene que coincidir con un nombre de `security find-identity -v -p codesigning`. Si no lo encuentra,
-  firma ad hoc igual. Con un certificado fijo, macOS recuerda los permisos que le diste a la app entre actualizaciones.
+```bash
+SIGN_IDENTITY="your certificate name"
+BUNDLE_ID="com.your-domain.tradinghub"
+```
 
-## Claude Code (opcional)
+Confirm the certificate identity with `security find-identity -v -p codesigning`. If the identity is not found, the script falls back to ad-hoc signing.
 
-Trading Hub no usa claves de API de Claude: corre la CLI de Claude Code que ya tenés instalada, con tu sesión. Lo que
-hace Claude se descuenta de tu límite de uso normal. Se usa en dos lugares:
+## Claude Code (optional)
 
-- **Backtesting → Claude**: un chat que escribe y corrige estrategias.
-- **En vivo → Portafolios**: el botón «Pedir análisis a Claude», que propone cambios de tamaño que vos aprobás.
+Claude Code integration uses your existing CLI session, not a Claude API key stored in the repository. It supports strategy assistance from Backtesting and portfolio risk analysis for live strategies. Without Claude Code, other features can still operate.
 
-Sin Claude Code el resto de la plataforma funciona igual (gráficos, operar, datos, backtesting y estrategias en vivo).
+On macOS the app searches common CLI installation directories such as `~/.local/bin/claude`, `~/.claude/local/claude`, `/opt/homebrew/bin/claude`, `/usr/local/bin/claude`, the directories in `PATH`, and the Claude desktop app's CLI.
 
-La app busca la CLI en estos lugares y usa la versión más nueva que encuentre:
-
-- `~/.local/bin/claude`, `~/.claude/local/claude`, `/opt/homebrew/bin/claude`, `/usr/local/bin/claude`,
-  `~/.npm-global/bin/claude`;
-- las carpetas del `PATH`;
-- la copia que trae la app de escritorio de Claude.
-
-Si `command -v claude` apunta a otro lugar, creá un enlace:
+If your CLI is installed elsewhere, you can create a user-local link:
 
 ```bash
 mkdir -p ~/.local/bin && ln -sf "$(command -v claude)" ~/.local/bin/claude
 ```
 
-También podés indicar una CLI puntual con la variable de entorno `TRADINGHUB_CLAUDE_CLI`. Para iniciar sesión, corré
-`claude` en la Terminal y usá `/login`. Si Claude Code pide iniciar sesión mientras usás el chat de Backtesting, la app
-muestra el botón «Iniciar sesión en Claude Code».
+You can also point to an explicit executable using `TRADINGHUB_CLAUDE_CLI`. For authentication, run `claude` and sign in using the supported login flow.
 
-## Dónde guarda tus datos
+## Where data is stored
 
-| Lugar | Qué hay |
+| Content | macOS | Windows |
+|---|---|---|
+| Settings, configured connections, charts, ticks, backtests, and live state | `~/Library/Application Support/Trading Hub` | `%APPDATA%\Trading Hub` |
+| Custom C# strategies and indicators | `~/Documents/Trading Hub` | `Documents\Trading Hub` |
+| Brokerage passwords, tokens, and secrets | macOS Keychain | Windows Credential Manager |
+
+The data directory contains:
+
+| Path | Description |
 |---|---|
-| `~/Library/Application Support/Trading Hub` | Ajustes, conexiones (sin secretos), espacio de trabajo, historia de operaciones, dibujos, plantillas, historial de las cuentas, backtests y estrategias en vivo. |
-| `~/Documents/Trading Hub/Estrategias` | Tus estrategias en C#. Adentro, `Reportes` guarda los reportes en Markdown. |
-| `~/Documents/Trading Hub/Indicadores` | Tus indicadores en C#. |
-| Llavero de macOS | Contraseñas, secrets y tokens de las conexiones, bajo el nombre «Trading Hub». |
+| `settings.json` | General preferences, hotkeys, DOM, and order templates |
+| `connections.json` | Connection configuration without stored secret values |
+| `workspace.json` | Open charts, tabs, layouts, and panels |
+| `Ticks/` | Saved trade-by-trade data organized by provider, instrument, and date |
+| `Klines/` | Downloaded candles for longer historical views |
+| `Drawings/` | Instrument-specific drawings |
+| `ChartTemplates/`, `IndicatorTemplates/`, `FootprintTemplates/` | Reusable templates |
+| `Accounts/` | Account fills and history |
+| `Backtests/` and `Live/` | Research runs and live-strategy state |
+| `crash.log` | Unexpected application failures |
 
-Adentro de la carpeta de datos:
+User strategies and indicators are stored outside the program installation. Do not accidentally overwrite or remove these directories during a source-code update.
 
-| Archivo o carpeta | Contenido |
-|---|---|
-| `settings.json` | Ajustes generales, atajos, DOM y plantillas de stop/objetivos. |
-| `connections.json` | Las conexiones configuradas, sin contraseñas ni secrets. |
-| `workspace.json` | Pestañas, gráficos, diseños y paneles abiertos. |
-| `Ticks/` | Historia de operaciones: un archivo por conexión, instrumento y día. |
-| `Klines/` | Velas bajadas de las conexiones (guardadas por mes), para cargar historia larga rápido. |
-| `Drawings/` | Dibujos de cada instrumento. |
-| `ChartTemplates/`, `IndicatorTemplates/`, `FootprintTemplates/` | Plantillas de gráfico, de indicador y de footprint. |
-| `Accounts/` | Ejecuciones de cada cuenta (el historial de la sección Cuenta). |
-| `Backtests/` y `Live/` | Corridas de backtesting y estado de las estrategias en vivo. |
-| `crash.log` | Errores inesperados, por si tenés que reportar un problema. |
+To open the folders from the application, use **File → Open data folder**, **Code → Open indicators folder**, **Code → Open strategies folder**, or **Settings → Data**.
 
-La primera vez que abrís la app se crean las carpetas de `Documents`. En `Indicadores` aparece un ejemplo
-(`EjemploDeltaPorcentual.cs`) y en `Estrategias` se escriben estrategias de ejemplo cuando la carpeta está vacía.
+## Updating
 
-Para abrir las carpetas desde la app: **Archivo → Abrir carpeta de datos**, **Código → Abrir carpeta de indicadores**,
-**Código → Abrir carpeta de estrategias**, o los botones «Abrir» de **Ajustes → Datos**.
+1. **Stop or safely manage live strategies and open orders first.** Quit Trading Hub completely; closing its window may leave it active in the system tray or macOS menu bar.
+2. Back up important app data and custom code.
+3. In the fork checkout, run `git pull` only after checking local changes and the selected branch.
+4. Rebuild and reinstall using the appropriate platform command (`.\build-windows.ps1` on Windows, `./build-app.sh --install` on macOS).
 
-## Actualizar
+An installed app update is intended to preserve user data because it lives outside the program folder. Always verify compatibility before a major upgrade.
 
-1. Cerrá Trading Hub del todo con ⌘Q o con «Salir de Trading Hub» desde su ícono en la barra de menú. Cerrar la
-   ventana no alcanza: de fábrica, la app sigue corriendo arriba a la derecha.
-2. Traé la versión nueva:
-   ```bash
-   git pull
-   ```
-   Si bajaste el código como ZIP, bajá el nuevo y reemplazá la carpeta (guardá tu `build.local.env` si tenías uno).
-3. Compilá e instalá:
-   ```bash
-   ./build-app.sh --install
-   ```
+## Uninstalling
 
-También podés abrir la carpeta en Claude Code y pedirle «actualizá Trading Hub». Tus datos, conexiones, claves y
-estrategias quedan como estaban porque viven fuera de la carpeta del repositorio.
+**Windows:** Quit the app fully, then uninstall Trading Hub from Windows **Settings → Apps → Installed apps**. The per-user application installation is removed; verify and back up data separately if you later choose to delete it. Credentials in Windows Credential Manager must be managed separately.
 
-## Desinstalar
+**macOS:** Quit fully using Command-Q or the menu-bar **Quit Trading Hub** command. Remove the app from Applications, then optionally remove credentials in Keychain Access and the user-data directories:
 
-1. Cerrá Trading Hub del todo (⌘Q o «Salir de Trading Hub»).
-2. Antes de borrar nada, si querés sacar las claves del Llavero desde la app: en **Conexiones**, el botón «Eliminar»
-   de cada conexión borra sus secretos. Las conexiones que vienen de fábrica no siempre se pueden eliminar; sus
-   secretos se borran en el paso 4.
-3. Borrá la app:
-   ```bash
-   rm -rf "/Applications/Trading Hub.app"
-   ```
-4. Borrá los secretos que queden en el Llavero: abrí **Acceso a Llaveros**, buscá «Trading Hub» y eliminá esos
-   ítems. Desde la Terminal, este comando los borra uno por uno hasta que no queda ninguno:
-   ```bash
-   while security delete-generic-password -s "Trading Hub" >/dev/null 2>&1; do :; done
-   ```
-5. Si no vas a volver a usarla, borrá la carpeta de datos (historia, cuentas, ajustes). No se puede deshacer:
-   ```bash
-   rm -rf ~/Library/Application\ Support/Trading\ Hub
-   ```
-6. Tus estrategias e indicadores están en `~/Documents/Trading Hub`. Borralos solo si no los querés guardar.
-7. Opcional: la carpeta del repositorio (con `dist/`), el SDK en `~/.dotnet` si no lo usa otro programa, y el enlace
-   `~/.local/bin/claude` si lo creaste solo para Trading Hub.
+```bash
+# Destructive: run only if you have backups and intend to erase all app data.
+rm -rf "/Applications/Trading Hub.app"
+rm -rf ~/Library/Application\ Support/Trading\ Hub
+```
 
-## Si algo falla
+If you want to remove every stored secret, search for Trading Hub entries in **Keychain Access** and delete only the intended entries. Do not delete user strategies or indicators unless you deliberately wish to lose them. Keep `~/Documents/Trading Hub` if you want to preserve your source files.
 
-- **`dotnet` no se encuentra**: el script usa `~/.dotnet` solo. Revisá que `~/.dotnet/dotnet --list-sdks` muestre
-  una versión 10.
-- **La compilación corta con un error**: leé el primer error que muestra la Terminal. Revisá que tengas internet (la
-  primera vez baja paquetes) y que el SDK instalado sea el 10.
-- **La app se cierra o algo no responde**: mirá `crash.log` en la carpeta de datos.
+## Troubleshooting
+
+- **SDK missing:** Verify `dotnet --list-sdks` or `~/.dotnet/dotnet --list-sdks` includes 10.x.
+- **Build fails:** Read the first actual compiler/error output. Verify internet and NuGet package availability.
+- **Installer unavailable:** Check that NSIS is installed and the Windows build script completed successfully.
+- **Claude Code not found:** Check `claude --version`, the CLI location, and `TRADINGHUB_CLAUDE_CLI`.
+- **App exits unexpectedly:** Check `crash.log` in the application's data directory.
+- **Spanish screens remain:** This fork is still being localized; check the source branch and current [translation status](../README.md).
+
+Do not run tests against live broker accounts or production market-data directories. See [Development](desarrollo.md) for isolated test guidance.

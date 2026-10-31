@@ -100,7 +100,7 @@ ven en el gráfico al momento.
 | Arrastrar el eje de tiempo / doble clic | Cambia el ancho de las velas / vuelve a lo último |
 | Botón de abajo a la derecha | Aparece si te corriste hacia atrás: vuelve a lo último |
 
-También sirven las teclas de [Primeros pasos](primeros-pasos.md#atajos-de-teclado) y, en el menú Gráfico,
+También sirven las teclas de [Primeros pasos](primeros-pasos.md#keyboard-shortcuts) y, en el menú Gráfico,
 «Escala automática» (⌥⌘A) e «Ir al último precio» (⌘Fin).
 
 ## Varios gráficos

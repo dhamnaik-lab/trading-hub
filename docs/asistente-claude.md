@@ -19,7 +19,7 @@ Trading Hub busca el ejecutable `claude` en `/usr/local/bin`, `/opt/homebrew/bin
 `~/.npm-global/bin`, en cada carpeta de tu `PATH` y en la copia que trae la app de escritorio de Claude
 (`~/Library/Application Support/Claude/claude-code/…`). Si encuentra varias, usa la de versión más nueva. Con la
 variable `TRADINGHUB_CLAUDE_CLI` podés indicarle otra ruta. Cómo instalarlo está en
-[Instalación](instalacion.md#claude-code-opcional).
+[Instalación](instalacion.md#claude-code-optional).
 
 - El panel de Claude muestra arriba «Claude Code *versión* · tu suscripción», o avisa si no lo encontró.
 - Si Claude Code pide iniciar sesión, aparece **Iniciar sesión en Claude Code**: abre la Terminal con `claude /login`

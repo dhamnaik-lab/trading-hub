@@ -162,7 +162,7 @@ condiciones opera cada estrategia, con la de ahora marcada. Se recalcula cada 30
 - **Barra de menú**: con la opción activada (lo está por defecto), cerrar la ventana deja a Trading Hub corriendo en la
   barra de menú de la Mac, con las estrategias trabajando. Su menú muestra las estrategias en vivo y las posiciones
   abiertas, y el panel tiene más detalle. Para cerrarlo del todo: ⌘Q o «Salir de Trading Hub». Ver
-  [Primeros pasos](primeros-pasos.md#el-ícono-en-la-barra-de-menú).
+  [Primeros pasos](primeros-pasos.md#system-tray-and-menu-bar).
 - **Reanudación automática**: unos segundos después de abrir, vuelven a arrancar solas las estrategias que corrían al
   cerrar (o al apagarse la Mac), con sus parámetros, tamaño y límites; las pausadas vuelven pausadas. Las de cuentas
   reales esperan que las reanudes, salvo que actives también esa opción. Un aviso resume qué se reanudó.

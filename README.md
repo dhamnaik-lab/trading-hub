@@ -2,154 +2,129 @@
 
 # Trading Hub
 
-**La plataforma de trading gratis y de código abierto que corre 100 % en tu computadora: Mac y Windows.**
-Gráficos con footprint, operación con DOM, backtesting profesional anti-sobreoptimización y estrategias con IA,
-con tus datos y tus claves siempre en tu computadora.
+**A free-to-use, source-available desktop trading platform for macOS and Windows.**
 
-Creada por [**@ralphtradesz**](https://x.com/ralphtradesz)
+Footprint charts, DOM trading, professional backtesting with overfitting checks, and AI-assisted C# strategies—all running locally, with market data and credentials kept on your computer.
 
-¿Usás Windows? **[Descargá el instalador](https://github.com/ralphtradesz/trading-hub/releases/latest/download/TradingHub-Setup-x64.exe)** ([cómo instalarla](#usás-windows)).
+Original project created by [**@ralphtradesz**](https://x.com/ralphtradesz). This is an independent English-language fork maintained at [dhamnaik-lab/trading-hub](https://github.com/dhamnaik-lab/trading-hub).
 
-[![Licencia MIT + Commons Clause](https://img.shields.io/badge/licencia-MIT%20%2B%20Commons%20Clause-amber.svg)](LICENSE)
+[![License: MIT + Commons Clause](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-amber.svg)](LICENSE)
 ![macOS Apple Silicon](https://img.shields.io/badge/macOS-Apple%20Silicon-black.svg)
-![Windows 10 y 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6.svg)
+![Windows 10 and 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6.svg)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4.svg)
 ![Avalonia](https://img.shields.io/badge/UI-Avalonia-8B44AC.svg)
 
-![Trading Hub](docs/img/trading.png)
+![Trading Hub overview](docs/img/trading.png)
 
 </div>
 
----
+> **Fork status:** The main navigation and Settings have been translated into English. Other application screens, some reports, the documentation, and the screenshots are being translated in stages. A complete English release has **not** been verified. The original project's [Windows installers](https://github.com/ralphtradesz/trading-hub/releases) are **upstream builds**, not builds of this English fork.
 
-## Qué es
+## Overview
 
-Trading Hub es una plataforma de trading de escritorio, gratuita y de código abierto. Todo corre localmente: la app, los
-datos que grabás o bajás, tus estrategias, los backtests y las claves de tus brokers (que van al Llavero de macOS, nunca
-a archivos). No hay servidores propios, cuentas que crear ni telemetría.
+Trading Hub is a desktop platform for charting, trading, and strategy research. Its application, downloaded market data, strategies, backtests, and broker secrets are designed to stay on your own computer. It does not require a Trading Hub account or operate a proprietary backend.
 
-Sirve para **futuros de CME** (Rithmic, Tradovate y la historia de Databento), **cripto** (Binance y Bybit, con datos
-gratis sin claves), **forex y CFDs** (OANDA, cTrader o archivos CSV) y **acciones de EE. UU.** (Alpaca).
+Supported market/data integrations in the source include CME futures (Rithmic, Tradovate, Databento historical data), crypto (Binance and Bybit), forex/CFDs (OANDA, cTrader, CSV), and US equities (Alpaca). Capabilities vary by integration; some connections supply data only and do **not** support live order placement.
 
-La IA viene de **Claude Code con tu propia suscripción** (sin claves de API): un asistente que escribe estrategias en C#,
-las compila, las prueba y arma reportes, y un agente que reparte el riesgo de tus estrategias en vivo.
+Claude Code integration uses your own signed-in Claude Code CLI session, not a Trading Hub API key. The application can assist with writing, compiling, and testing C# strategies, and includes tools for strategy reporting and portfolio-risk analysis.
 
-## Funciones
+## Features
 
-### Gráficos
-- Velas de tiempo, ticks, volumen o rango; velas, barras, línea o Heikin Ashi.
-- **Footprint** configurable columna por columna (bid/ask, delta, volumen, POC, perfil por vela) con su propio editor.
-- DOM, cinta de operaciones, dibujos y plantillas.
-- Indicadores incluidos: medias móviles, VWAP con desvíos, Bollinger, RSI, MACD, volumen, delta, delta acumulado (CVD),
-  perfil de volumen por sesión y grandes operaciones. Sumá los tuyos en C# (se recompilan al guardar), compatibles con
-  la API de indicadores de ATAS, y los de ATAS u otras fuentes de código público: ver
-  [Más indicadores](#más-indicadores).
-- **Replay** de cualquier día guardado, a la velocidad que quieras.
+### Charts and market data
 
-### Operar
-- **Chart Trader** y DOM con órdenes de mercado, límite y stop, brackets (stop y objetivos) y OCO.
-- Cuentas simuladas incluidas y cuentas reales de tus conexiones; historial y estadísticas por cuenta.
-- En la simulada nada te frena el clic; en cuentas reales podés pedir una confirmación antes de cada orden (se apaga
-  en Ajustes). La seguridad va por límites de riesgo.
+- Time-, tick-, volume-, and range-based bars, with candlestick, OHLC, line, and Heikin Ashi views.
+- Configurable footprint charts with bid/ask, delta, volume, POC, and per-bar profile columns.
+- Depth of market (DOM), time and sales, chart drawings, templates, and multiple chart layouts.
+- Built-in indicators including moving averages, VWAP with bands, Bollinger Bands, RSI, MACD, volume, delta, cumulative delta, session volume profile, and large trades.
+- Custom C# indicators, including compatibility helpers for publicly licensed ATAS indicator code.
+- Replay of previously recorded trading sessions.
 
-### Datos
-- Todo lo que mirás se graba solo, tick a tick, con el lado agresor.
-- Descargas: archivos públicos de Binance y Bybit, historia de Rithmic y de tus conexiones.
-- **Databento**: años de futuros de CME tick a tick (pago por uso, te muestra el costo antes). Se guarda aparte y en los
-  backtests elegís **solo Rithmic, solo Databento o las dos combinadas** (Rithmic primero y Databento completa lo que falta).
-- Importación de CSV de Dukascopy, HistData, MetaTrader o TradingView.
+### Trading and accounts
 
-### Estrategias y backtesting
-- Estrategias en **C#** con un editor integrado que compila en milisegundos (Roslyn, con los errores marcados en el
-  código) y una API simple: `EnterLong()`,
-  `StopLossTicks`, indicadores, filtros de horario y de contexto de mercado.
-- Backtests sobre cada operación real guardada, con comisiones, deslizamiento y llenado realista de órdenes límite.
-- **Optimización bayesiana** (TPE) y **walk-forward inteligente**: elige mesetas estables en vez de picos, comprime ticks
-  para ir más rápido y mide la sobreoptimización con **PBO (CSCV)** y **CPCV con embargo**. La librería trae además el
-  **Sharpe deflactado** y una validación completa para usar desde código.
-- El **timeframe** se optimiza como un parámetro más (M1 a D1), y tus estrategias **favoritas** quedan arriba de la lista.
-- **Monte Carlo**, resultados **según el mercado** (rango, mixto o tendencia; volatilidad baja, normal o alta) y métricas de
-  robustez para no confundir suerte con ventaja.
+- Chart Trader and DOM order entry: market, limit, stop, bracket, and OCO orders.
+- Simulated accounts and supported real accounts, with account trade history and statistics.
+- Optional confirmation before real-account orders, alongside configurable risk controls.
+- **Risk warning:** Trading can result in financial losses. Always verify the account, instrument, quantity, and order type before using a real account.
 
-### En vivo
-- Corré estrategias en tus cuentas desde el backtester o desde un gráfico, con tamaño, pérdida diaria y drawdown máximos.
-  En el gráfico ves cómo le fue en su historia: el resultado real con costos, una mini curva y todas las estadísticas.
-- Portafolios, un **agente de riesgo con Claude** que propone el tamaño de cada una (en cuentas reales aprobás vos),
-  la condición de cada mercado en tiempo real y un panel en la barra de menú de la Mac.
-- Reanudación automática al abrir y modo sin dormir (también con la tapa cerrada, si querés).
+### Storage and historical downloads
 
-### Claude
-- Un chat que escribe y corrige estrategias, y un **laboratorio** (servidor MCP de la misma app) donde Claude corre
-  backtests, optimizaciones y walk-forwards y te deja un reporte profesional con todas las métricas.
+- Locally recorded tick-by-tick data, including aggressor side when available.
+- Public Binance and Bybit data, supported connection history, and CSV imports from sources such as Dukascopy, HistData, MetaTrader, and TradingView.
+- Databento historical CME futures data (usage charges apply; the app presents a cost estimate before downloading).
+- Backtests can select recorded Rithmic data, Databento data, or a combination where supported.
 
-## Capturas
+### Strategies and backtesting
+
+- C# strategy editor powered by Roslyn, with compile diagnostics and entry/exit API helpers.
+- Historical tests based on recorded ticks, including transaction costs, slippage, and modeled limit-order fills.
+- Bayesian parameter optimization (TPE), walk-forward validation, Monte Carlo analysis, and market-regime breakdowns.
+- Overfitting and robustness tools including PBO/CSCV, CPCV with embargo, and deflated Sharpe.
+- Timeframe optimization and strategy favorites.
+
+### Live strategy management
+
+- Run supported strategies from the backtester or a chart, with position sizing, daily-loss limits, and maximum drawdown controls.
+- Portfolio monitoring and a Claude-assisted risk agent, with human approval required for changes affecting real accounts.
+- Optional resumption of strategies on application launch; review these settings carefully for real-money accounts.
+
+### Claude Code integration
+
+- Strategy assistant for creating and correcting C# code.
+- Local MCP laboratory tools for backtesting, optimization, walk-forward analysis, and professional reports.
+
+## Screenshots
+
+These are inherited upstream screenshots and may still contain Spanish UI labels until updated English screenshots are available.
 
 | | |
 |---|---|
-| ![Footprint](docs/img/footprint.png) | ![Operar desde el gráfico](docs/img/operar.png) |
-| Footprint con delta, POC y grandes operaciones | Chart Trader, DOM y cinta de operaciones |
-| ![Estrategias con Claude](docs/img/claude.png) | ![Backtesting](docs/img/backtest.png) |
-| Estrategias en C# con el asistente de Claude | Backtesting con resultados según el mercado |
-| ![Datos y Databento](docs/img/datos.png) | ![Tema claro](docs/img/claro.png) |
-| Historia tick a tick y Databento | Tema claro u oscuro |
+| ![Footprint chart](docs/img/footprint.png) | ![Trading from a chart](docs/img/operar.png) |
+| Footprint with delta, POC, and large trades | Chart Trader, DOM, and time and sales |
+| ![Claude strategy assistant](docs/img/claude.png) | ![Backtesting](docs/img/backtest.png) |
+| C# strategy assistant | Market-regime backtesting |
+| ![Recorded data](docs/img/datos.png) | ![Light theme](docs/img/claro.png) |
+| Historical ticks and Databento | Light and dark themes |
 
-## Instalación
+## Installation
 
-### Lo más fácil: con Claude Code
-Si tenés [Claude Code](https://claude.com/claude-code), abrí una Terminal en esta carpeta, corré `claude` y pedile:
+### Build this English fork
 
-```
-Instalá Trading Hub en mi Mac siguiendo CLAUDE.md.
-```
-
-Revisa tu Mac, instala lo que falte (sin contraseña de administrador), compila la app y la deja en Aplicaciones.
-La guía paso a paso está en [INSTALAR_CON_CLAUDE_CODE.md](INSTALAR_CON_CLAUDE_CODE.md).
-
-### A mano
-Necesitás una Mac con Apple Silicon y macOS 12 o más nuevo (para Windows, mirá [¿Usás Windows?](#usás-windows)).
+Clone **this fork**, not the original repository:
 
 ```bash
-curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
-bash /tmp/dotnet-install.sh --channel 10.0
-git clone https://github.com/ralphtradesz/trading-hub.git
+git clone https://github.com/dhamnaik-lab/trading-hub.git
 cd trading-hub
+```
+
+**Windows 10/11 (x64 or ARM64):** Install Git, the [.NET 10 SDK](https://dotnet.microsoft.com/download), and [NSIS](https://nsis.sourceforge.io). In PowerShell, run:
+
+```powershell
+.\build-windows.ps1
+```
+
+The build script publishes Windows installers into `dist`. An installer produced from this fork must be built from the updated source; installing an upstream release will **not** include the fork's English changes.
+
+**macOS (Apple Silicon, macOS 12+):** Use the repository's build script:
+
+```bash
 ./build-app.sh --install
 ```
 
-La primera compilación tarda unos minutos. La app queda en `/Applications/Trading Hub.app` y arranca con una cuenta
-simulada: nada opera dinero real hasta que lo habilites en Conexiones. Más detalles en
-[docs/instalacion.md](docs/instalacion.md).
+The script builds and installs `Trading Hub.app`. It can install the required .NET SDK locally. See [installation instructions](docs/instalacion.md) for further details; portions of that guide may still be in Spanish.
 
-## ¿Usás Windows?
+### Original upstream releases
 
-Trading Hub corre en Windows 10 y 11 con un instalador de un clic: no hace falta compilar nada ni instalar .NET.
+The original author's [published Windows installers](https://github.com/ralphtradesz/trading-hub/releases) are available separately. They are not generated from this fork, so do not expect them to contain the translations made here.
 
-1. Descargá el instalador:
-   - **[PC con Intel o AMD (la mayoría)](https://github.com/ralphtradesz/trading-hub/releases/latest/download/TradingHub-Setup-x64.exe)**
-   - [PC con Windows en ARM (Snapdragon, Surface Pro X)](https://github.com/ralphtradesz/trading-hub/releases/latest/download/TradingHub-Setup-arm64.exe)
-2. Abrilo. Como el instalador todavía no tiene firma de un certificado pago, Windows puede mostrar «Windows protegió
-   tu PC»: tocá **Más información** y después **Ejecutar de todas formas**.
-3. Tocá **Instalar**. No pide permisos de administrador: queda en tu usuario, con accesos en el menú Inicio y en el
-   escritorio. Al terminar, **Abrir Trading Hub**.
+## Data, secrets, and updates
 
-Arranca con una cuenta simulada, igual que en Mac. Tus datos quedan en `%APPDATA%\Trading Hub`, tus estrategias e
-indicadores en `Documentos\Trading Hub` y tus claves en el **Administrador de credenciales de Windows**. Para
-actualizar, instalá la versión nueva encima (tus datos no se tocan); para desinstalar, **Configuración → Aplicaciones →
-Trading Hub → Desinstalar**.
+On Windows, application data is stored under `%APPDATA%\Trading Hub`, user strategies/indicators under `Documents\Trading Hub`, and secrets are handled through Windows Credential Manager. On macOS, application data is stored under `~/Library/Application Support/Trading Hub`, user code under `~/Documents/Trading Hub`, and credentials use macOS Keychain.
 
-Para compilarla vos en Windows: [Git](https://git-scm.com), el [SDK de .NET 10](https://dotnet.microsoft.com/download)
-y [NSIS](https://nsis.sourceforge.io) (`winget install NSIS.NSIS`), y en la carpeta del repositorio
-`.\build-windows.ps1` (deja los instaladores en `dist`). Desde una Mac: `brew install makensis` y `./build-windows.sh`.
-Qué depende de cada sistema está en [PORTAR_A_WINDOWS.md](PORTAR_A_WINDOWS.md).
+Updating the installed application should preserve the user-data directories, but always back up valuable user files and confirm compatibility before upgrading. Never add API keys, broker passwords, or account tokens to the repository.
 
-## Más indicadores
+## Additional indicators
 
-Trading Hub trae sus propios indicadores (medias, VWAP, Bollinger, RSI, MACD, volumen, delta, CVD, perfil de volumen y
-grandes operaciones). Los de otras plataformas no vienen en el repositorio porque su código no tiene una licencia que
-permita redistribuirlo, pero **los podés sumar vos** desde su código público:
-
-**Los de ATAS, todos de una vez** (unos 250, desde su repositorio público
-[AtasPlatform/Indicators](https://github.com/AtasPlatform/Indicators)):
+The repository contains built-in indicators and tools for adding custom C# indicators. To obtain ATAS indicator sources separately, subject to their individual licenses:
 
 ```bash
 git clone https://github.com/AtasPlatform/Indicators.git third_party/ATAS-Indicators
@@ -157,71 +132,47 @@ python3 tools/port_atas.py
 ./build-app.sh --install
 ```
 
-El script adapta los namespaces de ATAS a los de Trading Hub sin tocar la lógica (y corrige un par de detalles para que
-compilen), y aparecen en la biblioteca de indicadores con los demás. Para actualizarlos cuando ATAS publique cambios:
-`git -C third_party/ATAS-Indicators pull` y repetí los dos últimos pasos. Las dos carpetas que se crean están en el
-`.gitignore`, así que no se suben si hacés un fork.
+Alternatively, place a compatible indicator `.cs` file in the user indicators directory. See the [indicator guide](docs/indicadores.md). Do not redistribute third-party code without checking its license.
 
-**Uno suelto, de ATAS o de cualquier otra fuente de código público en C#:** copiá el `.cs` en
-`~/Documents/Trading Hub/Indicadores`. Trading Hub lo compila solo, adapta los namespaces de ATAS y lo suma a la
-biblioteca. Si usa otro indicador (por ejemplo, el CCI de ATAS usa su SMA), copiá también ese.
+## Documentation
 
-Esos indicadores son de sus autores: usalos respetando la licencia de cada fuente. Más detalles en
-[docs/indicadores.md](docs/indicadores.md).
-
-## Documentación
-
-| | |
+| Topic | Guide |
 |---|---|
-| [Instalación](docs/instalacion.md) | Requisitos, compilar, actualizar y desinstalar |
-| [Primeros pasos](docs/primeros-pasos.md) | Recorrido por la app |
-| [Conexiones](docs/conexiones.md) | Brokers, exchanges y datos; cuentas reales y simuladas |
-| [Gráficos](docs/graficos.md) | Períodos, footprint, DOM, dibujos, indicadores y replay |
-| [Operar](docs/operar.md) | Chart Trader, DOM, órdenes, brackets y cuentas |
-| [Datos](docs/datos.md) | Grabación, descargas, Databento e importación de CSV |
-| [Estrategias](docs/estrategias.md) | La API en C# con ejemplos |
-| [Backtesting](docs/backtesting.md) | Backtest, optimización, walk-forward, PBO, CPCV y Monte Carlo |
-| [En vivo](docs/en-vivo.md) | Estrategias en tus cuentas, portafolios y agente de riesgo |
-| [Claude](docs/asistente-claude.md) | El asistente de estrategias y el laboratorio MCP |
-| [Indicadores](docs/indicadores.md) | Incluidos, propios y compatibles con la API de ATAS |
-| [Ajustes](docs/ajustes.md) | Todas las opciones |
-| [Privacidad](docs/privacidad.md) | Qué queda en tu Mac y qué se conecta a internet |
-| [Desarrollo](docs/desarrollo.md) | Estructura del código, pruebas y escenas |
-| [Windows](PORTAR_A_WINDOWS.md) | Qué depende de cada sistema operativo y cómo se armó la versión de Windows |
+| Documentation index | [docs/README.md](docs/README.md) |
+| Installation | [docs/instalacion.md](docs/instalacion.md) |
+| Getting started | [docs/primeros-pasos.md](docs/primeros-pasos.md) |
+| Connections | [docs/conexiones.md](docs/conexiones.md) |
+| Charts | [docs/graficos.md](docs/graficos.md) |
+| Trading | [docs/operar.md](docs/operar.md) |
+| Data | [docs/datos.md](docs/datos.md) |
+| C# strategies | [docs/estrategias.md](docs/estrategias.md) |
+| Backtesting | [docs/backtesting.md](docs/backtesting.md) |
+| Live trading | [docs/en-vivo.md](docs/en-vivo.md) |
+| Claude | [docs/asistente-claude.md](docs/asistente-claude.md) |
+| Indicators | [docs/indicadores.md](docs/indicadores.md) |
+| Settings | [docs/ajustes.md](docs/ajustes.md) |
+| Privacy | [docs/privacidad.md](docs/privacidad.md) |
+| Development | [docs/desarrollo.md](docs/desarrollo.md) |
+| Windows porting notes | [PORTAR_A_WINDOWS.md](PORTAR_A_WINDOWS.md) |
 
-## Apoyá el proyecto
+The filenames are intentionally unchanged to preserve existing links while the remaining documents are translated.
 
-Trading Hub es gratis y lo va a seguir siendo. Si te sirve y querés apoyar su desarrollo, podés donar acá:
+## Acknowledgments and support
 
-| Moneda | Red | Dirección |
-|---|---|---|
-| USDT | BEP20 (BNB Smart Chain) | `0xebedab9a1f6820914b0869e4126d5c54aa028a2a` |
-| USDT | TRC20 (Tron) | `THAULimtnWpbQ8opZWxK8863nZEkyek4E5` |
-| BTC | BEP20 (BNB Smart Chain) | `0xebedab9a1f6820914b0869e4126d5c54aa028a2a` |
+Original author: [@ralphtradesz](https://x.com/ralphtradesz). The upstream project includes donation details in its [README](https://github.com/ralphtradesz/trading-hub#readme). They support the original author, not the maintainer of this fork.
 
-Mandá cada moneda **solo por la red indicada**: lo que se envía por otra red se pierde. ¡Gracias!
+## Disclaimer
 
-## Aviso
+Market trading carries a risk of losing money. Trading Hub is a software tool, not investment advice. Historical backtest results cannot guarantee future returns. Test with a simulated account before considering live orders. Software is provided **as is**, without warranties.
 
-Operar en los mercados implica riesgo de perder dinero. Trading Hub es una herramienta: no da consejos de inversión y
-los resultados de un backtest no garantizan resultados futuros. Probá siempre primero con la cuenta simulada. El
-software se entrega "tal cual", sin garantías (ver la [licencia](LICENSE)).
+## License
 
-## Licencia
-
-[MIT con la cláusula Commons Clause](LICENSE): podés usar Trading Hub gratis (también para operar tu propia plata),
-modificarlo y compartirlo, siempre con el aviso de la licencia. Lo que no podés es **venderlo**: ni la app, ni una
-versión modificada, ni un servicio pago cuyo valor venga de Trading Hub (por ejemplo, cobrar por instalarlo, hostearlo
-o darle soporte). Por esa condición no es una licencia «open source» en el sentido estricto de la OSI: el código es
-público y gratis, pero no se puede comercializar.
-
-Los indicadores portados de otras plataformas que no tienen licencia abierta no forman parte de este repositorio, pero
-los podés sumar vos desde su código público (ver [Más indicadores](#más-indicadores)).
+See [LICENSE](LICENSE). The repository contains code offered under **MIT with Commons Clause**, which restricts commercial selling of the software or services substantially based on it. This is **source-available**, not an OSI-approved open-source license. Preserve all copyright, author, and license notices when modifying or distributing it.
 
 ---
 
 <div align="center">
 
-Hecho con dedicación por [**@ralphtradesz**](https://x.com/ralphtradesz)
+Originally created by [@ralphtradesz](https://x.com/ralphtradesz). English fork: [dhamnaik-lab/trading-hub](https://github.com/dhamnaik-lab/trading-hub).
 
 </div>

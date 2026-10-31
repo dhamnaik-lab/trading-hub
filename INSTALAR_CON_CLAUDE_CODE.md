@@ -1,62 +1,57 @@
-# Instalar Trading Hub con Claude Code
+# Install Trading Hub with Claude Code
 
-La forma más fácil de instalar Trading Hub es pedírselo a tu propio Claude Code: compila la app en tu Mac, la instala
-en Aplicaciones y la deja conectada a tu suscripción de Claude. No necesitás saber programar.
+Claude Code can build and install Trading Hub on your Mac, verify the required tools, and help you connect its AI features to your own Claude Code session. You do not need to be a programmer.
 
-## Antes de empezar
+**This guide builds the English fork** at [dhamnaik-lab/trading-hub](https://github.com/dhamnaik-lab/trading-hub). The original author's installers and source checkout do not automatically include this fork's translations.
 
-- Una Mac con Apple Silicon (M1 o más nuevo) y macOS 12 o más nuevo.
-- [Claude Code](https://claude.com/claude-code) instalado y con tu sesión iniciada (plan Pro o Max).
+## Before you begin
 
-## Pasos
+- A Mac with Apple Silicon (M1 or newer) and macOS 12 or later.
+- [Claude Code](https://claude.com/claude-code) installed and signed in using a plan that supports it.
+- Git installed, or a downloaded ZIP of this fork.
 
-1. Bajá el proyecto. Con Git:
+For Windows builds, use the Windows instructions in the [main README](README.md#installation); the macOS commands below do not apply.
+
+## Steps
+
+1. Clone **this fork**:
+
    ```bash
-   git clone https://github.com/ralphtradesz/trading-hub.git
-   ```
-   o desde GitHub: **Code → Download ZIP** y descomprimilo.
-2. Abrí una Terminal en esa carpeta y arrancá Claude Code:
-   ```bash
+   git clone https://github.com/dhamnaik-lab/trading-hub.git
    cd trading-hub
+   ```
+
+   Alternatively select **Code → Download ZIP** on this fork's repository page and extract it.
+
+2. Start Claude Code in the repository folder:
+
+   ```bash
    claude
    ```
-3. Copiá y pegá este mensaje:
 
----
+3. Send the following prompt to Claude Code:
 
-```
-Instalá Trading Hub en mi Mac siguiendo las instrucciones de CLAUDE.md de esta carpeta:
-revisá que mi Mac sea compatible, instalá el SDK de .NET 10 si falta (en ~/.dotnet, sin sudo),
-compilá e instalá la app con ./build-app.sh --install, verificá que la app encuentre mi Claude Code
-(creá el enlace en ~/.local/bin si hace falta), abrila y contame en pocas líneas cómo empiezo.
-Si en Aplicaciones ya hay otra app llamada «Trading Hub», preguntame antes de reemplazarla.
-```
+   > Install Trading Hub on my Mac using the CLAUDE.md instructions in this folder. First check that this is a compatible Apple Silicon Mac running macOS 12 or later. Install the .NET 10 SDK in ~/.dotnet without sudo if it is missing. Build and install the app with ./build-app.sh --install, then check that the installed app can locate my Claude Code CLI. Only create a link in ~/.local/bin if it is necessary. Do not overwrite another app named Trading Hub without asking. Show any real build errors and confirm success only after verifying that the app is installed. Open it and briefly explain how to get started. Preserve my existing user data and credentials.
 
----
+## What Claude Code does
 
-## Qué va a pasar
+- Checks the Mac's OS version and CPU architecture.
+- Installs a user-local .NET 10 SDK if needed.
+- Builds the application and installs it to `/Applications/Trading Hub.app`.
+- Verifies that the app can locate your existing Claude Code session for the Backtesting assistant, local laboratory, and live risk agent.
+- Opens Trading Hub, which initially uses a **simulated account**. No live orders are sent unless a supported real account is separately configured and authorized.
 
-- Claude Code revisa tu Mac (Apple Silicon, macOS 12 o más nuevo).
-- Si no tenés el SDK de .NET 10, lo baja del sitio oficial de Microsoft a `~/.dotnet` (no toca el resto del sistema ni
-  pide tu contraseña).
-- Compila Trading Hub (unos minutos la primera vez) y lo instala en `/Applications/Trading Hub.app`.
-- Verifica que la app encuentre tu Claude Code: como usa tu misma instalación y tu misma sesión, las funciones con IA
-  (el chat de Backtesting, el laboratorio y el agente de riesgo de En vivo) quedan conectadas a **tu** suscripción, sin
-  claves de API.
-- Abre la app. Arranca con una cuenta simulada: nada opera dinero real hasta que lo habilites vos en Conexiones.
+The app's integration uses your Claude Code CLI session. It does not require placing a Claude API key in this repository.
 
-## Actualizar
+## Updating
 
-Bajá la versión nueva (`git pull` o el ZIP nuevo) y pedile a Claude Code: «actualizá Trading Hub». Tus datos, tus
-conexiones y tus estrategias quedan como estaban (viven fuera de esta carpeta).
+Pull updates from your intended fork branch (or download the new fork ZIP), then ask Claude Code to rebuild and reinstall Trading Hub. Application data, saved connections, and user strategy files live outside the source checkout. Back up important user data before major upgrades.
 
-## Si algo sale mal
+## Troubleshooting
 
-Pedile a Claude Code que te muestre el error y lo resuelva. Los problemas más comunes:
+- **App cannot locate Claude Code:** Confirm the CLI installation and `command -v claude`. A user-local link in `~/.local/bin/claude` may help.
+- **macOS cannot verify the application:** The build script applies an ad-hoc signature. Rebuild locally if you copied the app from another computer.
+- **Build fails:** Check that `~/.dotnet/dotnet --list-sdks` or `dotnet --list-sdks` includes a 10.x SDK. Inspect the actual compiler error rather than assuming the build completed.
+- **The app still displays Spanish:** Localization is ongoing; ensure you built the English fork's latest source and check the translation status in [README.md](README.md).
 
-- **La app no encuentra Claude Code**: pedile que cree el enlace en `~/.local/bin/claude`.
-- **macOS dice que no puede verificar la app**: la app se firma "ad hoc" en tu Mac al compilarla; si la copiaste de otra
-  computadora, compilala de nuevo en la tuya.
-- **Falla la compilación**: confirmá que `~/.dotnet/dotnet --list-sdks` muestre una versión 10.
-
-Más detalles en [docs/instalacion.md](docs/instalacion.md).
+See the [installation guide](docs/instalacion.md) for platform and storage details.

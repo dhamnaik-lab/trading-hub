@@ -1,84 +1,79 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Ajustes
+# Settings
 
-**Ajustes** (⌘,) tiene las preferencias generales de Trading Hub. Cada cambio se guarda al momento. Lo que es de cada
-conexión está en [Conexiones](conexiones.md), lo de cada gráfico en [Gráficos](graficos.md), el stop y los objetivos de
-cada instrumento en [Operar](operar.md) y el agente de riesgo de cada portafolio en [En vivo](en-vivo.md).
+**Settings** (`Ctrl+,` on Windows or `⌘,` on macOS) contains the general Trading Hub preferences. Most changes save immediately. Provider-specific settings are in [Connections](conexiones.md), chart preferences in [Charts](graficos.md), order templates in [Trading](operar.md), and portfolio risk-agent settings in [Live strategies](en-vivo.md).
 
 ## General
 
-| Opción | Por defecto | Qué hace |
+| Setting | Default | Meaning |
 |---|---|---|
-| Apariencia | Oscuro | **Oscuro** (negro) o **Claro** (blanco) en toda la plataforma. También se cambia con el botón de sol y luna de la barra de arriba. Los colores propios de cada gráfico se mantienen. |
-| Zona horaria de los gráficos | Hora de esta Mac | La hora del eje de tiempo, la cinta y las sesiones. Arriba están las habituales (Buenos Aires, Nueva York, Chicago, Londres, Madrid y UTC) y después todas. Es también la zona de las estrategias puestas en un gráfico: con «Hora de esta Mac», ellas usan UTC. |
-| Sonidos de alerta | Activado | Suenan las alertas de precio, Big Trades y los avisos de indicadores. |
+| Appearance | Dark | Use **Dark** or **Light** colors across the application. The sun/moon icon in the top bar provides the same switch. Per-chart color settings are preserved. |
+| Chart time zone | This computer's time | Controls the chart time axis, time and sales, and session labels. The list includes Buenos Aires, New York, Chicago, London, Madrid, UTC, and available system zones. Check strategy-time handling separately from display labels. |
+| Alert sounds | Enabled | Enables price alerts, large-trade notifications, and indicator sounds. |
 
-## Operar
+## Trading
 
-| Opción | Por defecto | Qué hace |
+| Setting | Default | Meaning |
 |---|---|---|
-| Confirmar órdenes reales | Activado | Antes de mandar una orden manual (Chart Trader, DOM o atajos) a una cuenta real, pide confirmación. Se suma a la opción de cada conexión: la orden sale sin preguntar solo si las dos están apagadas. No afecta a las estrategias en vivo. |
-| Cuenta simulada | — | Muestra el saldo inicial (se cambia en la sección **Cuenta**). Las órdenes del simulador se llenan con la cola del libro y el tape real. |
+| Confirm live orders | Enabled | Manual real-account orders placed through Chart Trader, DOM, or hotkeys request confirmation. This works together with each connection's setting; both confirmation controls must be disabled for a manual real order to bypass confirmation. Live strategy orders have their own controls. |
+| Simulated account | — | Displays the initial simulator balance, which can be changed from **Accounts**. Simulated fills model order book queues and actual trade tape where available. |
 
-## Estrategias en vivo
+**Safety:** A confirmation dialog is not a substitute for verifying the selected account, contract, side, size, stop, and exchange status.
 
-| Opción | Por defecto | Qué hace |
+## Live strategies
+
+| Setting | Default | Meaning |
 |---|---|---|
-| Seguir en la barra de menú al cerrar la ventana | Activado | Cerrar la ventana no cierra Trading Hub: queda en la barra de menú de la Mac con las estrategias en vivo trabajando, y su ícono abre un panel con las estrategias y las posiciones en tiempo real. Para cerrarlo del todo, ⌘Q o «Salir de Trading Hub» en ese panel. |
-| Reanudarlas solas al abrir Trading Hub | Activado | Las que corrían cuando se cerró Trading Hub (o se apagó la Mac) vuelven a arrancar unos segundos después de abrir, con sus parámetros, tamaño y límites; las pausadas vuelven pausadas. Apagado, esperan que las reanudes desde En vivo. |
-| También las de cuentas reales | Apagado | Apagado (lo recomendado), las que operan dinero real esperan que las reanudes vos. Solo se puede activar si la anterior está activada. |
-| Elegir el contrato solo (minis o micros) | Activado | Si el tamaño de una estrategia de futuros pide una fracción del mini (por ejemplo 1 NQ × 0,5), las órdenes van al micro con la misma exposición (5 MNQ), mirando el mismo gráfico. Con minis enteros usa el mini. Con una posición abierta sigue en el mismo contrato y cambia cuando queda plana. |
+| Keep running in the system tray / menu bar when the window closes | Enabled | Closing the main window can leave Trading Hub and its live strategies running in the Windows system tray or macOS menu bar. Use **Quit Trading Hub** or the OS-specific exit shortcut to stop the app completely. |
+| Automatically resume when Trading Hub opens | Enabled | Strategies that were running at shutdown can restart shortly after startup using their saved parameters, size, and limits. Previously paused strategies remain paused. Disable to resume manually in **Live**. |
+| Include live accounts | Disabled | When disabled, real-money strategies wait for explicit manual resume after startup. Enabling this option permits automatic restart; it depends on the general auto-resume setting. **Leave disabled unless the operational risk is understood.** |
+| Automatically select mini or micro contracts | Enabled | For CME futures, a fractional mini exposure (for example NQ × 0.5) may be represented with the equivalent number of micros (5 MNQ). Whole mini quantities continue using minis. Open positions remain on the original contract until flat. |
 
-## Modo sin dormir
+## Prevent sleep
 
-| Opción | Por defecto | Qué hace |
+| Setting | Platform | Meaning |
 |---|---|---|
-| Mantener la Mac despierta | Activado | Mientras haya estrategias en vivo o el agente de riesgo trabajando, la Mac no se duerme por inactividad (la pantalla sí puede apagarse). No pide contraseña y se suelta solo cuando no queda nada corriendo. |
-| Seguir con la tapa cerrada | Apagado | Al cerrar la tapa, macOS duerme todo. Con esto activado, cuando haya algo corriendo Trading Hub te pide la contraseña de administrador (una vez por cada vez que lo abrís) y la Mac sigue funcionando con la tapa cerrada mientras Trading Hub esté abierto. Se deshace solo al cerrar Trading Hub, aunque se cierre de golpe. |
-| Solo con el cargador conectado | Activado | Con batería, la Mac se duerme al cerrar la tapa aunque la opción anterior esté activada. Se puede tocar solo si la anterior está activada. |
+| Keep this computer awake | Windows/macOS | Prevents idle sleep while live strategies or Claude agents require processing. The display may turn off. |
+| Keep running with the lid closed | macOS | Can enable an administrator-approved mechanism to keep the Mac running with the lid closed while Trading Hub is active. Default is disabled. |
+| Only when plugged in | macOS | When enabled, closed-lid operation is restricted to external power. |
+| With the lid closed / Power options | Windows | Windows determines lid-close behavior using its own Power settings. Trading Hub cannot independently override Windows' lid-close configuration. |
 
-Debajo se ve el estado: si la Mac está despierta y por qué, y si el modo de tapa cerrada está activo. Con la tapa cerrada
-la Mac no ventila igual: no la guardes en un bolso así.
+**Heat risk:** A laptop running with its lid closed may have reduced ventilation. Never leave a running laptop enclosed in a bag.
 
-Por dentro, el primero usa una aserción de energía de macOS, como hace una app de video. El de la tapa cerrada corre un
-ayudante con permisos de administrador que deja `pmset disablesleep` en 1 mientras exista un aviso en la carpeta de
-datos y Trading Hub esté abierto (con «Solo con el cargador», solo mientras está enchufada) y lo vuelve a 0 al terminar.
+On macOS, the keep-awake mechanism uses a power assertion; optional lid-closed mode adjusts the OS sleep policy temporarily and requests authorization. Review that setting before using unattended live trading.
 
-## Atajos de teclado
+## Keyboard shortcuts
 
-Funcionan en la sección Trading y en los gráficos en ventanas aparte, sobre el gráfico activo. Mientras escribís en un
-campo de texto solo responden los que usan ⌃, ⌥ o ⌘, o una tecla de función.
+Shortcuts apply to the active chart in **Trading** and detached chart windows. Text inputs and OS shortcut conventions can take precedence.
 
-| Grupo | Acciones (con su atajo de fábrica) |
+| Group | Actions |
 |---|---|
-| Operar | Comprar a mercado, Vender a mercado, Comprar límite en el bid, Vender límite en el ask, Cerrar la posición, Dar vuelta la posición, Cancelar todas las órdenes, Cerrar el 25 %, Cerrar el 50 %, Stop a breakeven, Poner stop y objetivos de la plantilla, Cantidad: siguiente preset y Cantidad: preset anterior. **Vienen sin asignar** a propósito. |
-| Gráfico | Período 1 minuto (⌥1), 5 minutos (⌥2), 15 minutos (⌥3), 1 hora (⌥4), 4 horas (⌥5) y diario (⌥6); estilo velas, footprint y Heikin Ashi; escala automática; ir al último precio; dibujar línea horizontal (⌥H); cursor (soltar herramienta). |
-| Ventanas | Diseño de un gráfico, diseño de cuatro gráficos, pestaña siguiente (⌃Tab) y anterior (⌃⇧Tab), sacar el gráfico a una ventana, mostrar u ocultar el DOM, el Chart Trader del gráfico (⌥T) y el panel derecho. |
+| Trading | Buy/sell market, buy limit at bid, sell limit at ask, close/reverse position, cancel all orders, close partial position, move stop to breakeven, apply stop/target templates, and cycle quantity presets. **Trading shortcuts are unassigned by default for safety.** |
+| Chart | Select common periods (1m, 5m, 15m, 1h, 4h, daily), chart type, auto-scale, return to latest price, horizontal line, and cursor tool. |
+| Windows and layout | One/four-chart layouts, next/previous tabs, detach chart, DOM, Chart Trader, and side panel. |
 
-Para cambiar uno, hacé clic en su botón y presioná la combinación: Esc cancela y ⌫ lo deja sin asignar. Si otra acción
-ya usaba esa combinación, se la saca y te avisa. **Restablecer los de fábrica** vuelve todo al principio. En cuentas
-reales, los atajos de operar siguen pidiendo confirmación si «Confirmar órdenes reales» está activado.
+Click a shortcut control and press the desired key combination. **Esc** cancels; **Backspace** clears the assignment. If the combination belongs to another action, the app transfers it and reports the change. **Restore defaults** resets bindings.
 
-## Datos
+Account confirmations remain governed by the real-order configuration even when a trading shortcut is assigned.
 
-| Opción | Qué hace |
+## Data
+
+| Setting | Description |
 |---|---|
-| Grabar lo que llega en vivo | Activado por defecto. Guarda cada operación que llega para reabrir los gráficos al instante, hacer replay y backtests. |
-| Carpeta de datos | `~/Library/Application Support/Trading Hub`, con **Abrir** |
-| Indicadores propios (C#) | `~/Documents/Trading Hub/Indicadores`, con **Abrir** |
-| Estrategias (C#) | `~/Documents/Trading Hub/Estrategias`, con **Abrir** |
+| Record live data | Enabled by default. Stores received trades for fast chart reopening, replay, and backtesting. |
+| Data folder | Opens the local application data directory. |
+| Custom indicators (C#) | Opens the user indicator source directory. |
+| Strategies (C#) | Opens the user strategy source directory. |
 
-Más sobre lo guardado en [Datos](datos.md) y [Privacidad](privacidad.md).
+For path details see [Installation](instalacion.md#where-data-is-stored), [Data](datos.md), and [Privacy](privacidad.md).
 
-## Acerca de
+## About
 
-Al final está la versión de Trading Hub, la de .NET y el crédito del autor, con un enlace a su perfil.
+The bottom of Settings shows the Trading Hub version, .NET details, and a link to the original author, [@ralphtradesz](https://x.com/ralphtradesz).
 
-## Dónde se guardan
+## Where preferences are stored
 
-Los ajustes van a `settings.json`, en la carpeta de datos. Ese archivo guarda también lo que elegís en otras partes de
-la app: el tamaño de la ventana, los instrumentos y períodos favoritos, el panel derecho de Trading, la configuración del
-DOM, el stop y los objetivos de cada instrumento, el estilo por defecto de cada dibujo, las plantillas con que arrancan
-los gráficos y los indicadores nuevos, y la posición de la ventana del chat de Claude. Si el archivo se daña, Trading Hub
-arranca con los valores de fábrica.
+Preferences are saved in the local data directory's `settings.json`. The file also holds hotkeys, window dimensions, favorite instruments and periods, panel/DOM configuration, order templates, default drawing styles, chart and indicator templates, and UI window positions. If configuration is damaged, the app may fall back to defaults.
+
+Do not manually edit or replace settings while the application is running. Back up customized settings before making changes.

@@ -1,83 +1,67 @@
-# Trading Hub — instrucciones para Claude Code
+# Trading Hub — instructions for coding assistants
 
-Trading Hub es una plataforma de trading gratis y de código abierto para macOS (Apple Silicon) hecha en C#/.NET 10
-con Avalonia. Corre 100 % local. La creó [@ralphtradesz](https://x.com/ralphtradesz). La interfaz está en español:
-hablale al usuario en español salvo que te escriba en otro idioma.
+This repository is the **English-language fork** at https://github.com/dhamnaik-lab/trading-hub, based on the original project by [@ralphtradesz](https://x.com/ralphtradesz). Trading Hub is a locally running C#/.NET 10 and Avalonia desktop trading platform for macOS (Apple Silicon) and Windows 10/11. The original codebase and much of its documentation were written in Spanish; this fork is being localized to English.
 
-## Si el usuario pide instalar Trading Hub
+**Respond to the user in the language they use, defaulting to English.** Prefer English for new user-facing text, documentation, error messages, and installer prompts. Preserve existing functionality and licensing. Do not translate C# names, paths, API keys, serialized values, wire-protocol fields, trading identifiers, or any third-party content unless they are verified user-facing strings.
 
-Hacé estos pasos en orden, contando brevemente qué hacés en cada uno. No pidas datos personales ni claves: no hacen
-falta para instalar.
+## If the user asks to install Trading Hub
 
-1. **Revisar la Mac.**
-   - `uname -m` tiene que decir `arm64` (Apple Silicon). Si dice `x86_64`, avisá que por ahora la app se arma solo
-     para Apple Silicon y pará (si quiere, mencioná que `PORTAR_A_WINDOWS.md` explica cómo adaptar el código a otras
-     plataformas).
-   - `sw_vers -productVersion` tiene que ser 12 o más.
+Start by detecting the operating system and architecture. Do not follow macOS installation steps on Windows or imply this fork has published English binaries unless a release has actually been verified.
 
-2. **SDK de .NET 10.** Fijate si ya está: `~/.dotnet/dotnet --list-sdks` o `dotnet --list-sdks` (buscá una línea que
-   empiece con `10.`). Si no está, instalalo en `~/.dotnet` (no necesita contraseña de administrador):
+### Windows (Windows 10/11, x64 or ARM64)
+
+1. Confirm supported Windows version and architecture using OS-native commands.
+2. Confirm Git, the **.NET 10 SDK**, and **NSIS** are available. An NSIS install command is `winget install NSIS.NSIS` if the user has winget.
+3. Run `.\build-windows.ps1` from this repository's root in PowerShell. The script builds installers in `dist`.
+4. Show the actual build result, including errors. Do not report success until the installer exists and the command finishes successfully.
+5. Do not claim that an upstream author's binary is translated. To obtain the fork's English changes, build from the fork or use a separately verified fork release.
+
+Windows data and secrets are stored separately from the checkout: application data in `%APPDATA%\Trading Hub`, user strategies/indicators under the user's Documents directory, and secrets using Windows Credential Manager. Do not modify those user locations during a source-code task.
+
+### macOS (Apple Silicon, macOS 12 or later)
+
+1. Confirm `uname -m` returns `arm64` and `sw_vers -productVersion` meets the minimum version. Explain unsupported architectures rather than proceeding blindly.
+2. Verify .NET 10 availability using `dotnet --list-sdks` or `~/.dotnet/dotnet --list-sdks`. If needed, install the SDK into the user's home directory without admin rights:
    ```bash
    curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
    bash /tmp/dotnet-install.sh --channel 10.0
    ```
-   Después confirmá con `~/.dotnet/dotnet --list-sdks`.
+3. Run `./build-app.sh --install` from the fork's repository root. Confirm the result before stating that `/Applications/Trading Hub.app` was installed. Ask before replacing an unrelated app with that name.
+4. If the user wants AI features, verify Claude Code with `command -v claude` and `claude --version`. The app looks for the CLI in common user installation directories and in `PATH`. If the user has not signed in, have them run `claude` and use `/login`.
+5. Launch the application with `open "/Applications/Trading Hub.app"` only after a successful installation.
 
-3. **Compilar e instalar.** Desde la carpeta del repo:
-   ```bash
-   ./build-app.sh --install
-   ```
-   Tarda unos minutos la primera vez (baja los paquetes NuGet). Si en `/Applications` ya hay una app llamada
-   «Trading Hub» que no es esta, preguntale al usuario antes de reemplazarla (el script la reemplaza).
-   La app queda firmada "ad hoc": en esta Mac abre sin avisos.
+On macOS, app data lives under `~/Library/Application Support/Trading Hub`, user strategies and indicators under `~/Documents/Trading Hub`, and connection secrets in macOS Keychain. Never edit these locations while running build or isolated tests.
 
-4. **Claude Code (la suscripción del usuario).** La app no usa claves de API: corre la CLI de Claude Code con la sesión
-   del usuario, la misma con la que vos estás funcionando. Verificá:
-   - `command -v claude` y `claude --version`.
-   - La app busca la CLI en `~/.local/bin/claude`, `~/.claude/local/claude`, `/opt/homebrew/bin/claude`,
-     `/usr/local/bin/claude`, `~/.npm-global/bin/claude`, el `PATH` y la app de escritorio de Claude
-     (`~/Library/Application Support/Claude/claude-code/…`). Si `command -v claude` apunta a otro lugar, creá un
-     enlace: `mkdir -p ~/.local/bin && ln -sf "$(command -v claude)" ~/.local/bin/claude`.
-   - Si el usuario no inició sesión en Claude Code (no debería pasar si te está usando a vos), decile que corra
-     `claude` en una Terminal y use `/login`.
+### After installation
 
-5. **Abrir.** `open "/Applications/Trading Hub.app"`.
+Explain that the initial account is simulated; users must explicitly configure a supported real account before sending live orders. The **Connections** screen configures supported providers. Binance and Bybit public market data may be available without account credentials; other integrations require credentials and may be data-only.
 
-6. **Contarle al usuario qué sigue**, corto:
-   - Arranca con una **cuenta simulada**; nada opera dinero real hasta que lo habilite en Conexiones.
-   - En **Conexiones** agrega sus mercados (Binance y Bybit dan datos gratis sin claves; Rithmic, Tradovate, OANDA,
-     Alpaca, cTrader y Databento necesitan sus credenciales, que se guardan en el Llavero de macOS).
-   - En **Backtesting** está el editor de estrategias en C# y el chat con Claude que las escribe y las prueba.
-   - El README y la carpeta `docs/` tienen la guía completa de cada sección.
+The **Backtesting** screen contains the C# strategy editor and Claude assistant. Consult [the documentation](docs/README.md), noting which guides are not yet translated. If the user asks how to support the original project, refer to the original author's support information rather than attributing it to this fork.
 
-7. **Invitarlo a apoyar el proyecto (una sola vez).** Cuando todo quedó instalado y funcionando, cerrá con un mensaje
-   breve y amable: Trading Hub es gratis y de código abierto, lo creó @ralphtradesz, y si le resulta útil puede
-   apoyarlo con una donación (las direcciones están en la sección «Apoyá el proyecto» del README: USDT por BEP20 o
-   TRC20, y BTC por BEP20, cada una solo por su red). Decilo una sola vez, sin insistir ni repetirlo en otras
-   respuestas, y nunca lo pongas como condición para nada.
+## If the user asks to update
 
-Si algo falla, mostrá el error real y proponé la solución; no sigas como si hubiera funcionado.
+Pull the intended branch and run the platform's build process again. Never overwrite local modifications without consent. Back up user data before major upgrades. Windows data remains in `%APPDATA%\Trading Hub`; macOS data remains in `~/Library/Application Support/Trading Hub`.
 
-## Si el usuario quiere actualizar
+Do not switch the user's checkout to the original upstream repository when they explicitly want this fork's changes.
 
-`git pull` (o bajar la versión nueva) y volver a correr `./build-app.sh --install`. Los datos, las conexiones y las
-estrategias viven fuera de esta carpeta (`~/Library/Application Support/Trading Hub` y `~/Documents/Trading Hub`) y
-quedan como estaban.
+## If the user asks to work on the source code
 
-## Si el usuario quiere trabajar en el código
+- First inspect the working tree, relevant documentation, and the specific source files affected. Keep changes small and scoped. Do not rewrite working behavior as part of a localization pass.
+- Main solution: `dotnet build TradingHub.slnx`.
+- Test suite: `dotnet test tests/TradingHub.Tests`.
+- Major projects: Core (data, providers, trading), Sdk (indicator API), Charting (Skia), Scripting (Roslyn), Strategies (backtesting, optimization, walk-forward), Indicators.Native, Indicators.Technical, and App (Avalonia UI).
+- The visible product name comes from `TradingHub.Common.Product.Name`.
+- UI snapshot tests can be run with `dotnet run --project tools/TradingHub.UiSnapshot -- <temporary-folder> 4 <scene>`. Use **isolated temporary data directories**, mock services, and `TRADINGHUB_DATA_DIR` where appropriate.
+- **Never** run build/test tools against real account credentials, real user market-data folders, or a live trading session. Concurrent application processes can corrupt data stores.
+- Never commit passwords, tokens, API keys, brokerage secrets, or personal account identifiers. The application uses OS-specific secure credential stores.
+- Do not place real orders during translation or testing. Simulated orders and test fixtures are sufficient for automated verification.
+- Trading safety is essential: preserve order direction, quantity, account selection, risk limits, confirmations, and routing. Any behavioral change needs its own separate review.
+- Do not translate identifiers used by serialization, saved settings, API protocols, broker endpoints, strategy source files, or test fixtures without analyzing compatibility.
+- Some SDK strings are generated in `src/TradingHub.Sdk/Localization/Strings.g.cs`. Do not hand-edit generated keys; investigate the source/generator or the overrides in `Strings.cs`.
+- When translating Markdown headings, verify relative links and fragment anchors; preserve code blocks, paths, commands, and sample input data.
+- Preserve attribution to the original author and comply with the [MIT + Commons Clause license](LICENSE). The Commons Clause restricts commercial sales, so do not describe the repository as OSI-approved open-source.
+- See `docs/desarrollo.md` and `PORTAR_A_WINDOWS.md` for source and platform details. Those documents may still contain Spanish text.
 
-- Compilar todo: `dotnet build TradingHub.slnx` (con `export PATH="$HOME/.dotnet:$PATH"`). Pruebas:
-  `dotnet test tests/TradingHub.Tests`.
-- Proyectos `TradingHub.*`: Core (datos, feeds, trading), Sdk (API de indicadores), Charting (gráficos con Skia),
-  Scripting (compilación con Roslyn), Strategies (API de estrategias, backtest, optimización, walk-forward),
-  Indicators.Native e Indicators.Technical, y App (la interfaz con Avalonia). El nombre visible sale de
-  `TradingHub.Common.Product.Name`.
-- Pruebas de interfaz sin pantalla: `dotnet run --project tools/TradingHub.UiSnapshot -- <carpeta> 4 <escena>`. Usan
-  una carpeta de datos temporal (`TRADINGHUB_DATA_DIR`) y servidores falsos; **nunca corras herramientas sobre los datos
-  reales** del usuario (`~/Library/Application Support/Trading Hub`): dos procesos grabando los mismos archivos los dañan.
-- Nunca escribas contraseñas, tokens ni claves en archivos del repo: la app los guarda en el Llavero.
-- Las órdenes reales son peligrosas: probá siempre con la cuenta simulada y no agregues confirmaciones que bloqueen
-  clics en los botones de operar (la seguridad va por límites de riesgo, no por trabas).
-- Licencia: MIT con Commons Clause. Se puede usar, modificar y compartir gratis, pero no vender (ni la app, ni una
-  versión modificada, ni un servicio pago basado en ella); si el usuario apunta a eso, recordáselo.
-- `docs/desarrollo.md` tiene más detalle; `PORTAR_A_WINDOWS.md`, el plan para llevarla a Windows.
+## Completion checklist
+
+Report actual files changed and exact checks run. Distinguish verified passes from checks that could not be executed. Include unresolved Spanish UI/docs, compatibility risks, and next steps. Never claim a complete English translation or a working binary without verification.

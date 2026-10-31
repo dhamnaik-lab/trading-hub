@@ -1,86 +1,82 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Privacidad y seguridad
+# Privacy and security
 
-Trading Hub corre entero en tu Mac: la app, tus datos, tus estrategias, los backtests y las claves de tus conexiones.
-No tiene servidores propios, no pide crear una cuenta y no manda telemetría ni estadísticas de uso. Solo se conecta a lo
-que vos configurás, y cuando lo usás.
+Trading Hub is designed to run locally: the application, market data, strategy files, historical tests, and saved connection configuration live on your computer. The source code does not describe a proprietary Trading Hub account or built-in usage telemetry; connections to exchanges, brokers, and AI services depend on the features you configure and use.
 
-## Qué queda en tu Mac
+## What stays on your computer
 
-| Lugar | Qué hay |
+| Location | Data |
 |---|---|
-| `~/Library/Application Support/Trading Hub` | Ajustes, conexiones (sin secretos), espacio de trabajo, historia tick a tick, velas, dibujos, plantillas, historial de las cuentas, backtests, estrategias en vivo y sus portafolios |
-| `~/Documents/Trading Hub` | Tus estrategias (con sus reportes en `Estrategias/Reportes`) y tus indicadores |
-| Llavero de macOS | Contraseñas, secretos, tokens y la API key de Databento, bajo el nombre «Trading Hub» |
+| macOS: `~/Library/Application Support/Trading Hub` | Settings, non-secret connection configuration, workspace, tick data, candles, drawings, templates, fills, backtests, live strategies, and portfolios |
+| Windows: `%APPDATA%\Trading Hub` | Corresponding application data on Windows |
+| `~/Documents/Trading Hub` (macOS) or `Documents\Trading Hub` (Windows) | Your custom strategy and indicator source files; strategy reports |
+| macOS Keychain / Windows Credential Manager | Broker passwords, tokens, and API secrets, managed by the OS credential store |
 
-El detalle de cada archivo está en [Instalación](instalacion.md#dónde-guarda-tus-datos). Lo que tiene que ver con Claude
-también queda en la carpeta de datos: las conversaciones (`Chats`), las imágenes del gráfico que miró el laboratorio
-(`Capturas del laboratorio`, las últimas 60) y la configuración del laboratorio (`claude-lab-mcp.json`). Los errores
-inesperados se anotan en `crash.log`, que no sale de tu Mac.
+For a directory-by-directory explanation, see [Installation](instalacion.md#where-data-is-stored).
 
-## Tus claves
+The application data folder also contains Claude conversations, the laboratory's chart snapshots (up to the most recent 60 as described by the source documentation), and laboratory configuration. Unexpected failures are recorded in a local `crash.log`.
 
-- Las contraseñas, los secretos de las API keys, los tokens y la API key de Databento van al **Llavero de macOS**,
-  nunca a archivos. Trading Hub los lee y los escribe con la herramienta `security` de macOS.
-- En `connections.json` quedan solo datos que no son secretos: nombre, usuario, servidor, la parte pública de la API key
-  (la API key de Binance o el Key ID de Alpaca) y las opciones. Ver [Conexiones](conexiones.md#dónde-quedan-tus-claves).
-- Al borrar una conexión se borran también sus secretos del Llavero.
-- Las claves no están en archivos que Claude pueda leer, y ninguna herramienta del laboratorio las lee.
+## Connection credentials
 
-## Qué se conecta a internet y cuándo
+- Secret values such as broker passwords, API secrets, access tokens, and Databento keys belong in the OS credential store, **not** source files or GitHub commits.
+- `connections.json` stores connection configuration, including non-secret fields such as provider, username, server, public API key identifiers, and selected options.
+- Removing a connection through the application is designed to remove its associated secrets.
+- Development tools and reports should not read or export stored credentials.
 
-| Qué | Cuándo | Con quién |
+On macOS, the application uses the system Keychain; Windows uses Windows Credential Manager. Review [Connections](conexiones.md#dónde-quedan-tus-claves) for provider-specific behavior. Do not assume an imported or copied data directory also safely transfers credentials between machines.
+
+## Network access
+
+| Activity | Trigger | External service |
 |---|---|---|
-| Datos de mercado | Al abrir un gráfico o un instrumento de una conexión activada | El exchange o broker de esa conexión (Binance, Bybit, Rithmic, Tradovate, OANDA, Alpaca, cTrader) |
-| Historia | Cuando bajás días en Datos, o Claude con `download_data` | Los archivos públicos de Binance y Bybit, o el servidor de tu conexión |
-| Historia en velas del exchange | Para cargar historia larga en un gráfico y para el contexto de mercado de los días sin ticks guardados | El exchange del mercado abierto; en cripto, las velas públicas de Binance o Bybit, sin abrir ninguna sesión |
-| Órdenes | Cuando operás vos o una estrategia en una cuenta de un broker | Ese broker. La cuenta simulada no manda nada afuera |
-| Databento | Al probar la conexión (consulta el rango disponible y el costo de un día de NQ), al tocar **Calcular costo** y al **Descargar**, que antes te muestra el costo y te pide confirmar | Databento, con tu API key |
-| Claude Code | Cuando usás el asistente, el laboratorio o el agente de riesgo | Anthropic, con tu cuenta, a través de la CLI de Claude Code |
-| Interactive Brokers | Solo cuando probás la conexión | Tu TWS o IB Gateway (por defecto, en tu propia Mac) |
-| Enlaces | Solo si los tocás (páginas de alta de cada servicio, la autorización de cTrader, el crédito del autor) | Se abren en tu navegador |
+| Market data | Opening a chart for an enabled connection | The selected exchange, broker, or data provider (for example Binance, Bybit, Rithmic, Tradovate, OANDA, Alpaca, or cTrader) |
+| Historical downloads | Downloading days from Data or invoking laboratory data tools | Public exchange archives or the configured provider |
+| Historical candles | Fetching missing candle history for charts or market conditions | Exchange or market-data service |
+| Real orders | Manually trading or running an authorized live strategy | The broker associated with the selected real account |
+| Databento | Testing the connection, requesting a cost estimate, or downloading | Databento using the configured key; paid data may incur charges |
+| Claude Code | Using strategy assistance, laboratory analysis, or the risk agent | Anthropic via your signed-in Claude Code CLI |
+| Interactive Brokers | Testing local gateway connectivity | TWS or IB Gateway |
+| External links | Explicitly opening signup/help links | Your web browser and the target site |
 
-Nada más: no hay chequeo de actualizaciones ni envío de errores. Para compilar la app hacen falta internet y los paquetes
-de NuGet, pero eso pasa al instalarla, no al usarla.
+Building the app also requires NuGet package downloads. Source behavior, third-party services, and telemetry policies can change; audit the relevant provider and current code if privacy guarantees are critical.
 
-## Claude
+## Claude and external AI
 
-Lo que hace Claude pasa por tu Claude Code y tu cuenta: lo que le escribís, los archivos que lee (tus estrategias e
-indicadores) y lo que le devuelven las herramientas (métricas, operaciones, resúmenes de datos, imágenes del gráfico y,
-si se lo pedís, el estado de tu cartera en vivo) viajan a Anthropic. Trading Hub lo arranca dentro de la carpeta de
-estrategias, con permiso para editar solo ahí, en la de indicadores y en la de capturas, con herramientas de archivos (sin
-terminal ni web) y sin tus otros servidores MCP. El agente de riesgo ni siquiera tiene herramientas: recibe los números
-del portafolio y devuelve una propuesta. Lo que Claude Code haga con esos datos depende de tu cuenta y de las políticas de
-Anthropic. Ver [Claude](asistente-claude.md).
+When you invoke Claude features, prompts and data supplied through the CLI can be processed by Anthropic under your account and applicable policies. This can include strategy/indicator source, backtest metrics, fills, summary market data, screenshots, and live portfolio state when requested.
 
-## Dinero real
+The original design constrains the strategy assistant to relevant working directories and avoids exposing credential stores through its tools. The risk agent receives portfolio figures and proposes changes rather than autonomously changing real-account risk settings. Treat the generated output as a proposal that requires review.
 
-- Trading Hub arranca con la **cuenta simulada**. Las órdenes reales están apagadas en cada conexión hasta que actives
-  «Permitir órdenes reales» (ver [Conexiones](conexiones.md#cuentas-reales-y-cuentas-de-prueba)).
-- Las órdenes manuales a cuentas reales piden confirmación si así lo dejaste (ver [Operar](operar.md#seguridad)), y
-  lanzar o reanudar a mano una estrategia en una cuenta real se confirma una vez. La reanudación automática al abrir no
-  pregunta: por eso, para las cuentas reales, viene apagada.
-- Las estrategias en vivo tienen tamaño, pérdida máxima del día y drawdown máximo, y **Frenar todo** las detiene a todas
-  (ver [En vivo](en-vivo.md)). El agente de riesgo nunca aplica cambios solo si hay una cuenta real en el portafolio.
+See [Claude integration](asistente-claude.md) for details. Never paste broker credentials into prompts.
 
-## Permisos que puede pedir macOS
+## Real-money account safety
 
-- **Contraseña de administrador**: solo si activás «Seguir con la tapa cerrada» en Ajustes, para que la Mac no se duerma
-  con la tapa cerrada mientras Trading Hub esté abierto. Se deshace solo al cerrarlo.
-- **Controlar la Terminal**: si tocás «Iniciar sesión en Claude Code», Trading Hub abre la Terminal con `claude /login`.
-- La app se firma «ad hoc» al compilarla en tu Mac (ver [Instalación](instalacion.md#firma-ad-hoc)).
+- The application starts with a **simulated account**. Live orders require configuring a supported broker and allowing real order placement for that connection.
+- Manual real-account orders can require confirmation, depending on [Trading](operar.md#seguridad) and connection settings.
+- Starting or manually resuming a real-money strategy has a separate confirmation flow. Automatic resumption does not prompt on startup; therefore auto-resumption of **real-account strategies is disabled by default**.
+- Live strategies expose position sizing, daily-loss and drawdown controls. The **Stop all** action stops running strategies.
+- The Claude risk agent should not automatically apply size changes to a portfolio that includes real accounts.
 
-## Las herramientas de desarrollo no tocan tus datos
+These measures reduce risk; they do not guarantee that a strategy is safe or profitable. Confirm the actual account, side, contract, quantity, and safety controls before connecting to live trading.
 
-Las pruebas y las escenas sin pantalla usan carpetas temporales (`TRADINGHUB_DATA_DIR`, `TRADINGHUB_STRATEGIES_DIR`,
-`TRADINGHUB_INDICATORS_DIR`) y un archivo de claves de mentira (`TRADINGHUB_KEYCHAIN_FILE`) en vez del Llavero. Las
-escenas copian tu configuración y tu historia a una carpeta temporal, sacan las API keys, apagan las órdenes reales y
-llevan Rithmic a un servidor falso. Ver [Desarrollo](desarrollo.md).
+## Operating-system permissions
 
-## Borrar todo
+On macOS, enabling **Keep running with the lid closed** may request an administrator password so the app can change sleep behavior temporarily. Starting Claude login may open Terminal. A local macOS build is signed according to the process described under [Code signing](instalacion.md#code-signing).
 
-1. Cerrá Trading Hub del todo (⌘Q o «Salir de Trading Hub» en la barra de menú).
-2. Borrá `~/Library/Application Support/Trading Hub` y, si querés, `~/Documents/Trading Hub`.
-3. En **Acceso a Llaveros**, buscá «Trading Hub» y borrá esas contraseñas.
-4. Borrá la app de Aplicaciones (ver [Instalación](instalacion.md#desinstalar)).
+On Windows, lid behavior is configured through Windows Power settings. The installer is intended to run per user without requiring administrator privileges.
+
+## Development and testing isolation
+
+Automated tests and UI snapshots should use isolated temporary directories such as `TRADINGHUB_DATA_DIR`, `TRADINGHUB_STRATEGIES_DIR`, and `TRADINGHUB_INDICATORS_DIR`, with test-only secret storage where supported. Avoid reading, overwriting, or testing with actual user credentials and market data. Do not send live broker orders during automated testing.
+
+See [Development](desarrollo.md).
+
+## Remove application data
+
+1. Quit Trading Hub completely. Closing the main window may leave the application running in the Windows system tray or macOS menu bar.
+2. Back up any strategy code, research results, trade history, or account records you want to keep.
+3. Uninstall the application through Windows Settings or remove the macOS app bundle.
+4. Remove the applicable application data directories only if you intend to delete all local app data.
+5. Review and remove Trading Hub entries from Keychain Access (macOS) or Credential Manager (Windows) if desired.
+
+Deletion may be irreversible. See [Uninstalling](instalacion.md#uninstalling).

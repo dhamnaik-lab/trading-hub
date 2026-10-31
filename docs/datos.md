@@ -161,4 +161,4 @@ resumen del backtest dice cuántos días aporta cada fuente.
 
 La historia vive en `~/Library/Application Support/Trading Hub/Ticks`, en una carpeta por conexión («rithmic»,
 «databento», «importado»…) y otra por instrumento, con un archivo por día. **Abrir carpeta** la muestra en el Finder.
-Ver también [Instalación](instalacion.md#dónde-guarda-tus-datos).
+Ver también [Instalación](instalacion.md#where-data-is-stored).
