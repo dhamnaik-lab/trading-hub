@@ -1164,13 +1164,13 @@ public sealed partial class TradingView : UserControl
         string? def = _svc.Settings.DefaultChartTemplate;
         foreach (var n in names)
         {
-            var apply = new MenuItem { Header = n == def ? $"{n}  · pestañas nuevas" : n, Icon = Ui.Icon(MaterialIconKind.BookmarkOutline, 16) };
-            ToolTip.SetTip(apply, $"Aplicar «{n}' a este gráfico (reemplaza su estilo, colores e indicadores)");
+            var apply = new MenuItem { Header = n == def ? $"{n}  · new tabs" : n, Icon = Ui.Icon(MaterialIconKind.BookmarkOutline, 16) };
+            ToolTip.SetTip(apply, $"Apply '{n}' to this chart (replaces style, colors and indicators)");
             apply.Click += (_, _) =>
             {
                 if (!Workspace.ApplyChartTemplate(this, tab, n)) return;
                 AfterTemplate(tab);
-                _status($"Plantilla «{n}' aplicada a {tab.Symbol}");
+                _status($"Template '{n}' applied to {tab.Symbol}");
             };
             items.Add(apply);
         }
@@ -1206,7 +1206,7 @@ public sealed partial class TradingView : UserControl
                     _svc.Settings.Save();
                 }
 
-                _status($"Plantilla «{n}' borrada");
+                _status($"Template '{n}' deleted");
             };
             delete.Items.Add(mi);
         }
@@ -1422,7 +1422,7 @@ public sealed partial class TradingView : UserControl
                 d.Dashed = false;
                 d.LineStyle = LineStyleKind.Solid;
                 DrawingsTouched(t);
-                _status($"🔔 {t.Symbol} tocó {m.Instrument.FormatPrice(level)}");
+                _status($"🔔 {t.Symbol} touched {m.Instrument.FormatPrice(level)}");
                 Sound.Play();
                 m.Invalidate();
             }
