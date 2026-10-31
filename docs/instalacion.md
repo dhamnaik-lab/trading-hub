@@ -38,6 +38,8 @@ You can also download a source ZIP from the fork's GitHub page. Do not clone `ra
 
 The Windows installer is per-user and does not require administrator rights. It places program files in `%LOCALAPPDATA%\Programs\Trading Hub`. User data and credentials are kept elsewhere and are not intentionally deleted by an application update or normal uninstall.
 
+**English fork installer CI:** The [Windows installer verification workflow](https://github.com/dhamnaik-lab/trading-hub/actions/workflows/english-windows-installer-validation.yml) builds x64/ARM64 **unsigned candidate installers**, generates SHA-256 evidence and checks x64 silent installation/uninstallation on an isolated runner. These are not published releases and do not replace manual installed-GUI or ARM64 runtime testing. See the [release checklist](english-release-verification.md).
+
 **Important:** Existing Windows installer packages linked from [the original author's releases](https://github.com/ralphtradesz/trading-hub/releases) are *upstream* builds and may still display Spanish. They are not verified releases of this fork.
 
 ## macOS installation (Apple Silicon)

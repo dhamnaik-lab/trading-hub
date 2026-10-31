@@ -35,6 +35,10 @@ Trading Hub is a desktop platform for charting, market data, trading, strategy r
 - [Windows porting notes](../PORTAR_A_WINDOWS.md) — Historical porting plan and platform-specific implementation details.
 - [Back to the main README](../README.md).
 
+## Release verification
+
+- [English fork Windows release checklist](english-release-verification.md) — CI installer candidates, SHA-256 evidence, simulated UI screenshots, manual runtime acceptance and publication conditions.
+
 ## English localization work
 
 The application still has untranslated hardcoded UI strings, even though the Markdown guides have been translated. Generated reports, the installer, and inherited screenshots may also contain Spanish. If contributing translations, preserve code behavior and identifiers, verify all relative Markdown links after changing headings, and check trade-related warnings with particular care. Do not change broker order routing or risk settings as part of translation alone.

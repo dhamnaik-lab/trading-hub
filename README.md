@@ -14,7 +14,7 @@ Original project created by [**@ralphtradesz**](https://x.com/ralphtradesz). Thi
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4.svg)
 ![Avalonia](https://img.shields.io/badge/UI-Avalonia-8B44AC.svg)
 
-![Trading Hub overview](docs/img/trading.png)
+**English UI evidence:** [View the latest screenshot verification runs](https://github.com/dhamnaik-lab/trading-hub/actions/workflows/english-ui-snapshots.yml). Screenshots are generated from isolated test data.
 
 </div>
 
@@ -72,18 +72,13 @@ Claude Code integration uses your own signed-in Claude Code CLI session, not a T
 - Strategy assistant for creating and correcting C# code.
 - Local MCP laboratory tools for backtesting, optimization, walk-forward analysis, and professional reports.
 
-## Screenshots
+## English UI screenshot evidence
 
-These are inherited upstream screenshots and may still contain Spanish UI labels until updated English screenshots are available.
+The seven original images in `docs/img/` are **historical upstream screenshots** and may contain Spanish. They are **not evidence** that the current fork has been translated or runtime-tested. For this reason, they are no longer embedded in this README.
 
-| | |
-|---|---|
-| ![Footprint chart](docs/img/footprint.png) | ![Trading from a chart](docs/img/operar.png) |
-| Footprint with delta, POC, and large trades | Chart Trader, DOM, and time and sales |
-| ![Claude strategy assistant](docs/img/claude.png) | ![Backtesting](docs/img/backtest.png) |
-| C# strategy assistant | Market-regime backtesting |
-| ![Recorded data](docs/img/datos.png) | ![Light theme](docs/img/claro.png) |
-| Historical ticks and Databento | Light and dark themes |
+For current visual evidence, use the [English UI snapshot workflow](https://github.com/dhamnaik-lab/trading-hub/actions/workflows/english-ui-snapshots.yml) and the [footprint/DOM verification workflow](https://github.com/dhamnaik-lab/trading-hub/actions/workflows/english-localization-phase6-ui.yml). Choose a successful run for the relevant source commit and download its image artifact. These headless screenshots use isolated, synthetic data and do not prove broker connectivity or safe order execution. GitHub Actions artifacts expire according to their retention settings.
+
+See the [English release verification checklist](docs/english-release-verification.md) for the exact steps needed before publishing a verified Windows installer or replacing historical screenshot assets.
 
 ## Installation
 
@@ -102,7 +97,7 @@ cd trading-hub
 .\build-windows.ps1
 ```
 
-The build script publishes Windows installers into `dist`. An installer produced from this fork must be built from the updated source; installing an upstream release will **not** include the fork's English changes.
+The build script builds self-contained x64 and ARM64 Windows installers into `dist`. An installer produced from this fork must be built from the updated source; installing an upstream release will **not** include the fork's English changes.
 
 **macOS (Apple Silicon, macOS 12+):** Use the repository's build script:
 

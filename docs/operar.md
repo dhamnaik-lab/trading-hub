@@ -21,6 +21,8 @@ Rithmic accounts become selectable once the order-session connection completes. 
 
 ![Chart Trader, DOM, execution buttons, and time and sales](img/operar.png)
 
+> Historical upstream screenshot: labels may still appear in Spanish. Refer to the [current English UI snapshot workflow](https://github.com/dhamnaik-lab/trading-hub/actions/workflows/english-ui-snapshots.yml) for isolated screenshots; these do not validate live order routing.
+
 Chart Trader can appear within an individual chart or at the top of the right-side panel. The individual-chart panel applies only to that chart. The right-side panel follows the active chart and can be detached into a separate window.
 
 | Control | Meaning |

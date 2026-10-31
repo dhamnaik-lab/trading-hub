@@ -1,0 +1,132 @@
+name: English fork Windows installer verification
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/english-windows-installer-validation.yml"
+      - "build-windows.ps1"
+      - "installer/**"
+      - "src/**"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: english-windows-installer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-installer:
+    name: Publish, package and isolate-check Windows x64 and ARM64
+    runs-on: windows-latest
+    timeout-minutes: 70
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      TRADINGHUB_SLEEP_GUARD: "off"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install NSIS and build both installer architectures
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          choco install nsis --yes --no-progress --limit-output
+          if ($LASTEXITCODE -ne 0) { throw "NSIS installation failed: $LASTEXITCODE" }
+          $nsis = Join-Path ${env:ProgramFiles(x86)} 'NSIS'
+          if (-not (Test-Path -LiteralPath (Join-Path $nsis 'makensis.exe') -PathType Leaf)) {
+            throw 'NSIS compiler not found in the expected Program Files location'
+          }
+          $env:PATH = "$nsis;$env:PATH"
+          & .\build-windows.ps1
+          if ($LASTEXITCODE -ne 0) { throw "Windows installer build failed: $LASTEXITCODE" }
+
+      - name: Verify published outputs and create SHA-256 evidence
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $items = @()
+          foreach ($arch in @('x64', 'arm64')) {
+            $setup = Join-Path $PWD "dist\TradingHub-Setup-$arch.exe"
+            $published = Join-Path $PWD "dist\win-$arch\TradingHub.exe"
+            foreach ($file in @($setup, $published)) {
+              if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Missing artifact: $file" }
+              $item = Get-Item -LiteralPath $file
+              if ($item.Length -lt $(if ($file -eq $setup) { 1024 * 1024 } else { 64 * 1024 })) { throw "Unexpectedly small artifact: $file" }
+              $items += [ordered]@{
+                path = $file.Substring($PWD.Path.Length + 1).Replace('\', '/')
+                architecture = $arch
+                bytes = $item.Length
+                sha256 = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash
+                signature_status = (Get-AuthenticodeSignature -LiteralPath $file).Status.ToString()
+              }
+            }
+          }
+          $manifest = [ordered]@{
+            source_commit = $env:GITHUB_SHA
+            workflow = 'English fork Windows installer verification'
+            classification = 'UNSIGNED CI CANDIDATE - NOT A PUBLISHED RELEASE'
+            files = $items
+          }
+          $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath 'dist\phase9-windows-sha256.json' -Encoding utf8
+          $items | Format-Table -AutoSize
+
+      - name: Smoke-test isolated x64 installation and uninstallation
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # This is a fresh, disposable GitHub-hosted runner; never run against a user PC.
+          $programDir = Join-Path $env:LOCALAPPDATA 'Programs\Trading Hub'
+          if (Test-Path -LiteralPath $programDir) { throw "Unexpected pre-existing installation: $programDir" }
+          $dataDir = Join-Path $env:APPDATA 'Trading Hub'
+          $codeDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Trading Hub'
+          New-Item -ItemType Directory -Force -Path $dataDir, $codeDir | Out-Null
+          $dataSentinel = Join-Path $dataDir 'phase9-keep-data.txt'
+          $codeSentinel = Join-Path $codeDir 'phase9-keep-source.txt'
+          Set-Content -LiteralPath $dataSentinel -Value 'Do not delete application data' -Encoding utf8
+          Set-Content -LiteralPath $codeSentinel -Value 'Do not delete user strategies' -Encoding utf8
+
+          $installer = Join-Path $PWD 'dist\TradingHub-Setup-x64.exe'
+          $p = Start-Process -FilePath $installer -ArgumentList '/S' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Silent installer exit code: $($p.ExitCode)" }
+          $app = Join-Path $programDir 'TradingHub.exe'
+          $uninstaller = Join-Path $programDir 'Desinstalar Trading Hub.exe'
+          if (-not (Test-Path -LiteralPath $app -PathType Leaf)) { throw 'Installed application is missing' }
+          if (-not (Test-Path -LiteralPath $uninstaller -PathType Leaf)) { throw 'Uninstaller is missing' }
+          $reg = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\TradingHub'
+          if (-not (Test-Path -LiteralPath $reg)) { throw 'Uninstall registration is missing' }
+          $props = Get-ItemProperty -LiteralPath $reg
+          if ($props.URLInfoAbout -ne 'https://github.com/dhamnaik-lab/trading-hub') {
+            throw 'Uninstall registration does not identify the English fork'
+          }
+
+          $p = Start-Process -FilePath $uninstaller -ArgumentList '/S' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Silent uninstall exit code: $($p.ExitCode)" }
+          for ($i = 0; $i -lt 20; $i++) {
+            if (-not (Test-Path -LiteralPath $app) -and -not (Test-Path -LiteralPath $reg)) { break }
+            Start-Sleep -Seconds 1
+          }
+          if (Test-Path -LiteralPath $app) { throw 'Installed executable remains after uninstall' }
+          if (Test-Path -LiteralPath $reg) { throw 'Uninstall registry entry remains after uninstall' }
+          if (-not (Test-Path -LiteralPath $dataSentinel)) { throw 'Installer removed user application data' }
+          if (-not (Test-Path -LiteralPath $codeSentinel)) { throw 'Installer removed user strategy files' }
+          'PASS: x64 silent install/uninstall preserves both user-data sentinels'
+
+      - name: Upload unsigned Windows installation candidates and evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: english-fork-windows-installers-UNSIGNED-CI-CANDIDATES
+          path: |
+            dist/TradingHub-Setup-x64.exe
+            dist/TradingHub-Setup-arm64.exe
+            dist/phase9-windows-sha256.json
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

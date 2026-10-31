@@ -52,6 +52,8 @@ Available views include **Candlesticks**, **OHLC bars**, **Line**, **Heikin Ashi
 
 ![Footprint chart with Delta indicator and trading panels](img/footprint.png)
 
+> Historical upstream screenshot: its controls may still be labeled in Spanish. See the [current English UI snapshot workflow](https://github.com/dhamnaik-lab/trading-hub/actions/workflows/english-ui-snapshots.yml) for synthetic screenshots of this fork.
+
 The footprint view adds two toolbar controls:
 
 - **Footprint template:** Examples include Bid × Ask, volume ladder + profile, delta ladder + volume profile, paired ladders, cells for volume/delta, bid/ask histogram, per-bar profile, and combined Bid × Ask/profile. Saved custom templates are distinguished with a star.
