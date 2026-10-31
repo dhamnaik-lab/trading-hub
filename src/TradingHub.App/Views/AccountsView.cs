@@ -16,7 +16,7 @@ using TradingHub.Trading;
 namespace TradingHub.App.Views;
 
 /// <summary>
-/// Sección Cuenta: saldo, resultado del día, posiciones, órdenes, ejecuciones, operaciones cerradas y estadísticas
+/// Sección Cuenta: saldo, resultado del día, posiciones, órdenes, ejecuciones, trades cerradas y estadísticas
 /// de cada cuenta (la simulada y las de Rithmic). Las filas de posiciones y órdenes nunca cambian de lugar:
 /// las nuevas se agregan abajo, así un clic no cae en la fila de al lado.
 /// </summary>
@@ -34,26 +34,26 @@ public sealed class AccountsView : UserControl
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly Button _accountButton = new() { Padding = new Thickness(12, 5), MinWidth = 320, HorizontalContentAlignment = HorizontalAlignment.Stretch };
     private readonly Flyout _accountMenu = new() { Placement = PlacementMode.BottomEdgeAlignedLeft };
-    private readonly TextBlock _noRithmic = new() { Text = "Las cuentas de Rithmic aparecen al conectar Rithmic en Conexiones", Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _noRithmic = new() { Text = "Rithmic accounts appear after you connect Rithmic in Connections", Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center };
     private IReadOnlyList<AccountEntry> _accounts = Array.Empty<AccountEntry>();
     private readonly TextBlock _accountStatus = new() { Classes = { "muted", "small" }, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
     private readonly WrapPanel _kpis = new();
     private readonly List<(TextBlock Title, TextBlock Value, TextBlock Sub)> _cards = new();
     private readonly StackPanel _simBar;
     private readonly NumericUpDown _startBalance = new() { Width = 150, Minimum = 100, Maximum = 100_000_000, Increment = 1000, FormatString = "N0", NumberFormat = CultureInfo.InvariantCulture.NumberFormat };
-    private readonly Button _restart = new() { Content = "Reiniciar la cuenta simulada" };
+    private readonly Button _restart = new() { Content = "Reset simulated account" };
     private readonly TextBlock _restartHint = new() { Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center };
     private readonly TabControl _tabs = new();
     private readonly StackPanel _positions = new();
     private readonly Dictionary<string, PositionRow> _positionRows = new();
-    private readonly TextBlock _positionsEmpty = new() { Text = "Sin posiciones todavía", Classes = { "muted" }, Margin = new Thickness(12, 14) };
+    private readonly TextBlock _positionsEmpty = new() { Text = "No positions yet", Classes = { "muted" }, Margin = new Thickness(12, 14) };
     private readonly StackPanel _orders = new();
     private readonly Dictionary<string, OrderRow> _orderRows = new();
-    private readonly TextBlock _ordersEmpty = new() { Text = "Todavía no hay órdenes", Classes = { "muted" }, Margin = new Thickness(12, 14) };
+    private readonly TextBlock _ordersEmpty = new() { Text = "No orders yet", Classes = { "muted" }, Margin = new Thickness(12, 14) };
     private readonly ListBox _fills = new();
     private readonly ListBox _trades = new();
     private readonly WrapPanel _statKpis = new();
-    private readonly EquityChart _equity = new() { Height = 230, EmptyText = "Todavía no hay operaciones cerradas en este período" };
+    private readonly EquityChart _equity = new() { Height = 230, EmptyText = "No closed trades in this period yet" };
     private readonly Grid _metrics = new() { ColumnDefinitions = new ColumnDefinitions("*,24,*") };
     private readonly StackPanel _days = new() { Spacing = 2 };
     private readonly WrapPanel _periodChips = new();
@@ -80,7 +80,7 @@ public sealed class AccountsView : UserControl
             svc.Settings.Save();
             Refresh();
         };
-        _restart.Flyout = ConfirmFlyout("La cuenta simulada vuelve al saldo inicial y su historial empieza de cero (el anterior queda guardado aparte).", "Reiniciar", RestartSim);
+        _restart.Flyout = ConfirmFlyout("The simulated account returns to its starting balance and starts a new history (the previous history is saved separately).", "Reiniciar", RestartSim);
         _simBar = Ui.H(10, Ui.Muted("Saldo inicial"), _startBalance, _restart, _restartHint);
         _simBar.Margin = new Thickness(0, 0, 0, 12);
 
@@ -99,13 +99,13 @@ public sealed class AccountsView : UserControl
     private Control Build()
     {
         var head = new DockPanel { Margin = new Thickness(0, 0, 0, 14) };
-        var title = Ui.H(10, Ui.Icon(MaterialIconKind.WalletOutline, 20, Ui.Accent), Ui.H2("Cuenta"));
+        var title = Ui.H(10, Ui.Icon(MaterialIconKind.WalletOutline, 20, Ui.Accent), Ui.H2("Accounts"));
         DockPanel.SetDock(title, Dock.Left);
         head.Children.Add(title);
         // una sola cuenta a la vista; las demás en el menú (con muchas cuentas los botones sueltos quedaban desordenados)
         _accountButton.Flyout = _accountMenu;
         _accountMenu.Opening += (_, _) => _accountMenu.Content = BuildAccountMenu();
-        ToolTip.SetTip(_accountButton, "Elegir la cuenta");
+        ToolTip.SetTip(_accountButton, "Choose account");
         var selector = Ui.H(12, _accountButton, _noRithmic);
         selector.Margin = new Thickness(18, 0, 0, 0);
         selector.VerticalAlignment = VerticalAlignment.Center;
@@ -123,11 +123,11 @@ public sealed class AccountsView : UserControl
             _cards.Add((t, v, sub));
         }
 
-        _tabs.Items.Add(new TabItem { Header = "Posiciones", Content = Table(PositionColumns, new[] { "Contrato", "Lado", "Cantidad", "Precio prom.", "PnL abierto", "Realizado hoy", "" }, new[] { 2, 3, 4, 5 }, _positions, _positionsEmpty) });
-        _tabs.Items.Add(new TabItem { Header = "Órdenes", Content = Table(OrderColumns, new[] { "Hora", "Contrato", "Lado", "Tipo", "Cant.", "Precio", "Ejecutado", "Precio prom.", "Estado", "" }, new[] { 4, 5, 6, 7 }, _orders, _ordersEmpty) });
+        _tabs.Items.Add(new TabItem { Header = "Posiciones", Content = Table(PositionColumns, new[] { "Contrato", "Lado", "Cantidad", "Avg. price", "PnL abierto", "Realizado hoy", "" }, new[] { 2, 3, 4, 5 }, _positions, _positionsEmpty) });
+        _tabs.Items.Add(new TabItem { Header = "Orders", Content = Table(OrderColumns, new[] { "Hora", "Contrato", "Lado", "Tipo", "Cant.", "Price", "Ejecutado", "Avg. price", "Estado", "" }, new[] { 4, 5, 6, 7 }, _orders, _ordersEmpty) });
         _tabs.Items.Add(new TabItem { Header = "Ejecuciones", Content = BuildFills() });
-        _tabs.Items.Add(new TabItem { Header = "Operaciones", Content = BuildTrades() });
-        _tabs.Items.Add(new TabItem { Header = "Estadísticas", Content = BuildStats() });
+        _tabs.Items.Add(new TabItem { Header = "Trades", Content = BuildTrades() });
+        _tabs.Items.Add(new TabItem { Header = "Statistics", Content = BuildStats() });
         _tabs.SelectionChanged += (_, _) => Refresh();
 
         var top = Ui.V(0, head, _accountStatus, _kpis, _simBar);
@@ -190,7 +190,7 @@ public sealed class AccountsView : UserControl
             c.Foreground = Ui.Text2;
             return g;
         });
-        return ListCard(FillColumns, new[] { "Hora", "Contrato", "Lado", "Cant.", "Precio", "Comisión" }, new[] { 3, 4, 5 }, _fills);
+        return ListCard(FillColumns, new[] { "Hora", "Contrato", "Lado", "Cant.", "Price", "Commission" }, new[] { 3, 4, 5 }, _fills);
     }
 
     private Control BuildTrades()
@@ -215,7 +215,7 @@ public sealed class AccountsView : UserControl
             r.Foreground = t.NetPnl >= 0 ? Ui.Up : Ui.Down;
             return g;
         });
-        return ListCard(TradeColumns, new[] { "Cierre", "Contrato", "Lado", "Cant.", "Entrada", "Salida", "Duración", "Resultado" }, new[] { 3, 4, 5, 6, 7 }, _trades);
+        return ListCard(TradeColumns, new[] { "Cierre", "Contrato", "Lado", "Cant.", "Entrada", "Salida", "Duration", "Resultado" }, new[] { 3, 4, 5, 6, 7 }, _trades);
     }
 
     private static Control ListCard(string columns, string[] titles, int[] right, ListBox list)
@@ -230,7 +230,7 @@ public sealed class AccountsView : UserControl
 
     private Control BuildStats()
     {
-        foreach (var (id, text) in new[] { ("today", "Hoy"), ("7", "7 días"), ("30", "30 días"), ("all", "Todo") })
+        foreach (var (id, text) in new[] { ("today", "Hoy"), ("7", "7 days"), ("30", "30 days"), ("all", "Todo") })
         {
             var b = new ToggleButton { Content = text, Tag = id, Margin = new Thickness(0, 0, 6, 0), IsChecked = id == _period };
             b.Click += (_, _) =>
@@ -245,7 +245,7 @@ public sealed class AccountsView : UserControl
 
         _metrics.Margin = new Thickness(0, 4, 0, 0);
         var left = Ui.V(12, _periodChips, _statKpis, Ui.Card(_equity, 10), Ui.Card(_metrics, 12));
-        var right = Ui.Card(Ui.V(8, new TextBlock { Text = "POR DÍA", Classes = { "h3" } }, _days), 12);
+        var right = Ui.Card(Ui.V(8, new TextBlock { Text = "BY DAY", Classes = { "h3" } }, _days), 12);
         right.Width = 300;
         right.Margin = new Thickness(14, 0, 0, 0);
         right.VerticalAlignment = VerticalAlignment.Top;
@@ -273,7 +273,7 @@ public sealed class AccountsView : UserControl
 
         _svc.Statistics.HistoryMyTrades.Clear();
         _listsKey = _statsKey = "";
-        _status($"Cuenta simulada reiniciada: saldo {_svc.Settings.SimStartBalance:N2}.");
+        _status($"Simulated account reset: balance {_svc.Settings.SimStartBalance:N2}.");
         Refresh();
     }
 
@@ -425,29 +425,29 @@ public sealed class AccountsView : UserControl
     private void UpdateHeader(AccountSnapshot s)
     {
         var a = s.Account;
-        _accountStatus.Text = s.Status + (a.IsReal ? " · CUENTA REAL" + (a.CanTrade ? "" : " (solo lectura: las órdenes reales están apagadas en Conexiones)") : "");
+        _accountStatus.Text = s.Status + (a.IsReal ? " · REAL ACCOUNT" + (a.CanTrade ? "" : " (read-only: real orders are disabled in Connections)") : "");
         _accountStatus.Foreground = !s.Connected ? Ui.Warn : a.IsReal ? Brushes.OrangeRed : Ui.Text2;
         int open = s.Positions.Count(p => p.Net != 0);
         int active = s.Orders.Count(o => o.Active);
         int filledToday = s.Orders.Count(o => o.Filled > 0 && _svc.AccountCenter.IsToday(o.Time));
 
         Card(0, "Saldo", s.Balance is { } bal ? Money(bal, false) : "—",
-            a.Kind == AccountKind.Sim ? $"arrancó con {Money(s.StartBalance ?? 0, false)}" : s.Balance == null ? $"esperando a {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}…" : $"según {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}");
-        Card(1, "Resultado del día", Money(s.DayPnl), $"realizado {Money(s.RealizedToday)} · abierto {Money(s.OpenPnl)}", Signed(s.DayPnl));
-        Card(2, "PnL abierto", Money(s.OpenPnl), open == 0 ? "sin posiciones abiertas" : $"{open} posición{(open > 1 ? "es" : "")} abierta{(open > 1 ? "s" : "")}", Signed(s.OpenPnl));
-        Card(3, "Realizado hoy", Money(s.RealizedToday), $"{s.TradesToday} operación{(s.TradesToday == 1 ? "" : "es")} cerrada{(s.TradesToday == 1 ? "" : "s")} hoy", Signed(s.RealizedToday));
+            a.Kind == AccountKind.Sim ? $"started with {Money(s.StartBalance ?? 0, false)}" : s.Balance == null ? $"esperando a {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}…" : $"as reported by {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}");
+        Card(1, "Today's result", Money(s.DayPnl), $"realizado {Money(s.RealizedToday)} · abierto {Money(s.OpenPnl)}", Signed(s.DayPnl));
+        Card(2, "PnL abierto", Money(s.OpenPnl), open == 0 ? "no open positions" : $"{open} posición{(open > 1 ? "es" : "")} abierta{(open > 1 ? "s" : "")}", Signed(s.OpenPnl));
+        Card(3, "Realizado hoy", Money(s.RealizedToday), $"{s.TradesToday} trade{(s.TradesToday == 1 ? "" : "es")} cerrada{(s.TradesToday == 1 ? "" : "s")} hoy", Signed(s.RealizedToday));
         if (a.Kind == AccountKind.Sim)
-            Card(4, "Resultado total", Money(s.Analysis.RealizedNet), $"{s.Analysis.Trades.Count} operaciones desde el inicio", Signed(s.Analysis.RealizedNet));
+            Card(4, "Resultado total", Money(s.Analysis.RealizedNet), $"{s.Analysis.Trades.Count} trades since inception", Signed(s.Analysis.RealizedNet));
         else
-            Card(4, "Disponible para operar", s.Available is { } av ? Money(av, false) : "—", s.MarginBalance is { } mb ? $"margen {Money(mb, false)}" : "poder de compra según Rithmic");
-        Card(5, "Órdenes activas", active.ToString(), $"{filledToday} ejecutada{(filledToday == 1 ? "" : "s")} hoy");
+            Card(4, "Available to trade", s.Available is { } av ? Money(av, false) : "—", s.MarginBalance is { } mb ? $"margen {Money(mb, false)}" : "buying power reported by Rithmic");
+        Card(5, "Active orders", active.ToString(), $"{filledToday} ejecutada{(filledToday == 1 ? "" : "s")} hoy");
 
         _simBar.IsVisible = a.Kind == AccountKind.Sim;
         if (a.Kind == AccountKind.Sim)
         {
             bool busy = open > 0 || active > 0;
             _restart.IsEnabled = !busy;
-            _restartHint.Text = busy ? "Para reiniciar, primero cerrá las posiciones y cancelá las órdenes" : "";
+            _restartHint.Text = busy ? "To reset, first close positions and cancel orders" : "";
             if (!_startBalance.IsKeyboardFocusWithin && _startBalance.Value != _svc.Settings.SimStartBalance)
             {
                 _syncing = true;
@@ -474,9 +474,9 @@ public sealed class AccountsView : UserControl
             {
                 var g = new Grid { ColumnDefinitions = new ColumnDefinitions(PositionColumns) };
                 PositionRow? self = null;
-                var close = ActionButton("Cerrar", "", "Cerrar a mercado", () => _svc.AccountCenter.CloseAsync(entry, self!.Line!), "Cerrando la posición a mercado…", entry.IsReal);
+                var close = ActionButton("Close", "", "Close at market", () => _svc.AccountCenter.CloseAsync(entry, self!.Line!), "Closing position at market…", entry.IsReal);
                 if (entry.IsReal && close.Flyout is Flyout f)
-                    f.Opening += (_, _) => ((TextBlock)((StackPanel)f.Content!).Children[0]).Text = $"¿Cerrar {Qty(Math.Abs(self!.Line!.Net))} {self.Line.Symbol} a mercado en la cuenta REAL?";
+                    f.Opening += (_, _) => ((TextBlock)((StackPanel)f.Content!).Children[0]).Text = $"Close {Qty(Math.Abs(self!.Line!.Net))} {self.Line.Symbol} at market on the REAL account?";
                 Grid.SetColumn(close, 6);
                 g.Children.Add(close);
                 row = self = new PositionRow { Root = RowBorder(g), Symbol = Cell(g, 0), Side = Cell(g, 1), Qty = Cell(g, 2, true), Avg = Cell(g, 3, true), Open = Cell(g, 4, true), Closed = Cell(g, 5, true), Close = close };
@@ -517,7 +517,7 @@ public sealed class AccountsView : UserControl
             {
                 var g = new Grid { ColumnDefinitions = new ColumnDefinitions(OrderColumns) };
                 OrderRow? self = null;
-                var cancel = ActionButton("Cancelar", "¿Cancelar la orden en la cuenta REAL?", "Cancelar la orden", () => _svc.AccountCenter.CancelAsync(entry, self!.Line!), "Cancelando la orden…", entry.IsReal);
+                var cancel = ActionButton("Cancelar", "Cancel the order on the REAL account?", "Cancelar la orden", () => _svc.AccountCenter.CancelAsync(entry, self!.Line!), "Cancelando la orden…", entry.IsReal);
                 Grid.SetColumn(cancel, 9);
                 g.Children.Add(cancel);
                 row = self = new OrderRow
@@ -593,22 +593,22 @@ public sealed class AccountsView : UserControl
         _equity.SetData(equity, capital);
 
         _statKpis.Children.Clear();
-        _statKpis.Children.Add(Kpi("Resultado neto", Money(m.NetProfit), $"{m.TotalTrades} operaciones", Signed(m.NetProfit)));
+        _statKpis.Children.Add(Kpi("Resultado neto", Money(m.NetProfit), $"{m.TotalTrades} trades", Signed(m.NetProfit)));
         _statKpis.Children.Add(Kpi("% ganadoras", m.TotalTrades > 0 ? $"{m.WinRate:0.#}%" : "—", $"{m.Winners} ganadoras · {m.Losers} perdedoras"));
-        _statKpis.Children.Add(Kpi("Profit factor", m.TotalTrades > 0 ? (m.ProfitFactor >= 999 ? "∞" : m.ProfitFactor.ToString("0.00", Es)) : "—", "ganancia bruta / pérdida bruta"));
-        _statKpis.Children.Add(Kpi("Drawdown máximo", Money(-m.MaxDrawdown), capital > 0 ? $"{m.MaxDrawdownPercent:0.##}% del saldo" : "desde el pico", m.MaxDrawdown > 0 ? Ui.Down : null));
-        _statKpis.Children.Add(Kpi("Expectativa", Money(m.Expectancy), "resultado esperado por operación", Signed(m.Expectancy)));
+        _statKpis.Children.Add(Kpi("Profit factor", m.TotalTrades > 0 ? (m.ProfitFactor >= 999 ? "∞" : m.ProfitFactor.ToString("0.00", Es)) : "—", "gross profit / gross loss"));
+        _statKpis.Children.Add(Kpi("Maximum drawdown", Money(-m.MaxDrawdown), capital > 0 ? $"{m.MaxDrawdownPercent:0.##}% del saldo" : "from peak", m.MaxDrawdown > 0 ? Ui.Down : null));
+        _statKpis.Children.Add(Kpi("Expectativa", Money(m.Expectancy), "expected result per trade", Signed(m.Expectancy)));
 
         var avgDuration = trades.Count > 0 ? TimeSpan.FromTicks((long)trades.Average(t => t.Duration.Ticks)) : TimeSpan.Zero;
         var rows = new (string, string)[]
         {
-            ("Resultado neto", Money(m.NetProfit)), ("Ganancia bruta", Money(m.GrossProfit)), ("Pérdida bruta", Money(-m.GrossLoss)), ("Comisiones", Money(-m.Commission)),
-            ("Operaciones", m.TotalTrades.ToString(Es)), ("Ganadoras / perdedoras", $"{m.Winners} / {m.Losers}"), ("% ganadoras", $"{m.WinRate:0.##}%"), ("Profit factor", m.ProfitFactor >= 999 ? "∞" : m.ProfitFactor.ToString("0.00", Es)),
-            ("Promedio por operación", Money(m.AverageTrade)), ("Ganancia promedio", Money(m.AverageWin)), ("Pérdida promedio", Money(m.AverageLoss)), ("Relación ganancia/pérdida", m.PayoffRatio.ToString("0.00", Es)),
-            ("Mayor ganancia", Money(m.LargestWin)), ("Mayor pérdida", Money(m.LargestLoss)), ("Racha ganadora máx.", m.MaxConsecutiveWins.ToString(Es)), ("Racha perdedora máx.", m.MaxConsecutiveLosses.ToString(Es)),
-            ("Drawdown máximo", $"{Money(-m.MaxDrawdown)} ({m.MaxDrawdownPercent:0.##}%)"), ("Factor de recuperación", m.RecoveryFactor >= 999 ? "∞" : m.RecoveryFactor.ToString("0.00", Es)),
+            ("Resultado neto", Money(m.NetProfit)), ("Ganancia bruta", Money(m.GrossProfit)), ("Gross loss", Money(-m.GrossLoss)), ("Comisiones", Money(-m.Commission)),
+            ("Trades", m.TotalTrades.ToString(Es)), ("Ganadoras / perdedoras", $"{m.Winners} / {m.Losers}"), ("% ganadoras", $"{m.WinRate:0.##}%"), ("Profit factor", m.ProfitFactor >= 999 ? "∞" : m.ProfitFactor.ToString("0.00", Es)),
+            ("Average per trade", Money(m.AverageTrade)), ("Ganancia promedio", Money(m.AverageWin)), ("Average loss", Money(m.AverageLoss)), ("Win/loss ratio", m.PayoffRatio.ToString("0.00", Es)),
+            ("Mayor ganancia", Money(m.LargestWin)), ("Largest loss", Money(m.LargestLoss)), ("Max. winning streak", m.MaxConsecutiveWins.ToString(Es)), ("Max. losing streak", m.MaxConsecutiveLosses.ToString(Es)),
+            ("Maximum drawdown", $"{Money(-m.MaxDrawdown)} ({m.MaxDrawdownPercent:0.##}%)"), ("Recovery factor", m.RecoveryFactor >= 999 ? "∞" : m.RecoveryFactor.ToString("0.00", Es)),
             ("Resultado largos", $"{Money(m.LongNetProfit)} ({trades.Count(t => t.IsLong)})"), ("Resultado cortos", $"{Money(m.ShortNetProfit)} ({trades.Count(t => !t.IsLong)})"),
-            ("Duración promedio", trades.Count > 0 ? Duration(avgDuration) : "—"), ("Días operados", trades.Select(t => center.ToLocal(t.CloseTime).Date).Distinct().Count().ToString(Es)),
+            ("Average duration", trades.Count > 0 ? Duration(avgDuration) : "—"), ("Days traded", trades.Select(t => center.ToLocal(t.CloseTime).Date).Distinct().Count().ToString(Es)),
         };
         _metrics.Children.Clear();
         _metrics.RowDefinitions.Clear();
@@ -637,7 +637,7 @@ public sealed class AccountsView : UserControl
             var g = new Grid { ColumnDefinitions = new ColumnDefinitions("78,*,92"), Margin = new Thickness(0, 2) };
             var date = new TextBlock { Text = d.Day.ToString("ddd dd/MM", Es), FontSize = 12, Foreground = Ui.Text2, VerticalAlignment = VerticalAlignment.Center };
             var bar = new Border { Height = 8, CornerRadius = new CornerRadius(4), Background = d.Net >= 0 ? Ui.Up : Ui.Down, HorizontalAlignment = HorizontalAlignment.Left, Width = max > 0 ? Math.Max(3, (double)(Math.Abs(d.Net) / max) * 110) : 3, VerticalAlignment = VerticalAlignment.Center };
-            ToolTip.SetTip(bar, $"{d.Count} operación{(d.Count == 1 ? "" : "es")}");
+            ToolTip.SetTip(bar, $"{d.Count} trade{(d.Count == 1 ? "" : "es")}");
             var net = new TextBlock { Text = Money(d.Net), FontSize = 12, TextAlignment = TextAlignment.Right, Foreground = Signed(d.Net), VerticalAlignment = VerticalAlignment.Center };
             Grid.SetColumn(bar, 1);
             Grid.SetColumn(net, 2);
@@ -647,7 +647,7 @@ public sealed class AccountsView : UserControl
             _days.Children.Add(g);
         }
 
-        if (days.Count == 0) _days.Children.Add(new TextBlock { Text = "Sin operaciones cerradas en este período", Classes = { "muted", "small" } });
+        if (days.Count == 0) _days.Children.Add(new TextBlock { Text = "No closed trades in this period", Classes = { "muted", "small" } });
     }
 
     private static Border Kpi(string title, string value, string sub, IBrush? color = null)
