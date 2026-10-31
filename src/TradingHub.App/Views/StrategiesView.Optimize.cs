@@ -71,7 +71,7 @@ internal sealed partial class StrategiesView
             _rangesPanel,
             _comboCount,
             Ui.Divider(),
-            Ui.Field("Ordenar por", _metric),
+            Ui.Field("Sort by", _metric),
             Ui.Field("Minimum trades", _minTrades, "Exclude combinations with too few trades, which may reflect chance results."),
             _optButton,
             _optSummary));
