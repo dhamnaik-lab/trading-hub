@@ -329,7 +329,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         {
             // sigue escuchando la cuenta hasta que se ejecute el cierre (así su contabilidad queda plana)
             _closing = true;
-            SendClose("Close on stop");
+            SendClose("Cierre al detener");
             SyncOrders(); // una simulada llena al instante
             if (_orders.Count == 0) _closing = false;
         }
@@ -848,7 +848,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         {
             decimal dd = CurrentDrawdown;
             StopReason = $"Maximum drawdown reached ({Money(-dd)}; threshold {Money(-MaxDrawdown)})";
-            string msg = $"{StrategyName}: {StopReason} . Stopped{(CloseOnLimit ? " and closes its position" : "")}.";
+            string msg = $"{StrategyName}: {StopReason}. Stopped{(CloseOnLimit ? " and closes its position" : "")}.";
             Log(StopReason + (CloseOnLimit ? ": stops and closes the position" : ": stops (position remains open)"));
             Stop(CloseOnLimit);
             LimitHit?.Invoke(this, msg);
@@ -867,7 +867,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
             {
                 foreach (var o in _orders.ToList()) Cancel(o);
                 _sl = _tp = null;
-                SendClose("Daily limit");
+                SendClose("Límite del día");
             }
 
             LimitHit?.Invoke(this, $"{StrategyName}: {StopReason}. No new entries until the next session{(CloseOnLimit ? " and closed its position" : "")}.");
@@ -939,7 +939,7 @@ public sealed class LiveStrategyRunner : IStrategyHost, IDisposable
         decimal delta = Target(_virtual + sign * q) - own;
         if (delta == 0 || Math.Sign(delta) != Math.Sign(sign))
         {
-            Log(SizeMultiplier <= 0 ? $"Tamaño en cero: {name} was not sent" : $"At size ×{Qty(SizeMultiplier)}, order {name} rounds to zero");
+            Log(SizeMultiplier <= 0 ? $"Size is zero: {name} was not sent" : $"At size ×{Qty(SizeMultiplier)}, order {name} rounds to zero");
             so.State = StrategyOrderState.Canceled;
             return so;
         }
