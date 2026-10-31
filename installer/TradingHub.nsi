@@ -21,7 +21,7 @@ ${UnStrStr}
   !define ARCH "x64"
 !endif
 !ifndef SRC
-  !error "Falta -DSRC=<carpeta con TradingHub.exe publicado>"
+  !error "Missing -DSRC=<folder containing published TradingHub.exe>"
 !endif
 !ifndef OUT
   !define OUT "TradingHub-Setup-${ARCH}.exe"
@@ -41,24 +41,24 @@ ManifestDPIAware true
 BrandingText "Trading Hub ${VERSION}"
 VIProductVersion "${VERSION}.0"
 VIAddVersionKey "ProductName" "${NAME}"
-VIAddVersionKey "FileDescription" "Instalador de ${NAME}"
+VIAddVersionKey "FileDescription" "${NAME} Installer"
 VIAddVersionKey "FileVersion" "${VERSION}"
 VIAddVersionKey "ProductVersion" "${VERSION}"
-VIAddVersionKey "LegalCopyright" "Licencia MIT con Commons Clause"
+VIAddVersionKey "LegalCopyright" "MIT with Commons Clause"
 
 !define MUI_ICON "..\src\TradingHub.App\Assets\tradinghub.ico"
 !define MUI_UNICON "..\src\TradingHub.App\Assets\tradinghub.ico"
 !define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TEXT "Esto instala Trading Hub ${VERSION} en tu PC.$\r$\n$\r$\nSi ya la tenés, se actualiza: tus conexiones, gráficos, estrategias e indicadores quedan como están.$\r$\n$\r$\nTocá Instalar para seguir."
+!define MUI_WELCOMEPAGE_TEXT "This installs Trading Hub ${VERSION} on your PC.$\r$\n$\r$\nIf it is already installed, this updates the application while keeping your connections, charts, strategies, and indicators.$\r$\n$\r$\nClick Install to continue."
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${EXE}"
-!define MUI_FINISHPAGE_RUN_TEXT "Abrir Trading Hub"
+!define MUI_FINISHPAGE_RUN_TEXT "Open Trading Hub"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
-!insertmacro MUI_LANGUAGE "Spanish"
+!insertmacro MUI_LANGUAGE "English"
 
 ; Si está abierta, Windows no deja reemplazar sus archivos: pide cerrarla (sin cerrarla a la fuerza, por si está operando)
 Function WaitClosed
@@ -70,7 +70,7 @@ Function WaitClosed
     ${If} $2 == ""
       ${Break}
     ${EndIf}
-    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Trading Hub está abierta. Cerrala (si tenés operaciones o estrategias corriendo, primero dejalas como quieras) y tocá Reintentar." /SD IDCANCEL IDRETRY +2
+    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Trading Hub is running. Close it first. If any trading strategies or orders are active, manage them safely before retrying. Click Retry to check again." /SD IDCANCEL IDRETRY +2
     Abort
   ${Loop}
 FunctionEnd
@@ -84,7 +84,7 @@ Function un.WaitClosed
     ${If} $2 == ""
       ${Break}
     ${EndIf}
-    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Trading Hub está abierta. Cerrala y tocá Reintentar." /SD IDCANCEL IDRETRY +2
+    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Trading Hub is running. Close the application and click Retry to continue." /SD IDCANCEL IDRETRY +2
     Abort
   ${Loop}
 FunctionEnd
@@ -126,7 +126,7 @@ Section "Trading Hub" SecMain
   WriteRegStr HKCU "${UNINSTKEY}" "DisplayName" "${NAME}"
   WriteRegStr HKCU "${UNINSTKEY}" "DisplayVersion" "${VERSION}"
   WriteRegStr HKCU "${UNINSTKEY}" "Publisher" "Trading Hub"
-  WriteRegStr HKCU "${UNINSTKEY}" "URLInfoAbout" "https://github.com/ralphtradesz/trading-hub"
+  WriteRegStr HKCU "${UNINSTKEY}" "URLInfoAbout" "https://github.com/dhamnaik-lab/trading-hub"
   WriteRegStr HKCU "${UNINSTKEY}" "DisplayIcon" "$INSTDIR\${EXE}"
   WriteRegStr HKCU "${UNINSTKEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "${UNINSTKEY}" "UninstallString" '"$INSTDIR\Desinstalar Trading Hub.exe"'
