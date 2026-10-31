@@ -1,167 +1,131 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Operar
+# Trading
 
-Se opera desde la sección **Trading**: con el Chart Trader, con el DOM, desde el gráfico o con atajos de teclado. Cada
-gráfico opera con la cuenta que le elijas; de entrada es la **Cuenta simulada**.
+Orders can be entered from the **Trading** page through Chart Trader, the depth-of-market (DOM) ladder, the chart, or assigned keyboard shortcuts. Each chart has a selected trading account; the default is the **Simulated account**.
 
-## Elegir la cuenta
+## Select an account
 
-Cada gráfico recuerda su cuenta. Se elige en el Chart Trader, en **Cuenta**. Siempre está la Cuenta simulada; las demás
-aparecen según el instrumento del gráfico y tus [conexiones](conexiones.md):
+Each chart remembers its account choice in the Chart Trader **Account** selector. Available accounts depend on the chart instrument and your [connections](conexiones.md).
 
-| Gráfico | Cuentas que aparecen |
+| Chart/data source | Trading accounts |
 |---|---|
-| Cualquiera | Cuenta simulada |
-| Binance Futures o Spot | Tu cuenta de Binance de esa conexión: «(testnet)» o «— REAL» |
-| Futuros de Rithmic | Tus cuentas de Rithmic: «(práctica)» o «— REAL» |
-| Futuros de CME de Rithmic o Tradovate | Tus cuentas de Tradovate: «(demo)» o «— REAL» |
+| Any supported chart | Simulated account |
+| Binance Futures / Spot | Matching Binance testnet or explicitly enabled real account |
+| Rithmic futures | Connected Rithmic practice or real accounts |
+| CME futures via Rithmic or Tradovate | Compatible Tradovate demo or real accounts |
 
-Las cuentas de Rithmic aparecen cuando su sesión de órdenes termina de conectarse; mientras tanto el Chart Trader dice
-por qué todavía no están. Con una cuenta real elegida, el Chart Trader muestra «CUENTA REAL» en naranja.
+Rithmic accounts become selectable once the order-session connection completes. The interface marks real-money accounts with an orange **REAL ACCOUNT** warning.
 
-## El Chart Trader
+## Chart Trader
 
-![El Chart Trader del gráfico y, a la derecha, el panel con el DOM, sus botones de ejecución y la cinta](img/operar.png)
+![Chart Trader, DOM, execution buttons, and time and sales](img/operar.png)
 
-Está en dos lugares que muestran lo mismo:
+Chart Trader can appear within an individual chart or at the top of the right-side panel. The individual-chart panel applies only to that chart. The right-side panel follows the active chart and can be detached into a separate window.
 
-- **En cada gráfico**, a la derecha. Se pliega con la flechita o con ⌥T, y cada gráfico opera solo lo suyo.
-- **En el panel derecho**, arriba del DOM. Sigue al gráfico activo («Opera en el gráfico activo: …»). Si lo sacás a
-  una ventana aparte, al cerrarla vuelve al panel.
-
-De arriba hacia abajo:
-
-| Parte | Qué hace |
+| Control | Meaning |
 |---|---|
-| Cuenta | Dónde van las órdenes de este gráfico. |
-| Cross trading | Ejecutar en otro instrumento (ver [Cross trading](#cross-trading)). |
-| Cantidad | Con botones rápidos: 1, 2, 5 y 10 si el instrumento se opera en unidades enteras; fracciones en cripto. |
-| Comprar MKT / Vender MKT | A mercado. |
-| Comprar Ask / Vender Ask | Límite al precio del ask (abajo de cada botón se ve el precio). Comprar en el ask llena enseguida, con precio tope; vender en el ask espera en la oferta. |
-| Comprar Bid / Vender Bid | Límite al precio del bid. Comprar en el bid espera en la demanda; vender en el bid llena enseguida, con precio tope. |
-| Canc. compras / Canc. ventas | Cancela las órdenes de ese lado. |
-| Cancelar todo / Revertir | Cancela todas las órdenes / da vuelta la posición. |
-| Breakeven | Mueve el stop al precio de entrada. |
-| Cerrar 25 % / 50 % / 75 % | Cierra esa parte a mercado; el stop y los objetivos se ajustan solos. |
-| Cerrar posición | Cierra todo a mercado y cancela las órdenes. |
-| Resultado | PnL abierto y la posición («LARGO 2 @ precio», «Plana · resultado del día»). |
-| SL / TP automáticos | Stop y objetivos (ver [Stop y objetivos](#stop-y-objetivos)). |
+| Account | Choose where orders will be routed |
+| Cross trading | Route an order to a different instrument |
+| Quantity | Choose a trading size, with quick presets such as 1, 2, 5, and 10 for whole-contract instruments |
+| Buy MKT / Sell MKT | Place a market order |
+| Buy Ask / Sell Ask | Place a limit order at the displayed ask |
+| Buy Bid / Sell Bid | Place a limit order at the displayed bid |
+| Cancel buys / Cancel sells | Cancel working orders on one side |
+| Cancel all / Reverse | Cancel all working orders or reverse the current position |
+| Breakeven | Move the protective stop to entry |
+| Close 25% / 50% / 75% | Close part of a position at market and adjust associated exit orders |
+| Close position | Flatten the whole position and cancel related orders |
+| Position / P&L | Display quantity, side, average entry, and open/day results |
+| Automatic SL / TP | Enable stop-loss and take-profit templates |
 
-El resultado y la posición se muestran debajo de los botones, así sus cambios no corren los botones de lugar.
+The price and position display is beneath the buttons so changing market data does not move order controls while you are using them.
 
-## Tipos de órdenes
+## Order types
 
-| Tipo | Cómo se manda | En la cuenta simulada |
+| Order type | Entry methods | Simulator fill model |
 |---|---|---|
-| Mercado | MKT, Cerrar, Revertir, parciales | Llena al mejor bid o ask del libro (o al último precio si no hay libro). |
-| Límite | Ask / Bid, clic en el DOM, clic derecho en el gráfico | Llena si el precio opera a través de tu precio, o si en tu precio se operó más volumen que el que tenías adelante en la cola. |
-| Stop | Clic en el DOM más allá del precio (ver la tabla de abajo), clic derecho en el gráfico | Se dispara cuando opera el precio y llena a mercado. |
+| Market | MKT buttons, Close, Reverse, partial exits | Best available bid or ask in the book, or last trade price when no book is available |
+| Limit | Bid/Ask buttons, DOM price row, chart context menu | Fills after price trades through the limit or enough volume trades at the limit to clear the modeled queue |
+| Stop | DOM/chart context actions beyond the current price | Triggers when the stop price trades and then executes as market |
 
-El stop loss y los objetivos solo pueden reducir la posición, nunca darla vuelta.
+Stop-loss and profit-target orders are intended to reduce an existing position, not reverse it. Confirm actual broker behavior and exchange order support before real-money use.
 
-## Operar con el DOM
+## Trading in the DOM
 
-| Acción | Resultado |
+| Interaction | Action |
 |---|---|
-| Clic en la columna Bid (u Órdenes de compra) | Compra límite en ese precio; si está en el ask o arriba, compra stop. |
-| Clic en la columna Ask (u Órdenes de venta) | Venta límite en ese precio; si está en el bid o abajo, venta stop. |
-| Clic derecho o ⌥ clic | Cancela tus órdenes de ese precio. |
-| Arrastrar una orden tuya | La mueve a otro precio. |
-| Rueda / botón de centrar | Desplaza la escalera / vuelve al precio. |
+| Click a Bid / Buy Orders price row | Buy limit at that level, or buy stop if at/above the ask |
+| Click an Ask / Sell Orders price row | Sell limit at that level, or sell stop if at/below the bid |
+| Right-click or Alt/Option-click a price | Cancel working orders at that price |
+| Drag an existing order | Modify its price |
+| Scroll or click recenter | Move ladder view or return to market |
 
-La cantidad es la del gráfico activo. Si activás **Doble clic para operar** en Configurar DOM, un clic simple ya no
-manda órdenes (cancelar sigue funcionando con un clic). El ícono del signo de pregunta del DOM resume estos gestos.
+The DOM uses the active chart's selected quantity and account. Enabling **Double-click to trade** in DOM settings prevents a single click from submitting a new order; cancellation remains a separate action. The DOM help icon summarizes the controls.
 
-Debajo del DOM están los **botones de ejecución** (se muestran u ocultan desde su encabezado): cantidad con botones
-rápidos, Comprar MKT, Vender MKT, C. Bid, C. Ask, V. Bid, V. Ask, Cancelar, Revertir y Cerrar. Operan el gráfico activo.
+The execution toolbar below the DOM includes size presets, market and Bid/Ask entries, Cancel, Reverse, and Close. It operates the active chart.
 
-## Operar desde el gráfico
+## Trading from the chart
 
-- **Clic derecho** en un precio: «Comprar límite» y «Vender stop» si está abajo del último precio, «Vender límite» y
-  «Comprar stop» si está arriba, con la cantidad del Chart Trader. También «Cancelar todas las órdenes».
-- **Arrastrar** la línea de una orden la mueve de precio.
-- **Clic derecho sobre una orden tuya**: cancelarla; en un objetivo, «Cantidad del objetivo» (25, 50, 75 o 100 % de la
-  posición); en el stop, «Stop a breakeven»; en una orden de entrada pendiente, «Adjuntar stop y objetivos de la
-  plantilla».
-- **Con posición abierta**, el clic derecho ofrece «Cerrar la mitad a mercado», «Cerrar todo a mercado», «Stop a
-  breakeven» y «Poner stop y objetivos de la plantilla».
+- **Right-click at a price:** Offers suitable buy/sell limit and stop entries according to the current trading price, plus cancellation controls.
+- **Drag an order line:** Request a price modification.
+- **Right-click an existing order:** Cancel it, configure a profit target's close percentage, move a stop to breakeven, or attach a stop/target template to a pending entry order.
+- **Right-click with an open position:** Actions can include closing half, closing all, moving the stop to entry, and applying stop/target templates.
 
-## Stop y objetivos
+These interactions can send orders immediately on practice accounts. Check the selected trading account before clicking.
 
-La sección **SL / TP automáticos** del Chart Trader guarda una plantilla por instrumento (la misma en el panel del
-gráfico y en el de la derecha):
+## Stops and targets
 
-1. Activá el interruptor de **SL / TP automáticos**.
-2. Poné el **SL** en ticks desde la entrada.
-3. Poné el **TP** en ticks. Con **+ objetivo** agregás hasta 3 objetivos parciales, cada uno con su porcentaje de la
-   posición (el 100 % se reparte solo; la × de cada uno lo quita).
-4. **Breakeven al TP1** (viene tildado) mueve el stop a la entrada cuando se llena el primer objetivo.
+The Chart Trader **Automatic SL / TP** section stores a per-instrument template:
 
-Con la plantilla activa, al abrir una posición se ponen solos el stop y los objetivos en OCO: cuando uno cierra la
-posición, lo que queda se cancela. En una orden de entrada límite o stop, quedan adjuntos y se envían cuando se llena.
-Si agrandás la posición, cubren todo lo abierto; si cerrás una parte, se ajustan a lo que queda.
+1. Enable **Automatic SL / TP**.
+2. Set the stop-loss distance in ticks.
+3. Set one or more take-profit distances in ticks. You can configure up to three partial exits, each with an allocated percentage.
+4. **Breakeven at TP1**, enabled by default, moves the stop to entry after the first target fills.
 
-**Aplicar a la posición** reemplaza el stop y los objetivos de la posición abierta por los de la plantilla.
+When enabled, stops and targets are associated with a new filled position using OCO-style management. For pending limit or stop entries, the exits are attached for placement once the entry fills. Increasing or reducing the position updates exit quantities as supported.
 
-También se ponen a mano en el gráfico: arrastrá los botones SL / TP de la posición o de una orden pendiente, o
-arrastrá desde la línea de la posición (hacia la ganancia crea un objetivo; hacia la pérdida, el stop).
+**Apply to position** replaces an existing position's stop and targets with the current template. You can also drag SL/TP controls or position lines to create or adjust exits on the chart.
+
+Be aware that stops may slip or fail to fill during volatile or disconnected markets. Verify order state at the broker.
 
 ## Cross trading
 
-Mirás un instrumento y las órdenes van a otro, por ejemplo mirás el ES y ejecutás en el MES. En el Chart Trader tocá
-**Cross trading**, buscá el instrumento (primero aparecen los del mismo subyacente) y elegilo; «Ninguno» vuelve a
-operar el del gráfico. Las órdenes, el stop y los objetivos van al instrumento elegido con los precios tal cual. Si los
-precios de los dos difieren, el Chart Trader avisa «ojo: precios distintos».
+Cross trading allows a chart instrument to differ from the execution instrument—for example, analyzing ES while placing orders in MES. In Chart Trader select **Cross trading**, search for the execution symbol, and choose it. Selecting **None** returns execution to the chart instrument.
 
-## Atajos para operar
+The orders, stops, and targets use the selected execution instrument's exact prices. The app warns when the chart and execution instruments have different price scales.
 
-En **Ajustes → Atajos de teclado**, grupo **Operar**, podés asignar: comprar y vender a mercado, comprar límite en el
-bid, vender límite en el ask, cerrar la posición, darla vuelta, cancelar todas las órdenes, cerrar el 25 % o el 50 %,
-stop a breakeven, poner stop y objetivos de la plantilla, y pasar al siguiente o al anterior botón rápido de cantidad.
-Vienen sin asignar. Funcionan sobre el gráfico activo y no se disparan mientras escribís en un campo de texto (salvo
-que el atajo use ⌘, ⌥, ⌃ o una tecla de función).
+**Critical:** ES and MES have different contract multipliers. Cross trading does not automatically guarantee correct risk exposure. Confirm instrument, contract multiplier, quantity, tick size, and prices before executing.
 
-## La sección Cuenta
+## Trading shortcuts
 
-**Cuenta** (⌘5) muestra una cuenta por vez. El botón de arriba abre la lista, agrupada por conexión: la Cuenta
-simulada y tus cuentas de Rithmic y Tradovate.
+Under **Settings → Keyboard shortcuts → Trading**, you can assign actions for market buy/sell, limit buy at bid, limit sell at ask, flatten, reverse, cancel all, partial exits, breakeven, stop/target templates, and quantity presets.
 
-Tarjetas: **Saldo**, **Resultado del día**, **PnL abierto**, **Realizado hoy**, **Resultado total** (en la simulada) o
-**Disponible para operar** (en las del broker), y **Órdenes activas**. En las cuentas del broker el saldo es el que
-informa Rithmic o Tradovate.
+**All trading shortcuts are unassigned by default.** Hotkeys apply to the active chart and normally do not trigger while typing in a text field unless they use modifiers or a function key.
 
-| Pestaña | Contenido |
+## Accounts page
+
+**Accounts** (Ctrl+5 on Windows or ⌘5 on macOS) displays the selected account's balances, positions, orders, fills, trades, and statistics.
+
+Main summary cards include balance, daily result, open P&L, realized result, cumulative simulated P&L, available buying power for broker accounts, and active orders.
+
+| Tab | Contents |
 |---|---|
-| Posiciones | Contrato, lado, cantidad, precio promedio, PnL abierto, realizado hoy y botón «Cerrar». |
-| Órdenes | Las de hoy, activas o terminadas, con su estado y botón «Cancelar». |
-| Ejecuciones | Cada ejecución con hora, contrato, lado, cantidad, precio y comisión. |
-| Operaciones | Cada operación cerrada: entrada, salida, duración y resultado. |
-| Estadísticas | Hoy, 7 días, 30 días o todo: curva de saldo, resultado neto, % ganadoras, profit factor, drawdown máximo, expectativa, rachas, largos y cortos, y el resultado de cada día. |
+| Positions | Contract, side, quantity, average price, open and realized P&L, Close |
+| Orders | Working and completed orders with state and Cancel |
+| Fills | Individual executions with timestamp, symbol, side, quantity, price, commission |
+| Trades | Closed entries/exits with holding duration and result |
+| Statistics | Equity curve, net result, win rate, profit factor, maximum drawdown, expectancy, streaks, and long/short breakdowns |
 
-Las filas de posiciones y órdenes no cambian de lugar: las nuevas se agregan abajo, así un clic no cae en la fila de
-al lado. El historial se guarda en tu Mac y sobrevive al cerrar la app.
+The selected simulator balance and history persist across application restarts. **Reset simulated account** restores the starting balance and creates a fresh history; existing history is retained separately. Reset requires no open simulated orders or positions.
 
-En la Cuenta simulada podés cambiar el **Saldo inicial** y usar **Reiniciar la cuenta simulada**: vuelve al saldo
-inicial y empieza un historial nuevo (el anterior queda guardado aparte). Para reiniciar tenés que estar sin posiciones
-ni órdenes.
+## Safety
 
-## Seguridad
+- **Simulated by default:** Live-order permissions for broker connections are disabled until enabled manually. See [Real and practice accounts](conexiones.md#real-and-practice-accounts).
+- **Practice orders can be immediate:** Simulated, testnet, and demo orders generally do not require additional order confirmation.
+- **Real-account confirmation:** With default settings, the application asks before submitting manual real-account orders and certain order amendments, closes, reversals, cancellations, and stop changes. Binance and Rithmic provide per-connection controls. Trading Hub also has a global **Settings → Trading → Confirm live orders** option. Tradovate real orders require confirmation under the documented app behavior.
+- **Maximum order quantity:** Where configured, real orders above the connection's maximum are rejected. Zero may mean unlimited—never assume zero is a safe limit.
+- **Live strategy limits:** Automatic strategies support daily-loss and maximum-drawdown thresholds. **Stop all** in Live stops strategies, cancels orders, and requests position exits according to the implementation.
+- **Visible account warnings:** Real accounts are marked as real in the account selector and Chart Trader.
 
-- **Nada real por defecto.** Cada conexión tiene su casilla de órdenes reales, apagada de entrada. Sin ella, la cuenta
-  real no aparece para operar (ver [Conexiones](conexiones.md#cuentas-reales-y-cuentas-de-prueba)).
-- **Sin confirmaciones en las cuentas de prueba.** En la cuenta simulada y en las cuentas demo, de práctica o
-  testnet, cada clic manda la orden al instante.
-- **Confirmación en cuentas reales.** De fábrica, cada orden a una cuenta real abre la confirmación «Confirmar orden
-  REAL» con el detalle y la cuenta. Lo mismo pasa al mover una orden, cerrar, revertir, cancelar desde los botones y
-  usar parciales o breakeven. Para no tenerla tienen que estar apagadas las dos opciones: la de la conexión («Pedir
-  confirmación antes de cada orden real» en Binance, «Confirmar cada orden real» en Rithmic) y **Ajustes → Operar →
-  Confirmar órdenes reales**. La conexión de Tradovate no tiene esa casilla, así que sus órdenes reales siempre piden
-  confirmación. En Cuenta, «Cerrar» y «Cancelar» de una cuenta real también piden confirmación.
-- **Cantidad máxima por orden.** En las cuentas reales, una orden más grande que el máximo de la conexión se bloquea y
-  la barra de estado dice «Orden bloqueada».
-- **Límites de las estrategias.** Las estrategias automáticas tienen pérdida máxima del día y drawdown máximo
-  (0 = sin límite), y en **En vivo** está **Frenar todo**, que detiene todas, cancela sus órdenes y cierra sus
-  posiciones.
-- **Avisos visibles.** Las cuentas reales se marcan en naranja con «— REAL» o «CUENTA REAL», en el Chart Trader y en
-  Cuenta.
+**Important:** Order confirmation, stop management, and broker connectivity are not guarantees of risk control. This guide documents intended application behavior; verify it with your broker and a practice environment before using real funds. Backtests and simulated fills do not predict future returns.
