@@ -1056,9 +1056,9 @@ foreach (var page in pages)
         if (parts[1] == "claudefloat")
         {
             // conversación de ejemplo en el historial (carpeta de datos aparte) y chat en una ventana
-            var conv = new TradingHub.App.Services.ChatConversation { Title = "Creá una estrategia de ruptura del rango de 30 minutos", SessionId = "prueba", Strategy = "Ruptura.cs" };
+            var conv = new TradingHub.App.Services.ChatConversation { Title = "Build a 30-minute opening-range breakout strategy", SessionId = "phase9-demo", Strategy = "Ruptura.cs" };
             conv.Messages.Add(new TradingHub.App.Services.ChatMessage { Role = "user", Text = conv.Title });
-            conv.Messages.Add(new TradingHub.App.Services.ChatMessage { Role = "assistant", Text = "Listo: creé Ruptura.cs con la ruptura del rango de los primeros 30 minutos, stop por ATR y salida al cierre." });
+            conv.Messages.Add(new TradingHub.App.Services.ChatMessage { Role = "assistant", Text = "Created Ruptura.cs with a 30-minute opening-range breakout, ATR stop and close-of-session exit." });
             TradingHub.App.Services.ChatHistory.Save(conv);
             t.GetMethod("ShowTab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(view, new object[] { "code" });
             Pump(0.5);
