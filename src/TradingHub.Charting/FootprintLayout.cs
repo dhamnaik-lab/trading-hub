@@ -190,6 +190,23 @@ public sealed class FootprintLayout
 
     private static FootprintColumn Candle() => new() { Kind = FootprintColumnKind.Candle };
 
+    // Built-in preset names remain serialized as originally shipped. Translate their
+    // Translate presentation only, not persisted identities.
+    public static string DisplayPresetName(string name) => name switch
+    {
+        "Bid x Ask (clásico)" => "Bid × Ask (classic)",
+        "Escalera de volumen + perfil" => "Volume ladder + profile",
+        "Escalera de delta + perfil de volumen" => "Delta ladder + volume profile",
+        "Doble escalera (bid | ask)" => "Double ladder (bid | ask)",
+        "Doble escalera de delta" => "Double delta ladder",
+        "Volumen (celdas)" => "Volume (cells)",
+        "Delta (celdas)" => "Delta (cells)",
+        "Histograma bid / ask" => "Bid / ask histogram",
+        "Perfil de volumen por vela" => "Per-candle volume profile",
+        "Bid x Ask + perfil" => "Bid × Ask + profile",
+        _ => name,
+    };
+
     public static IReadOnlyList<FootprintLayout> Presets { get; } = new[]
     {
         new FootprintLayout
