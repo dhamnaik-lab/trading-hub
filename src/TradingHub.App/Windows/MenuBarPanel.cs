@@ -54,11 +54,11 @@ internal sealed class MenuBarPanel : Window
         head.Children.Add(Ui.V(1, new TextBlock { Text = TradingHub.Common.Product.Name, FontWeight = FontWeight.SemiBold, FontSize = 14 }, _status));
 
         var quit = Ui.Button("Salir de Trading Hub", MaterialIconKind.Power, MenuBar.Quit, "ghost");
-        ToolTip.SetTip(quit, "Cierra Trading Hub del todo: detiene las estrategias en vivo y los agentes (las que corrían se reanudan al abrir, si así está en Ajustes)");
+        ToolTip.SetTip(quit, "Quit Trading Hub completely: stop live strategies and agents (previously running strategies may resume at startup if enabled in Settings)");
         var foot = new DockPanel();
         DockPanel.SetDock(quit, Dock.Right);
         foot.Children.Add(quit);
-        var stays = Os.IsWindows ? "Cerrar la ventana deja a Trading Hub corriendo acá, en la bandeja del sistema." : "Cerrar la ventana deja a Trading Hub corriendo acá arriba.";
+        var stays = Os.IsWindows ? "Closing the window keeps Trading Hub running here in the system tray." : "Closing the window keeps Trading Hub running here in the menu bar.";
         foot.Children.Add(new TextBlock { Text = stays, Classes = { "faint", "small" }, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap });
 
         var body = new StackPanel { Spacing = 14 };
@@ -157,7 +157,7 @@ internal sealed class MenuBarPanel : Window
             // cuántos contratos y de cuál manda cada orden (el micro, resaltado)
             var contract = new TextBlock
             {
-                Text = plan.Units <= 0 ? "Tamaño en cero: no abre operaciones" : $"Cada orden: {plan.Text}{(plan.Detail.Length > 0 ? $" ({plan.Detail})" : "")}",
+                Text = plan.Units <= 0 ? "Size is zero: no new positions are opened" : $"Each order: {plan.Text}{(plan.Detail.Length > 0 ? $" ({plan.Detail})" : "")}",
                 FontSize = 11.5,
                 Foreground = plan.Micro ? Ui.Accent : Ui.Text1,
                 FontWeight = plan.Micro ? FontWeight.SemiBold : FontWeight.Normal,
