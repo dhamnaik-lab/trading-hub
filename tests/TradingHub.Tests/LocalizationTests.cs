@@ -57,5 +57,7 @@ public class LocalizationTests
 
         // Stored preset names remain unchanged so previously saved layouts can still match.
         Assert.Equal("Bid x Ask (clásico)", FootprintLayout.Presets[0].Name);
+        Assert.Equal("Bid × Ask (classic)", FootprintLayout.DisplayPresetName(FootprintLayout.Presets[0].Name));
+        Assert.Equal("User preset", FootprintLayout.DisplayPresetName("User preset"));
     }
 }
