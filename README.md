@@ -81,9 +81,9 @@ Phase 9 regenerates these documentation images from this fork on an isolated Win
 | ![Footprint chart](docs/img/footprint.png) | ![Trading from a chart](docs/img/operar.png) |
 | Footprint with delta, POC, and large trades | Chart Trader, DOM, and time and sales |
 | ![Claude strategy assistant](docs/img/claude.png) | ![Backtesting](docs/img/backtest.png) |
-| C# strategy assistant | Market-regime backtesting |
+| Synthetic Claude conversation (the CI runner has no Claude CLI) | Backtesting configuration and filters |
 | ![Recorded data](docs/img/datos.png) | ![Light theme](docs/img/claro.png) |
-| Historical ticks and Databento | Light and dark themes |
+| Data download and import controls | Light and dark themes |
 
 ## Installation
 
