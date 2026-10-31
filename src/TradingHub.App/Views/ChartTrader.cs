@@ -482,7 +482,7 @@ internal sealed class ChartTraderPanel : UserControl
 
         _cross.Content = _chart.CrossSymbol is { } cs
             ? Ui.H(6, Ui.Icon(MaterialIconKind.SwapHorizontal, 14, Ui.Accent), new TextBlock { Text = cs, FontWeight = FontWeight.SemiBold })
-            : Ui.H(6, Ui.Icon(MaterialIconKind.SwapHorizontal, 14, Ui.Text2), new TextBlock { Text = "Ninguno", Classes = { "muted" } });
+            : Ui.H(6, Ui.Icon(MaterialIconKind.SwapHorizontal, 14, Ui.Text2), new TextBlock { Text = "None", Classes = { "muted" } });
         if (_chart.CrossSymbol != null)
         {
             decimal a = data.LastPrice, b = tradeData.LastPrice;
