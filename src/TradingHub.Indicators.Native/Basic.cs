@@ -8,12 +8,12 @@ namespace TradingHub.Indicators.Native;
 public enum MaType
 {
     [Display(Name = "Simple (SMA)")] Sma,
-    [Display(Name = "Exponencial (EMA)")] Ema,
-    [Display(Name = "Ponderada (WMA)")] Wma,
+    [Display(Name = "Exponential (EMA)")] Ema,
+    [Display(Name = "Weighted (WMA)")] Wma,
 }
 
 /// <summary>Media móvil simple, exponencial o ponderada.</summary>
-[DisplayName("Media móvil")]
+[DisplayName("Moving average")]
 [Category(IndicatorCategories.Trend)]
 public class MovingAverage : Indicator
 {
@@ -26,14 +26,14 @@ public class MovingAverage : Indicator
         DataSeries[0] = _ma;
     }
 
-    [Display(Name = "Período", GroupName = "Cálculo", Order = 10)]
+    [Display(Name = "Period", GroupName = "Calculation", Order = 10)]
     [Range(1, 10000)]
     public int Period { get => _period; set { _period = Math.Max(1, value); RecalculateValues(); } }
 
-    [Display(Name = "Tipo", GroupName = "Cálculo", Order = 20)]
+    [Display(Name = "Type", GroupName = "Calculation", Order = 20)]
     public MaType Type { get => _type; set { _type = value; RecalculateValues(); } }
 
-    [Display(Name = "Fuente", GroupName = "Cálculo", Order = 30)]
+    [Display(Name = "Source", GroupName = "Calculation", Order = 30)]
     public DataSeriesType Source { get => SourceType; set { SourceType = value; RecalculateValues(); } }
 
     protected override void OnCalculate(int bar, decimal value)
@@ -70,14 +70,14 @@ public class MovingAverage : Indicator
 /// <summary>Período en el que se reinicia el VWAP.</summary>
 public enum VwapAnchor
 {
-    [Display(Name = "Sesión (día)")] Session,
-    [Display(Name = "Semana")] Week,
-    [Display(Name = "Mes")] Month,
+    [Display(Name = "Session (day)")] Session,
+    [Display(Name = "Week")] Week,
+    [Display(Name = "Month")] Month,
 }
 
-[DisplayName("VWAP con desvíos")]
+[DisplayName("VWAP with deviation bands")]
 [Category(IndicatorCategories.VolumeOrderFlow)]
-[Description("VWAP anclado a la sesión, la semana o el mes con hasta tres bandas de desvío estándar ponderado por volumen.")]
+[Description("VWAP anchored to the session, week or month with up to three volume-weighted standard deviation bands.")]
 public class SessionVwap : Indicator
 {
     private readonly ValueDataSeries _vwap = new("VWAP", "VWAP") { Color = Color.FromArgb(255, 255, 255, 255), Width = 2 };
@@ -103,18 +103,18 @@ public class SessionVwap : Indicator
         DataSeries.Add(_dn3);
     }
 
-    [Display(Name = "Reiniciar cada", GroupName = "Cálculo", Order = 1)]
+    [Display(Name = "Reset every", GroupName = "Calculation", Order = 1)]
     public VwapAnchor Anchor { get => _anchor; set { _anchor = value; RecalculateValues(); } }
 
-    [Display(Name = "Banda 1 (σ)", GroupName = "Bandas", Order = 10)]
+    [Display(Name = "Band 1 (σ)", GroupName = "Bands", Order = 10)]
     [Range(0, 10)]
     public decimal Band1 { get => _k1; set { _k1 = value; RecalculateValues(); } }
 
-    [Display(Name = "Banda 2 (σ)", GroupName = "Bandas", Order = 20)]
+    [Display(Name = "Band 2 (σ)", GroupName = "Bands", Order = 20)]
     [Range(0, 10)]
     public decimal Band2 { get => _k2; set { _k2 = value; RecalculateValues(); } }
 
-    [Display(Name = "Banda 3 (σ, 0 = oculta)", GroupName = "Bandas", Order = 30)]
+    [Display(Name = "Band 3 (σ, 0 = hidden)", GroupName = "Bands", Order = 30)]
     [Range(0, 10)]
     public decimal Band3 { get => _k3; set { _k3 = value; RecalculateValues(); } }
 
@@ -190,7 +190,7 @@ public class SessionVwap : Indicator
 }
 
 /// <summary>Volumen por vela, coloreado según el delta.</summary>
-[DisplayName("Volumen")]
+[DisplayName("Volume")]
 [Category(IndicatorCategories.VolumeOrderFlow)]
 public class VolumeBars : Indicator
 {
@@ -202,13 +202,13 @@ public class VolumeBars : Indicator
         DataSeries[0] = _vol;
     }
 
-    [Display(Name = "Color alcista", GroupName = "Colores", Order = 10)]
+    [Display(Name = "Bullish color", GroupName = "Colors", Order = 10)]
     public Color UpColor { get; set; } = Color.FromArgb(255, 60, 170, 90);
 
-    [Display(Name = "Color bajista", GroupName = "Colores", Order = 20)]
+    [Display(Name = "Bearish color", GroupName = "Colors", Order = 20)]
     public Color DownColor { get; set; } = Color.FromArgb(255, 200, 60, 60);
 
-    [Display(Name = "Colorear por delta (si no, por vela)", GroupName = "Colores", Order = 30)]
+    [Display(Name = "Color by delta (otherwise by candle)", GroupName = "Colors", Order = 30)]
     public bool ByDelta { get; set; } = true;
 
     protected override void OnCalculate(int bar, decimal value)
@@ -227,8 +227,8 @@ public class DeltaBars : Indicator
 {
     public enum DeltaView
     {
-        [Display(Name = "Histograma")] Histogram,
-        [Display(Name = "Velas (con máx/mín del delta)")] Candles,
+        [Display(Name = "Histogram")] Histogram,
+        [Display(Name = "Candles (delta high/low)")] Candles,
     }
 
     private readonly ValueDataSeries _delta = new("Delta", "Delta") { VisualType = VisualMode.Histogram };
@@ -243,13 +243,13 @@ public class DeltaBars : Indicator
         LineSeries.Add(new LineSeries("Zero", "Cero") { Value = 0, Color = Color.FromArgb(120, 140, 140, 150), LineDashStyle = LineDashStyle.Solid });
     }
 
-    [Display(Name = "Vista", GroupName = "Visualización", Order = 10)]
+    [Display(Name = "View", GroupName = "Visualization", Order = 10)]
     public DeltaView View { get => _view; set { _view = value; RecalculateValues(); } }
 
-    [Display(Name = "Color positivo", GroupName = "Visualización", Order = 20)]
+    [Display(Name = "Positive color", GroupName = "Visualization", Order = 20)]
     public Color PositiveColor { get; set; } = Color.FromArgb(255, 73, 209, 73);
 
-    [Display(Name = "Color negativo", GroupName = "Visualización", Order = 30)]
+    [Display(Name = "Negative color", GroupName = "Visualization", Order = 30)]
     public Color NegativeColor { get; set; } = Color.FromArgb(255, 232, 69, 72);
 
     protected override void OnCalculate(int bar, decimal value)
@@ -275,7 +275,7 @@ public class DeltaBars : Indicator
 }
 
 /// <summary>Delta acumulado (CVD) en velas.</summary>
-[DisplayName("Delta acumulado (CVD)")]
+[DisplayName("Cumulative delta (CVD)")]
 [Category(IndicatorCategories.VolumeOrderFlow)]
 public class CumulativeDeltaCandles : Indicator
 {
@@ -291,7 +291,7 @@ public class CumulativeDeltaCandles : Indicator
         DataSeries.Add(_cvd);
     }
 
-    [Display(Name = "Reiniciar en cada sesión", GroupName = "Cálculo", Order = 10)]
+    [Display(Name = "Reset each session", GroupName = "Calculation", Order = 10)]
     public bool ResetDaily { get => _resetDaily; set { _resetDaily = value; RecalculateValues(); } }
 
     protected override void OnRecalculate() => _base = 0;
@@ -323,7 +323,7 @@ public class Rsi : Indicator
         LineSeries.Add(new LineSeries("30", "Sobreventa") { Value = 30, Color = Color.FromArgb(150, 73, 209, 73) });
     }
 
-    [Display(Name = "Período", GroupName = "Cálculo", Order = 10)]
+    [Display(Name = "Period", GroupName = "Calculation", Order = 10)]
     [Range(2, 1000)]
     public int Period { get => _period; set { _period = Math.Max(2, value); RecalculateValues(); } }
 
@@ -368,9 +368,9 @@ public class Macd : Indicator
         DataSeries.Add(_signal);
     }
 
-    [Display(Name = "Rápida", GroupName = "Cálculo", Order = 10)] public int Fast { get => _fastP; set { _fastP = Math.Max(1, value); RecalculateValues(); } }
-    [Display(Name = "Lenta", GroupName = "Cálculo", Order = 20)] public int Slow { get => _slowP; set { _slowP = Math.Max(1, value); RecalculateValues(); } }
-    [Display(Name = "Señal", GroupName = "Cálculo", Order = 30)] public int SignalPeriod { get => _sigP; set { _sigP = Math.Max(1, value); RecalculateValues(); } }
+    [Display(Name = "Fast", GroupName = "Calculation", Order = 10)] public int Fast { get => _fastP; set { _fastP = Math.Max(1, value); RecalculateValues(); } }
+    [Display(Name = "Slow", GroupName = "Calculation", Order = 20)] public int Slow { get => _slowP; set { _slowP = Math.Max(1, value); RecalculateValues(); } }
+    [Display(Name = "Signal", GroupName = "Calculation", Order = 30)] public int SignalPeriod { get => _sigP; set { _sigP = Math.Max(1, value); RecalculateValues(); } }
 
     protected override void OnRecalculate()
     {
@@ -392,7 +392,7 @@ public class Macd : Indicator
 }
 
 /// <summary>Bandas de Bollinger.</summary>
-[DisplayName("Bandas de Bollinger")]
+[DisplayName("Bollinger Bands")]
 [Category(IndicatorCategories.Trend)]
 public class Bollinger : Indicator
 {
@@ -411,8 +411,8 @@ public class Bollinger : Indicator
         DataSeries.Add(_band);
     }
 
-    [Display(Name = "Período", GroupName = "Cálculo", Order = 10)] public int Period { get => _period; set { _period = Math.Max(2, value); RecalculateValues(); } }
-    [Display(Name = "Desvíos", GroupName = "Cálculo", Order = 20)] public decimal Width { get => _width; set { _width = value; RecalculateValues(); } }
+    [Display(Name = "Period", GroupName = "Calculation", Order = 10)] public int Period { get => _period; set { _period = Math.Max(2, value); RecalculateValues(); } }
+    [Display(Name = "Deviations", GroupName = "Calculation", Order = 20)] public decimal Width { get => _width; set { _width = value; RecalculateValues(); } }
 
     protected override void OnCalculate(int bar, decimal value)
     {
