@@ -31,7 +31,7 @@ internal sealed class LivePortfolioWindow : Window
         _svc = svc;
         _def = def ?? new LivePortfolioDef { Name = "Portafolio " + (LiveStore.LoadPortfolios().Count(d => !d.Auto) + 1) };
         bool isNew = def == null;
-        Title = isNew ? "Nuevo portafolio en vivo" : $"Portafolio · {_def.Name}";
+        Title = isNew ? "New live portfolio" : $"Portafolio · {_def.Name}";
         Width = 560;
         Height = 660;
         MinHeight = 420;
@@ -64,17 +64,17 @@ internal sealed class LivePortfolioWindow : Window
             list.Children.Add(box);
         }
 
-        if (_members.Count == 0) list.Children.Add(new TextBlock { Text = "Todavía no hay estrategias en vivo para agregar. Lanzá una con «Nueva estrategia en vivo».", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap });
+        if (_members.Count == 0) list.Children.Add(new TextBlock { Text = "No live strategies are available to add. Start one with New live strategy.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap });
 
         var body = new StackPanel { Spacing = 16, Margin = new Thickness(22, 18, 22, 18) };
-        body.Children.Add(Ui.H2(isNew ? "Nuevo portafolio" : _def.Name));
+        body.Children.Add(Ui.H2(isNew ? "New portfolio" : _def.Name));
         if (_def.Auto)
-            body.Children.Add(new TextBlock { Text = "El automático junta solo todas las estrategias que corren en vivo sin un portafolio tuyo. Podés cambiar su capital de referencia y su agente de riesgo.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap });
+            body.Children.Add(new TextBlock { Text = "The automatic portfolio contains live strategies not assigned to a custom portfolio. You can change its reference capital and risk-agent settings.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap });
         body.Children.Add(Ui.Field("Nombre", _name));
         body.Children.Add(Ui.Field("Capital de referencia", _capital, "Para los porcentajes, el drawdown y el Sharpe del portafolio (y el presupuesto de riesgo del agente)."));
-        body.Children.Add(Ui.V(8, Ui.H3("Estrategias"), new TextBlock { Text = "Una estrategia está en un solo portafolio tuyo a la vez. Para sumar una nueva, lanzala con «Nueva estrategia en vivo» eligiendo este portafolio.", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap }, list));
+        body.Children.Add(Ui.V(8, Ui.H3("Estrategias"), new TextBlock { Text = "Each strategy can belong to only one custom portfolio. To add a new one, start it using New live strategy and select this portfolio.", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap }, list));
 
-        var save = Ui.Button(isNew ? "Crear portafolio" : "Guardar", MaterialIconKind.Check, Save, "primary");
+        var save = Ui.Button(isNew ? "Crear portafolio" : "Save", MaterialIconKind.Check, Save, "primary");
         var cancel = Ui.Button("Cancelar", MaterialIconKind.Close, () => Close(null));
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(22, 10, 22, 16) };
         actions.Children.Add(cancel);
