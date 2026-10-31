@@ -60,7 +60,7 @@ internal sealed partial class StrategiesView
         _runButton = Ui.Button("Correr backtest", MaterialIconKind.Play, () => _ = RunBacktestAsync(), "primary");
         _stopButton = Ui.Button("Detener", MaterialIconKind.Stop, () => _cts?.Cancel());
         _stopButton.IsEnabled = false;
-        _limitMode.Items.Add(new ComboBoxItem { Content = "Solo si el precio lo atraviesa", Tag = LimitFillMode.TradeThrough });
+        _limitMode.Items.Add(new ComboBoxItem { Content = "Only when price trades through the limit", Tag = LimitFillMode.TradeThrough });
         _limitMode.Items.Add(new ComboBoxItem { Content = "Apenas lo toca (optimista)", Tag = LimitFillMode.Touch });
         _limitMode.SelectedIndex = 0;
         foreach (var (id, label) in new[] { ("", "UTC"), ("America/Argentina/Buenos_Aires", "Buenos Aires"), ("America/New_York", "Nueva York"), ("America/Chicago", "Chicago (CME)"), ("Europe/London", "Londres") })
@@ -107,7 +107,7 @@ internal sealed partial class StrategiesView
         var liveCard = Ui.Card(Ui.V(12,
             Ui.H(8, Ui.Icon(MaterialIconKind.AccessPoint, 17, Ui.Accent), Ui.H2("Llevar a vivo")),
             new TextBlock { Text = "Uses these parameters, bar period and session. Running strategies are managed under Live.", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap },
-            Ui.Button("Ejecutar en vivo…", MaterialIconKind.Play, () => _ = OpenLiveLaunchAsync(), "primary"),
+            Ui.Button("Run live…", MaterialIconKind.Play, () => _ = OpenLiveLaunchAsync(), "primary"),
             Ui.Button("Add to active chart", MaterialIconKind.ChartBoxPlusOutline, () => _ = PutOnChartAsync()),
             new TextBlock { Text = "On a chart it behaves as a strategy overlay, marking entries and exits. Its settings control visual-only or account execution.", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap }));
 
@@ -191,7 +191,7 @@ internal sealed partial class StrategiesView
         Grid Header()
         {
             var g = new Grid { ColumnDefinitions = new ColumnDefinitions(TradeColumns), Margin = new Thickness(12, 0, 12, 6) };
-            string[] titles = { "#", "Lado", "Entry", "Precio", "Exit", "Precio", "Cant.", "Result", "MAE", "MFE", "Velas", "Exit reason" };
+            string[] titles = { "#", "Lado", "Entry", "Price", "Exit", "Price", "Cant.", "Result", "MAE", "MFE", "Velas", "Exit reason" };
             for (int i = 0; i < titles.Length; i++)
             {
                 var t = new TextBlock { Text = titles[i], Classes = { "h3" }, TextAlignment = i is 3 or 5 or 6 or 7 or 8 or 9 or 10 ? TextAlignment.Right : TextAlignment.Left, Margin = new Thickness(0, 0, 8, 0) };
@@ -271,7 +271,7 @@ internal sealed partial class StrategiesView
         var index = HistorySources.Datasets(AppPaths.Ticks).Where(s => !s.FeedId.StartsWith(TradingHub.Feeds.ReplayFeed.FeedPrefix, StringComparison.Ordinal)).ToList();
         _dataSource.Items.Clear();
         foreach (var s in index)
-            _dataSource.Items.Add(new ComboBoxItem { Content = $"{s.Symbol} · {SourceName(s)} · {s.Days.Count} día{(s.Days.Count == 1 ? "" : "s")}", Tag = s });
+            _dataSource.Items.Add(new ComboBoxItem { Content = $"{s.Symbol} · {SourceName(s)} · {s.Days.Count} day{(s.Days.Count == 1 ? "" : "s")}", Tag = s });
 
         var want = _state.Settings;
         _dataSource.SelectedItem = _dataSource.Items.OfType<ComboBoxItem>().FirstOrDefault(i => i.Tag is SymbolData sd && want != null && sd.FeedId == want.FeedId && sd.Symbol == want.Symbol)
@@ -585,7 +585,7 @@ internal sealed partial class StrategiesView
         _equity.SetData(r.Equity, r.Settings.InitialCapital);
         _tradesList.ItemsSource = r.Trades;
         FillMetrics(m, r);
-        _logBox.Text = r.Log.Count == 0 ? "La estrategia no escribió nada (usá Log(\"…\") para dejar mensajes)." : string.Join('\n', r.Log);
+        _logBox.Text = r.Log.Count == 0 ? "The strategy generated no log entries (use Log(...) to add messages)." : string.Join('\n', r.Log);
         RenderMarket(r);
         _mcKpis.Children.Clear();
         _mcChart.SetData(Array.Empty<EquityPoint>(), r.Settings.InitialCapital);
