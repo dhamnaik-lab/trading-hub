@@ -81,7 +81,7 @@ internal sealed class StrategyChartWindow : Window
             host.RemoveStrategy(chart, cs);
             Close();
         }, "danger");
-        var close = Ui.Button("Cerrar", MaterialIconKind.Close, Close);
+        var close = Ui.Button("Close", MaterialIconKind.Close, Close);
         var actions = new WrapPanel { ItemSpacing = 8, LineSpacing = 8, Margin = new Thickness(20, 10, 20, 16) };
         foreach (var b in new Control[] { apply, remove, close }) actions.Children.Add(b);
 
@@ -217,15 +217,15 @@ internal sealed class StrategyChartWindow : Window
 
         var items = new (string Label, string Value, IBrush? Color)[]
         {
-            ("Operaciones", $"{m.TotalTrades} ({m.Winners} G · {m.Losers} P)", null),
+            ("Trades", $"{m.TotalTrades} ({m.Winners} G · {m.Losers} P)", null),
             ("% ganadoras", $"{m.WinRate:0.#}%", null),
             ("Profit factor", m.ProfitFactor >= 999 ? "∞" : m.ProfitFactor.ToString("0.00", Es), m.ProfitFactor >= 1 ? Ui.Up : Ui.Down),
             ("Maximum drawdown", $"{(-m.MaxDrawdown).ToString("#,##0.00", Es)} ({m.MaxDrawdownPercent:0.#}%)", Ui.Down),
             ("Promedio por op.", Money(m.AverageTrade), m.AverageTrade >= 0 ? Ui.Up : Ui.Down),
             ("Profit / loss", m.PayoffRatio.ToString("0.00", Es), null),
-            ("Ganancia media", Money(m.AverageWin), Ui.Up),
+            ("Average win", Money(m.AverageWin), Ui.Up),
             ("Average loss", Money(m.AverageLoss), Ui.Down),
-            ("Mayor ganancia", Money(m.LargestWin), Ui.Up),
+            ("Largest win", Money(m.LargestWin), Ui.Up),
             ("Largest loss", Money(m.LargestLoss), Ui.Down),
             ("Racha ganadora", $"{m.MaxConsecutiveWins}", null),
             ("Racha perdedora", $"{m.MaxConsecutiveLosses}", null),
