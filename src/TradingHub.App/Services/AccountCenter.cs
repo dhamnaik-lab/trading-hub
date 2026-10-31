@@ -78,7 +78,7 @@ public sealed class AccountCenter
 
     public IReadOnlyList<AccountEntry> Accounts()
     {
-        var list = new List<AccountEntry> { new(SimId, "Cuenta simulada", AccountKind.Sim, false, true) };
+        var list = new List<AccountEntry> { new(SimId, "Simulated account", AccountKind.Sim, false, true) };
         foreach (var p in _svc.Connections.Enabled.Where(p => p.IsRithmic && !string.IsNullOrWhiteSpace(p.RithmicUser)))
         {
             var session = _svc.RithmicSessionFor(p);
@@ -180,7 +180,7 @@ public sealed class AccountCenter
         s.Balance = s.StartBalance + s.Analysis.RealizedNet + s.OpenPnl;
         s.RealizedToday = realizedToday;
         s.DayPnl = realizedToday + s.OpenPnl;
-        s.Status = "Trading Hub simula las ejecuciones con el mercado real";
+        s.Status = "Trading Hub simulates fills using market data";
     }
 
     private void FillRithmic(AccountSnapshot s, decimal realizedToday)
