@@ -1,43 +1,40 @@
-# Documentación de Trading Hub
+# Trading Hub documentation
 
-[← Volver al README principal](../README.md)
+Trading Hub is a desktop platform for charting, market data, trading, strategy research, and C# indicators. The original project was created by [@ralphtradesz](https://x.com/ralphtradesz); this documentation is for the [English-language fork](../README.md).
 
-Guía completa de la plataforma, sección por sección. Si recién llegás, empezá por la instalación y los primeros pasos.
+> **Translation status:** This index and the fork's main README are in English. The linked guides are being translated in stages and some still contain Spanish. Their existing filenames are retained so links do not break. For Windows, always check that installation instructions refer to a build of **this fork**, not an upstream release.
 
-## Empezar
+## Getting started
 
-- [Instalación](instalacion.md): requisitos, compilar e instalar, actualizar y desinstalar.
-- [Primeros pasos](primeros-pasos.md): un recorrido por la ventana principal y la cuenta simulada.
-- [Conexiones](conexiones.md): brokers, exchanges y proveedores de datos; cuentas reales y simuladas.
+- [Installation](instalacion.md) — Supported operating systems, prerequisites, building, updating, and uninstalling.
+- [First steps](primeros-pasos.md) — Main window, simulated account, charts, and navigation.
+- [Connections](conexiones.md) — Market-data providers, brokers, read-only versus trading access, and credentials.
 
-## Mirar y operar
+## Charting and trading
 
-- [Gráficos](graficos.md): períodos, estilos, footprint, DOM, dibujos, plantillas, indicadores y replay.
-- [Operar](operar.md): Chart Trader, DOM, tipos de órdenes, brackets, cuentas e historial.
-- [Indicadores](indicadores.md): los incluidos, los tuyos en C# y la compatibilidad con la API de ATAS.
+- [Charts](graficos.md) — Bar periods, footprint, DOM, chart drawings, layouts, templates, indicators, and replay.
+- [Trading](operar.md) — Chart Trader, order types, brackets, DOM, accounts, and history.
+- [Indicators](indicadores.md) — Built-in indicators, custom C#, and compatibility with ATAS APIs.
 
-## Datos
+## Market data
 
-- [Datos](datos.md): lo que se graba solo, descargas, Databento (solo Rithmic, solo Databento o combinadas) e
-  importación de CSV.
+- [Data management](datos.md) — Local recordings, downloads, imports, Databento, and replay.
 
-## Estrategias
+## Strategies and backtesting
 
-- [Estrategias](estrategias.md): la API en C# con ejemplos completos.
-- [Backtesting](backtesting.md): backtest, optimización bayesiana, walk-forward inteligente, PBO, CPCV, Monte Carlo y
-  resultados según el mercado.
-- [En vivo](en-vivo.md): estrategias en tus cuentas, límites de riesgo, portafolios y el agente de riesgo.
-- [Claude](asistente-claude.md): el asistente que escribe estrategias y el laboratorio MCP.
+- [C# strategies](estrategias.md) — Strategy API and examples.
+- [Backtesting](backtesting.md) — Tick backtests, optimization, walk-forward, PBO/CPCV, and Monte Carlo.
+- [Live strategies](en-vivo.md) — Risk limits, portfolios, and risk-agent workflows.
+- [Claude integration](asistente-claude.md) — Strategy assistant and local MCP laboratory.
 
-## Más
+## Settings, safety, and development
 
-- [Ajustes](ajustes.md): todas las opciones.
-- [Privacidad](privacidad.md): qué queda en tu computadora y qué se conecta a internet.
-- [Desarrollo](desarrollo.md): estructura del código, compilar, pruebas y escenas sin pantalla.
-- [Portar a Windows](../PORTAR_A_WINDOWS.md): el plan y el prompt para llevarla a Windows con Claude.
+- [Settings](ajustes.md) — Appearance, data, hotkeys, live-strategy startup, and power settings.
+- [Privacy and security](privacidad.md) — Local data, credentials, network access, and safe testing.
+- [Development](desarrollo.md) — Source structure, build steps, tests, and UI snapshots.
+- [Windows porting notes](../PORTAR_A_WINDOWS.md) — Historical porting plan and platform-specific implementation details.
+- [Back to the main README](../README.md).
 
----
+## English localization work
 
-Trading Hub es gratis y su código es público (licencia MIT con Commons Clause: se puede usar y modificar, no vender) y
-lo creó [@ralphtradesz](https://x.com/ralphtradesz). Si te sirve, podés
-[apoyar el proyecto](../README.md#apoyá-el-proyecto).
+The application still has untranslated hardcoded UI strings. Generated reports, the installer, and inherited screenshots may also contain Spanish. If contributing translations, preserve code behavior and identifiers, verify all relative Markdown links after changing headings, and check trade-related warnings with particular care. Do not change broker order routing or risk settings as part of translation alone.
