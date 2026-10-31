@@ -69,7 +69,7 @@ internal sealed partial class LiveView
         _agentInstructions.LostFocus += (_, _) => SaveAgent();
         _agentRun = Ui.Button("Revisar ahora", MaterialIconKind.ShieldHalfFull, () => _ = RunAgentAsync(), "primary");
 
-        var intro = Ui.Faint("Group live strategies in portfolios; unassigned strategies use the automatic portfolio. Claude risk agents que reparte el riesgo entre sus estrategias.");
+        var intro = Ui.Faint("Group live strategies in portfolios; unassigned strategies use the automatic portfolio. Claude risk agents can propose size and risk adjustments.");
         intro.TextWrapping = TextWrapping.Wrap;
         var root = Ui.V(16, intro, bar, _portfolioDetail);
         root.Margin = new Thickness(24, 18, 24, 28);
@@ -139,7 +139,7 @@ internal sealed partial class LiveView
         DockPanel.SetDock(actions, Dock.Right);
         head.Children.Add(actions);
         head.Children.Add(Ui.V(3, Ui.H2(def.Name),
-            Ui.Faint($"{(def.Auto ? "Automático: todas las que corren en vivo sin un portafolio tuyo · " : "")}{p.Members.Count} strategy/strategies · reference capital {def.Capital.ToString("#,##0", Es)}" +
+            Ui.Faint($"{(def.Auto ? "Automatic: all unassigned live strategies · " : "")}{p.Members.Count} strategy/strategies · reference capital {def.Capital.ToString("#,##0", Es)}" +
                      $"{(p.HasReal ? " · incluye cuentas REALES" : "")}").Also(t => t.TextWrapping = TextWrapping.Wrap)));
         _portfolioDetail.Children.Add(head);
 
