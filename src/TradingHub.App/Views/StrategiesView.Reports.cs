@@ -75,8 +75,8 @@ internal sealed partial class StrategiesView
         };
 
         _reportView.Paper = true;
-        var refresh = Ui.IconButton(MaterialIconKind.Refresh, "Actualizar", RefreshReports, 16);
-        var folder = Ui.IconButton(MaterialIconKind.FolderOpenOutline, "Abrir la carpeta de reportes", () =>
+        var refresh = Ui.IconButton(MaterialIconKind.Refresh, "Refresh", RefreshReports, 16);
+        var folder = Ui.IconButton(MaterialIconKind.FolderOpenOutline, "Open reports folder", () =>
         {
             System.IO.Directory.CreateDirectory(AppPaths.Reports);
             Windows.Shell.OpenFolder(AppPaths.Reports);

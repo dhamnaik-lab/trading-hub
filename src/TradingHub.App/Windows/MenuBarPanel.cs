@@ -41,7 +41,7 @@ internal sealed class MenuBarPanel : Window
         TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
 
         var logo = new Border { Width = 30, Height = 30, CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = new Image { Source = AppIcon.Bitmap, Width = 30, Height = 30 } };
-        var open = Ui.Button("Abrir Trading Hub", MaterialIconKind.OpenInNew, openMain, "primary");
+        var open = Ui.Button("Open Trading Hub", MaterialIconKind.OpenInNew, openMain, "primary");
         var head = new DockPanel();
         DockPanel.SetDock(open, Dock.Right);
         open.Margin = new Thickness(10, 0, 0, 0);
@@ -134,11 +134,11 @@ internal sealed class MenuBarPanel : Window
     private void RefreshStrategies()
     {
         var running = _svc.Live.Entries(includeStopped: false).Where(e => e.Running).ToList();
-        _strategiesTitle.Text = $"ESTRATEGIAS EN VIVO ({running.Count})";
+        _strategiesTitle.Text = $"LIVE STRATEGIES ({running.Count})";
         _strategies.Children.Clear();
         if (running.Count == 0)
         {
-            _strategies.Children.Add(Empty("No hay estrategias en vivo corriendo."));
+            _strategies.Children.Add(Empty("No live strategies are running."));
             return;
         }
 

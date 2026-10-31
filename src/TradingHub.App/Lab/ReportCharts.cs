@@ -338,7 +338,7 @@ internal static class ReportCharts
 
         using (var cap = new SKPaint { Color = AxisC, StrokeWidth = 1.5f, PathEffect = SKPathEffect.CreateDash(new[] { 8f, 6f }, 0), IsAntialias = true })
             c.DrawLine(left, Y((double)capital), right, Y((double)capital), cap);
-        var lbl = "operaciones →";
+        var lbl = "trades →";
         c.DrawText(lbl, right - Tw(font, lbl), H - 22, font, tp);
         return Encode(surface);
     }

@@ -134,18 +134,18 @@ public sealed class ChartDrawing
 
     public static string KindName(DrawingKind k) => k switch
     {
-        DrawingKind.HorizontalLine => "Línea horizontal",
+        DrawingKind.HorizontalLine => "Horizontal line",
         DrawingKind.HorizontalRay => "Rayo horizontal",
-        DrawingKind.VerticalLine => "Línea vertical",
-        DrawingKind.TrendLine => "Línea de tendencia",
+        DrawingKind.VerticalLine => "Vertical line",
+        DrawingKind.TrendLine => "Trend line",
         DrawingKind.Ray => "Rayo",
-        DrawingKind.ExtendedLine => "Línea extendida",
-        DrawingKind.Rectangle => "Rectángulo / zona",
+        DrawingKind.ExtendedLine => "Extended line",
+        DrawingKind.Rectangle => "Rectangle / zone",
         DrawingKind.FibRetracement => "Retroceso de Fibonacci",
         DrawingKind.Text => "Texto",
         DrawingKind.Ruler => "Regla",
-        DrawingKind.LongPosition => "Posición larga",
-        DrawingKind.ShortPosition => "Posición corta",
+        DrawingKind.LongPosition => "Long position",
+        DrawingKind.ShortPosition => "Short position",
         _ => k.ToString(),
     };
 

@@ -27,7 +27,7 @@ internal sealed partial class StrategiesView
     // walk-forward
     private readonly NumericUpDown _isDays = new() { Value = 14, Minimum = 1, Maximum = 365, Increment = 1, FormatString = "0" };
     private readonly NumericUpDown _osDays = new() { Value = 7, Minimum = 1, Maximum = 365, Increment = 1, FormatString = "0" };
-    private readonly ToggleSwitch _anchored = new() { OnContent = "Anclada (IS crece desde el inicio)", OffContent = "Rolling (fixed IS window)" };
+    private readonly ToggleSwitch _anchored = new() { OnContent = "Anchored (IS grows from beginning)", OffContent = "Rolling (fixed IS window)" };
     private readonly ComboBox _search = new() { HorizontalAlignment = HorizontalAlignment.Stretch };
     private readonly TextBlock _wfoPreview = new() { Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap };
     private readonly WrapPanel _wfoKpis = new() { ItemSpacing = 10, LineSpacing = 10 };
@@ -71,7 +71,7 @@ internal sealed partial class StrategiesView
             _rangesPanel,
             _comboCount,
             Ui.Divider(),
-            Ui.Field("Ordenar por", _metric),
+            Ui.Field("Sort by", _metric),
             Ui.Field("Minimum trades", _minTrades, "Exclude combinations with too few trades, which may reflect chance results."),
             _optButton,
             _optSummary));
@@ -329,7 +329,7 @@ internal sealed partial class StrategiesView
             };
             StrategyStore.Save(run, _compiledSource.Length > 0 ? _compiledSource : File.ReadAllText(file.Path));
             _optSummary.Text = $"{res.Combinations:N0} combinaciones en {res.Seconds:0.#} s · guardado en el historial";
-            _status($"Optimización de {file.DisplayName} terminada");
+            _status($"Optimization of {file.DisplayName} completed");
         }
         catch (OperationCanceledException)
         {
@@ -430,7 +430,7 @@ internal sealed partial class StrategiesView
             Ui.H(8, Ui.Icon(MaterialIconKind.ChartTimelineVariantShimmer, 17, Ui.Accent), Ui.H2("Ventanas")),
             new TextBlock
             {
-                Text = "Optimiza en una ventana (dentro de muestra) y prueba los mejores parámetros en los días siguientes, que la optimización no vio (fuera de muestra). Después avanza y repite. Usa los rangos de Optimización.",
+                Text = "Optimize parameters on an in-sample window, evaluate the selection on subsequent unseen out-of-sample days, then advance the window. Uses ranges configured in Optimization.",
                 Classes = { "muted", "small" },
                 TextWrapping = TextWrapping.Wrap,
             },
@@ -439,7 +439,7 @@ internal sealed partial class StrategiesView
             Ui.Field("Parameter search", _search),
             new TextBlock
             {
-                Text = "Cada combinación se corre una sola vez sobre toda la historia (los ticks repetidos se juntan) y en cada ventana se elige la mejor meseta, no el mejor pico. " +
+                Text = "Each combination runs once over all saved history (consecutive duplicate ticks may be compressed); each window selects a parameter plateau rather than an isolated peak. " +
                        "Estimates overfitting using PBO (in-sample winners tested out of sample) and CPCV paths.",
                 Classes = { "faint", "small" },
                 TextWrapping = TextWrapping.Wrap,
@@ -512,7 +512,7 @@ internal sealed partial class StrategiesView
         int windows = total > isD ? (int)Math.Ceiling((total - isD) / osD) : 0;
         long combos = Optimizer.Combinations(_state.Ranges);
         _wfoPreview.Text = windows > 0
-            ? $"{windows} window(s) in {total:0} días · {windows * combos:N0} backtests total"
+            ? $"{windows} window(s) in {total:0} days · {windows * combos:N0} backtests total"
             : $"Backtest date range ({total:0} days) is shorter than the optimization window. Download more history or shorten the windows.";
         _wfoPreview.Foreground = windows > 0 ? Ui.Text1 : Ui.Warn;
     }
@@ -577,7 +577,7 @@ internal sealed partial class StrategiesView
                 Ticks = data.Count,
                 Seconds = res.Seconds,
             }, _compiledSource.Length > 0 ? _compiledSource : File.ReadAllText(file.Path));
-            _wfoPreview.Text = $"{res.Windows.Count} windows in {res.Seconds:0.#} s · búsqueda {res.Search}: {res.Evaluated} de {res.SpaceSize} combinaciones, cada una corrida una vez" +
+            _wfoPreview.Text = $"{res.Windows.Count} windows in {res.Seconds:0.#} s · search {res.Search}: {res.Evaluated} of {res.SpaceSize} combinations, each evaluated once" +
                                (res.Compression < 0.99 ? $" · ticks juntados al {res.Compression * 100:0}%" : "") + " · guardado en el historial";
         }
         catch (OperationCanceledException)
@@ -600,7 +600,7 @@ internal sealed partial class StrategiesView
     {
         var m = res.OutSampleMetrics;
         _wfoKpis.Children.Clear();
-        _wfoKpis.Children.Add(Kpi("Fuera de muestra", Money(m.NetProfit), $"{m.TotalTrades} trades · PF {m.ProfitFactor:0.00}", m.NetProfit >= 0 ? Ui.Up : Ui.Down));
+        _wfoKpis.Children.Add(Kpi("Out of sample", Money(m.NetProfit), $"{m.TotalTrades} trades · PF {m.ProfitFactor:0.00}", m.NetProfit >= 0 ? Ui.Up : Ui.Down));
         _wfoKpis.Children.Add(Kpi("Eficiencia WF", $"{res.WalkForwardEfficiency * 100:0}%", "out-of-sample / in-sample daily profit · above 50% is a heuristic, not a guarantee", res.WalkForwardEfficiency >= 0.5 ? Ui.Up : res.WalkForwardEfficiency >= 0 ? Ui.Warn : Ui.Down));
         _wfoKpis.Children.Add(Kpi("Ventanas ganadoras", $"{res.ProfitableWindowsPercent:0}%", $"{res.Windows.Count(w => w.OutSample.NetProfit > 0)} de {res.Windows.Count}", res.ProfitableWindowsPercent >= 60 ? Ui.Up : Ui.Warn));
         _wfoKpis.Children.Add(Kpi("Drawdown fuera", Money(-m.MaxDrawdown), $"{m.MaxDrawdownPercent:0.##}%", Ui.Down));

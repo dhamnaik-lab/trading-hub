@@ -52,7 +52,7 @@ internal sealed partial class LiveView : UserControl, IPage
             ("strategies", "Estrategias", (string?)"All live strategies, including those started from charts"),
             ("market", "Market", (string?)"Each market's range/trend and volatility regime, and which strategies allow entries"),
             ("portfolios", "Portafolios", (string?)"Strategies grouped for statistics, correlation and risk management"),
-            ("trades", "Operaciones", (string?)"All completed live trades with MAE, MFE and full details"),
+            ("trades", "Trades", (string?)"All completed live trades with MAE, MFE and full details"),
             ("proposals", "Propuestas", (string?)"Suggested size changes from rules, Claude or the risk agent, requiring your approval"),
         });
         _tabs.SelectionChanged += ShowTab;
@@ -153,7 +153,7 @@ internal sealed partial class LiveView : UserControl, IPage
                 "Frenar todo", danger: true))
             return;
         int n = await _svc.Live.KillAllAsync("you started it from Live");
-        _status($"Frenaste todo: {n} estrategia(s) detenidas y sus posiciones cerradas");
+        _status($"Emergency stop: {n} strategies stopped and positions closed");
         Refresh(force: true);
     }
 
@@ -243,7 +243,7 @@ internal sealed partial class LiveView : UserControl, IPage
         _kpis.Children.Add(Kpi("Resultado", Money(net), $"abierto {Money(open)}", net >= 0 ? Ui.Up : Ui.Down));
         _kpis.Children.Add(Kpi("Hoy", Money(today), "cerrado + abierto de las que corren", today >= 0 ? Ui.Up : Ui.Down));
         _kpis.Children.Add(Kpi("Live", running.Count.ToString(Inv), paused > 0 ? $"{paused} pausada(s) o frenada(s)" : $"{entries.Count} en total", running.Count > 0 ? Ui.Accent : null));
-        _kpis.Children.Add(Kpi("Operaciones cerradas", trades.ToString(Inv), "select to view all details", null, () => OpenTrades(), "All trades with MAE, MFE and size; select a trade to view it on the chart"));
+        _kpis.Children.Add(Kpi("Closed trades", trades.ToString(Inv), "select to view all details", null, () => OpenTrades(), "All trades with MAE, MFE and size; select a trade to view it on the chart"));
         _kpis.Children.Add(Kpi("Cambios pendientes", pending.ToString(Inv), "awaiting approval", pending > 0 ? Ui.Warn : null, pending > 0 ? () => Select("proposals") : null));
 
         // la tabla solo se rehace si cambió algo visible
@@ -252,7 +252,7 @@ internal sealed partial class LiveView : UserControl, IPage
         _rowsKey = key;
         _rows.Children.Clear();
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions(RowColumns), Margin = new Thickness(10, 4, 10, 8) };
-        string[] titles = { "Estrategia", "Estado", "Size", "Position", "Hoy", "Neto", "Ops", "PF", "DD actual", "Limits (day / DD)", "" };
+        string[] titles = { "Strategy", "Estado", "Size", "Position", "Hoy", "Neto", "Ops", "PF", "DD actual", "Limits (day / DD)", "" };
         for (int i = 0; i < titles.Length; i++)
         {
             var t = new TextBlock { Text = titles[i], Classes = { "h3" }, HorizontalAlignment = i >= 2 && i <= 8 ? HorizontalAlignment.Right : HorizontalAlignment.Left, Margin = new Thickness(6, 0) };
@@ -346,7 +346,7 @@ internal sealed partial class LiveView : UserControl, IPage
         var state = new TextBlock { Text = e.StateLabel, Foreground = dotColor, FontSize = 12, TextWrapping = TextWrapping.Wrap };
         if (!OutOfContext(e)) return state;
         var s = e.Runner!.StrategyInstance;
-        var note = new TextBlock { Text = "en pausa por contexto", Foreground = Ui.Warn, FontSize = 11, TextWrapping = TextWrapping.Wrap };
+        var note = new TextBlock { Text = "paused by market context", Foreground = Ui.Warn, FontSize = 11, TextWrapping = TextWrapping.Wrap };
         var cell = Ui.V(1, state, note);
         ToolTip.SetTip(cell, $"Opera en: {FilterText(s)}. Ahora hay {MarketContextTracker.Label(s.Regime, s.MarketDirection).ToLowerInvariant()}" +
                              (s.VolatilityRank is { } vr ? $" con volatilidad en el percentil {vr:0}" : "") + ": new entries blocked until market context matches (details under Market).");
@@ -393,7 +393,7 @@ internal sealed partial class LiveView : UserControl, IPage
         DockPanel.SetDock(buttons, Dock.Right);
         head.Children.Add(buttons);
         head.Children.Add(Ui.V(4, Ui.H2("Size proposals"),
-            Ui.Faint("De las reglas, de Claude o del agente de riesgo de cada portafolio. Nada cambia hasta que lo apruebes (salvo un portafolio con el agente en automático, que solo opera cuentas simuladas).").Also(t => t.TextWrapping = TextWrapping.Wrap)));
+            Ui.Faint("From rules, Claude, or a portfolio risk agent. No changes apply until approved, except automatic agents restricted to simulated accounts.").Also(t => t.TextWrapping = TextWrapping.Wrap)));
         var root = Ui.V(16, head, _proposals);
         root.Margin = new Thickness(24, 18, 24, 28);
         return new ScrollViewer { Content = root };
@@ -457,7 +457,7 @@ internal sealed partial class LiveView : UserControl, IPage
         {
             var it = item;
             string change = $"{it.Strategy}:  ×{it.CurrentSize.ToString("0.##", Es)} → {(it.ProposedSize == 0 ? "en cero" : "×" + it.ProposedSize.ToString("0.##", Es))}";
-            if (it.ProposedMaxDailyLoss is { } dl) change += $" · pérdida del día {(it.CurrentMaxDailyLoss > 0 ? it.CurrentMaxDailyLoss.ToString("#,##0", Es) : "sin límite")} → {(dl > 0 ? dl.ToString("#,##0", Es) : "sin límite")}";
+            if (it.ProposedMaxDailyLoss is { } dl) change += $" · daily loss {(it.CurrentMaxDailyLoss > 0 ? it.CurrentMaxDailyLoss.ToString("#,##0", Es) : "sin límite")} → {(dl > 0 ? dl.ToString("#,##0", Es) : "sin límite")}";
             if (it.ProposedMaxDrawdown is { } dd) change += $" · drawdown {(it.CurrentMaxDrawdown > 0 ? it.CurrentMaxDrawdown.ToString("#,##0", Es) : "sin límite")} → {(dd > 0 ? dd.ToString("#,##0", Es) : "sin límite")}";
             var changeText = new TextBlock
             {

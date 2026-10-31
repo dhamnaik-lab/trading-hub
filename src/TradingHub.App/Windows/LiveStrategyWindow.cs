@@ -103,7 +103,7 @@ internal sealed class LiveStrategyWindow : Window
         body.Children.Add(Ui.V(4, _title, _subtitle, _state));
         body.Children.Add(_lockNote);
         body.Children.Add(_kpis);
-        body.Children.Add(Section("Acciones", _actions));
+        body.Children.Add(Section("Actions", _actions));
         body.Children.Add(Section("Risk", riskGrid, _closeOnLimit, _riskNote, Right(_applyRisk)));
         body.Children.Add(Section("Market condition", _conditions,
             Note("Only opens new positions when selected market conditions match, using completed bars. Changes take effect immediately; position-reducing exits are always allowed."),
@@ -200,7 +200,7 @@ internal sealed class LiveStrategyWindow : Window
         if (r is { CrossExecution: true })
             return $"\nContract: {q(qty)} {info.Symbol} × {q(size)} = {q(qty * size * r.ExecRatio)} {r.ExecInstrument.Symbol} (equivalent micro-contract exposure).";
         if (!symbol.Equals(info.Symbol, StringComparison.OrdinalIgnoreCase))
-            return $"\nContract: con este tamaño conviene {symbol} ({q(qty * size * ratio)} {symbol}); switches only when flat.";
+            return $"\nContract: at this size, use {symbol} ({q(qty * size * ratio)} {symbol}); switches only when flat.";
         if (r != null && r.SizeBelowMinimum(qty))
             return $"\nContract: {q(qty)} {info.Symbol} × {q(size)} no llega a 1 contrato: se manda 1.";
         return "";
@@ -282,7 +282,7 @@ internal sealed class LiveStrategyWindow : Window
             Add(Ui.Button("Detener", MaterialIconKind.Stop, () => _ = StopAsync(false)));
             if (!locked && e.Ledger.Position != 0) Add(Ui.Button("Stop and close", MaterialIconKind.StopCircleOutline, () => _ = StopAsync(true), "danger"));
         }
-        else Add(Ui.Button(e.WaitingResume ? "Resume on chart" : "Volver a arrancar", MaterialIconKind.Play, () => _ = ResumeAsync(), "primary"));
+        else Add(Ui.Button(e.WaitingResume ? "Resume on chart" : "Restart", MaterialIconKind.Play, () => _ = ResumeAsync(), "primary"));
 
         Add(Ui.Button("View on chart", MaterialIconKind.ChartBoxOutline, () => _ = ShowOnChartAsync()));
         if (e.Ledger.Trades.Count > 0) Add(Ui.Button("View trades", MaterialIconKind.FormatListBulleted, OpenTrades));
@@ -365,7 +365,7 @@ internal sealed class LiveStrategyWindow : Window
     private async Task DeleteAsync()
     {
         bool ok = await ConfirmDialog.ShowAsync(this, "Remove from Live",
-            $"«{_entry.Info.Strategy}» ({_entry.Info.Symbol} · {_entry.Info.Account}) se detiene{(_entry.ChartStrategy != null ? ", se quita del gráfico" : "")} y deja de aparecer en En vivo. " +
+            $"«{_entry.Info.Strategy}» ({_entry.Info.Symbol} · {_entry.Info.Account}) se detiene{(_entry.ChartStrategy != null ? ", se quita del gráfico" : "")} and no longer appears under Live. " +
             "Any open position remains open (close it first if desired).",
             "Delete", danger: true);
         if (!ok) return;
@@ -373,7 +373,7 @@ internal sealed class LiveStrategyWindow : Window
             $"Has {_entry.Ledger.Trades.Count} recorded trade(s). Deletion cannot be undone; if retained, it remains associated with the same strategy when restarted.",
             "Delete history", danger: true);
         var err = await _svc.Live.DeleteAsync(_entry, history);
-        _status(err ?? $"{_entry.Info.Strategy} borrada de En vivo");
+        _status(err ?? $"{_entry.Info.Strategy} removed from Live");
         if (err == null) Close();
     }
 
