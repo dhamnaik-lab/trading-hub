@@ -53,6 +53,15 @@ namespace TradingHub.Localization
                 (nameof(TextColor), "Text color"),
                 (nameof(Value), "Value"),
                 (nameof(Visualization), "Visualization"),
+                (nameof(Font), "Font"),
+                (nameof(Mode), "Mode"),
+                (nameof(Negative), "Negative"),
+                (nameof(Positive), "Positive"),
+                (nameof(Show), "Show"),
+                (nameof(ShowValue), "Show value"),
+                (nameof(StartTime), "Start time"),
+                (nameof(Trades), "Trades"),
+                (nameof(Volume), "Volume"),
                 (nameof(ZeroValue), "Zero value"),
             };
 
