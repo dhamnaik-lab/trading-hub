@@ -44,11 +44,11 @@ internal sealed partial class StrategiesView
         if (!Filtered(current)) _baseline = r;
         else if (_baseline != null && !SameRun(_baseline, r)) _baseline = null;
 
-        _marketBox.Children.Add(Ui.H3("Cómo le fue según el mercado"));
+        _marketBox.Children.Add(Ui.H3("Results by market condition"));
         _marketBox.Children.Add(new TextBlock
         {
-            Text = "Cada operación guarda cómo estaba el mercado al entrar, medido con las velas ya cerradas: la tendencia de las últimas 24 horas " +
-                   "(rango, mixto o tendencia alcista o bajista) y la volatilidad comparada con la del último mes.",
+            Text = "Market context is saved at trade entry using completed bars: the last 24 hours' trend " +
+                   "(range, mixed, uptrend or downtrend) and volatility relative to the previous month.",
             Classes = { "faint", "small" },
             TextWrapping = TextWrapping.Wrap,
         });
@@ -63,7 +63,7 @@ internal sealed partial class StrategiesView
         {
             if (!_btConditions.IsValid)
             {
-                _status("Elegí al menos una condición de mercado y una volatilidad.");
+                _status("Select at least one market regime and volatility level.");
                 return;
             }
 
@@ -87,12 +87,12 @@ internal sealed partial class StrategiesView
         var note = new TextBlock
         {
             Text = "Es un backtest nuevo con el filtro de contexto, no un recorte del anterior: en cada vela la estrategia mira el contexto medido hasta ese " +
-                   "momento y solo abre si es uno de los elegidos (las salidas siempre pasan), igual que en vivo. Ojo: si elegís las condiciones mirando " +
-                   "estos mismos resultados, es sobre los mismos datos; para saber si vale de verdad, validalo con walk-forward o en otro período.",
+                   "current time and only opens if the selected conditions match (exits always proceed). Choosing filters based on " +
+                   "these same results creates selection bias; validate with walk-forward or a separate untouched period.",
             Classes = { "faint", "small" },
             TextWrapping = TextWrapping.Wrap,
         };
-        var box = Ui.V(10, Ui.H3("Probar solo en ciertas condiciones"), _btConditions, actions, note);
+        var box = Ui.V(10, Ui.H3("Test only selected conditions"), _btConditions, actions, note);
         _marketBox.Children.Add(Ui.Card(box, 14));
     }
 
@@ -135,7 +135,7 @@ internal sealed partial class StrategiesView
     {
         var known = trades.Where(t => t.EntryTrend != null).ToList();
         if (known.Count == 0)
-            return new TextBlock { Text = trades.Count == 0 ? "No hubo operaciones." : "Esta corrida no guardó el contexto de cada operación (es de antes): volvé a correr el backtest.", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap };
+            return new TextBlock { Text = trades.Count == 0 ? "No trades occurred." : "This older run did not save market context per trade; rerun the backtest.", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap };
         var rows = new List<(string Name, List<ClosedTrade> Trades, bool Head)>();
         bool Trend(ClosedTrade t) => t.EntryTrend >= MarketContextTracker.TrendLimit;
         rows.Add(("Rango", known.Where(t => t.EntryTrend <= MarketContextTracker.RangeLimit).ToList(), false));
@@ -143,7 +143,7 @@ internal sealed partial class StrategiesView
         rows.Add(("Tendencia alcista", known.Where(t => Trend(t) && t.EntryMarketDirection > 0).ToList(), false));
         rows.Add(("Tendencia bajista", known.Where(t => Trend(t) && t.EntryMarketDirection < 0).ToList(), false));
         var undirected = known.Where(t => Trend(t) && t.EntryMarketDirection is null or 0).ToList();
-        if (undirected.Count > 0) rows.Add(("Tendencia (sin dirección guardada)", undirected, false));
+        if (undirected.Count > 0) rows.Add(("Trend (direction not recorded)", undirected, false));
         if (known.Count(t => t.EntryVolatilityRank != null) >= known.Count * 0.8)
         {
             rows.Add(("Volatilidad baja", known.Where(t => t.EntryVolatilityRank <= MarketContextTracker.LowVolatility).ToList(), true));
@@ -170,7 +170,7 @@ internal sealed partial class StrategiesView
         }
 
         grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-        string[] titles = { "Condición al entrar", "Ops", "Neto", "PF", "Ganadoras", "Promedio" };
+        string[] titles = { "Condition at entry", "Ops", "Neto", "PF", "Ganadoras", "Average" };
         for (int i = 0; i < titles.Length; i++) Cell(titles[i], i, head: true);
         foreach (var (name, list, head) in rows)
         {
@@ -197,7 +197,7 @@ internal sealed partial class StrategiesView
         int unknown = trades.Count - known.Count;
         var v = Ui.V(6, grid);
         if (unknown > 0)
-            v.Children.Add(new TextBlock { Text = $"{unknown} operación(es) sin contexto todavía (al principio, antes de tener historia para medirlo).", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap });
+            v.Children.Add(new TextBlock { Text = $"{unknown} trade(s) without sufficient market context during initial warm-up.", Classes = { "faint", "small" }, TextWrapping = TextWrapping.Wrap });
         return v;
     }
 }
