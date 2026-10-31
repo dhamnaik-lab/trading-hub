@@ -670,7 +670,7 @@ public sealed partial class TradingView : UserControl
                 var from = TimeZoneInfo.ConvertTimeFromUtc(data.Trades.Count > 0 ? data.Trades.FirstTime : DateTime.UtcNow, model.Settings.TimeZone);
                 _status(data.HistoryError != null
                     ? $"{inst.Symbol}: no se pudo traer toda la historia ({data.HistoryError})"
-                    : $"{inst.Symbol} listo · {data.Trades.Count:N0} operaciones desde {from:dd/MM HH:mm}");
+                    : $"{inst.Symbol} ready · {data.Trades.Count:N0} trades since {from:dd/MM HH:mm}");
             }
 
             if (data.IsLoadingHistory) data.HistoryLoaded += Ready;
@@ -1042,11 +1042,11 @@ public sealed partial class TradingView : UserControl
         var tz = chart.Model!.Settings.TimeZone;
         string fromText = TimeZoneInfo.ConvertTimeFromUtc(data.Trades.Count > 0 ? data.Trades.FirstTime : from, tz).ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
         string ticks = data.RealTicksFrom < DateTime.MaxValue
-            ? $" · footprint (ticks) desde {TimeZoneInfo.ConvertTimeFromUtc(data.RealTicksFrom, tz):dd/MM HH:mm}; antes, velas de 1 minuto del exchange (para más footprint, bajá días en Datos)"
+            ? $" · tick footprint since {TimeZoneInfo.ConvertTimeFromUtc(data.RealTicksFrom, tz):dd/MM HH:mm}; earlier history uses exchange 1-minute candles (download tick days in Data for more footprint)"
             : "";
         _status(data.HistoryError != null
             ? $"{chart.Symbol}: no se pudo traer toda la historia ({data.HistoryError})"
-            : $"{chart.Symbol}: historia desde {fromText} · {data.Trades.Count:N0} operaciones{ticks}");
+            : $"{chart.Symbol}: history since {fromText} · {data.Trades.Count:N0} trades{ticks}");
     }
 
     // ===================================================================== herramientas y ventanas auxiliares
