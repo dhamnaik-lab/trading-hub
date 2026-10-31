@@ -195,8 +195,8 @@ public class LiveRunnerTests : IDisposable
         Assert.False(r.SizeBelowMinimum(1));
         // el aviso dice cuántos contratos, de cuál y que es el micro (con su equivalente en el mini)
         var notice = Assert.Single(notices);
-        Assert.Contains("compró 5 MTEST", notice);
-        Assert.Contains("micro: equivale a 0.5 TEST", notice);
+        Assert.Contains("bought 5 MTEST", notice);
+        Assert.Contains("micro: equivalent to 0.5 TEST", notice);
 
         microData.Trades.Add(new Trade(2, T0.AddMinutes(10), 110, 1, TradeSide.Buy)); // el micro sube 10 puntos
         s.Next.Enqueue(x => x.DoClose());
