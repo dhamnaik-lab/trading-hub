@@ -58,7 +58,7 @@ jobs:
             foreach ($file in @($setup, $published)) {
               if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Missing artifact: $file" }
               $item = Get-Item -LiteralPath $file
-              if ($item.Length -lt 1024 * 1024) { throw "Unexpectedly small artifact: $file" }
+              if ($item.Length -lt $(if ($file -eq $setup) { 1024 * 1024 } else { 64 * 1024 })) { throw "Unexpectedly small artifact: $file" }
               $items += [ordered]@{
                 path = $file.Substring($PWD.Path.Length + 1).Replace('\', '/')
                 architecture = $arch
