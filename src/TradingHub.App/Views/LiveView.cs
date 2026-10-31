@@ -346,7 +346,7 @@ internal sealed partial class LiveView : UserControl, IPage
         var state = new TextBlock { Text = e.StateLabel, Foreground = dotColor, FontSize = 12, TextWrapping = TextWrapping.Wrap };
         if (!OutOfContext(e)) return state;
         var s = e.Runner!.StrategyInstance;
-        var note = new TextBlock { Text = "en pausa por contexto", Foreground = Ui.Warn, FontSize = 11, TextWrapping = TextWrapping.Wrap };
+        var note = new TextBlock { Text = "paused by market context", Foreground = Ui.Warn, FontSize = 11, TextWrapping = TextWrapping.Wrap };
         var cell = Ui.V(1, state, note);
         ToolTip.SetTip(cell, $"Opera en: {FilterText(s)}. Ahora hay {MarketContextTracker.Label(s.Regime, s.MarketDirection).ToLowerInvariant()}" +
                              (s.VolatilityRank is { } vr ? $" con volatilidad en el percentil {vr:0}" : "") + ": new entries blocked until market context matches (details under Market).");
