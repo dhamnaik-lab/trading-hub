@@ -60,7 +60,7 @@ Do not switch the user's checkout to the original upstream repository when they 
 - Some SDK strings are generated in `src/TradingHub.Sdk/Localization/Strings.g.cs`. Do not hand-edit generated keys; investigate the source/generator or the overrides in `Strings.cs`.
 - When translating Markdown headings, verify relative links and fragment anchors; preserve code blocks, paths, commands, and sample input data.
 - Preserve attribution to the original author and comply with the [MIT + Commons Clause license](LICENSE). The Commons Clause restricts commercial sales, so do not describe the repository as OSI-approved open-source.
-- See `docs/desarrollo.md` and `PORTAR_A_WINDOWS.md` for source and platform details. Those documents may still contain Spanish text.
+- See `docs/desarrollo.md` and `PORTAR_A_WINDOWS.md` for source and platform details. Those documents are translated into English, but may retain original source and test identifiers.
 
 ## Completion checklist
 
