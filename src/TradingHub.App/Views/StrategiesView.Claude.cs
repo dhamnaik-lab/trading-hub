@@ -47,7 +47,7 @@ internal sealed partial class StrategiesView
 
     private Control BuildClaudePanel()
     {
-        var newChat = Ui.IconButton(MaterialIconKind.ChatPlusOutline, "Nueva conversación", () =>
+        var newChat = Ui.IconButton(MaterialIconKind.ChatPlusOutline, "New conversation", () =>
         {
             if (_claude.IsRunning) return;
             _claude.NewConversation();
@@ -58,7 +58,7 @@ internal sealed partial class StrategiesView
         var history = new Button { Content = Ui.Icon(MaterialIconKind.History, 17) }.Classes("icon");
         ToolTip.SetTip(history, "Historial de conversaciones (se pueden retomar donde quedaron)");
         history.Click += (_, _) => ShowHistoryMenu(history);
-        _claudeDetach = Ui.IconButton(MaterialIconKind.OpenInNew, "Sacar el chat a una ventana aparte", ToggleClaudeWindow, 17);
+        _claudeDetach = Ui.IconButton(MaterialIconKind.OpenInNew, "Detach chat to another window", ToggleClaudeWindow, 17);
         var title = Ui.V(1, Ui.H(8, Ui.Icon(MaterialIconKind.Creation, 18, Ui.Accent), new TextBlock { Text = "Claude", FontWeight = FontWeight.SemiBold, FontSize = 14 }), _claudeStatus);
         // laboratorio: Claude corre backtests, optimizaciones y walk-forward por su cuenta
         _labToggle.Content = Ui.H(6, Ui.Icon(MaterialIconKind.FlaskOutline, 15), new TextBlock { Text = "Laboratorio", FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
@@ -112,19 +112,19 @@ internal sealed partial class StrategiesView
     {
         bool lab = _labToggle.IsChecked == true;
         _claudeHint.Text = lab
-            ? "Laboratorio: Claude corre las pruebas por su cuenta (pueden tardar varios minutos) y guarda un reporte en Reportes."
-            : "Usa tu Claude Code (suscripción). Solo puede leer y editar archivos de la carpeta de estrategias.";
+            ? "Laboratory: Claude runs the research tests (which can take several minutes) and saves a report under Reports."
+            : "Uses your Claude Code subscription. File access is restricted to strategy directories.";
         _claudeHint.Foreground = lab ? Ui.Accent : null;
-        _prompt.Watermark = lab ? "Ej.: investigá y optimizá la estrategia abierta con 60 días de BTCUSDT y decime si es ganadora" : "Pedile una estrategia o un cambio…";
+        _prompt.Watermark = lab ? "Example: research and optimize the open strategy using 60 days of BTCUSDT and assess its robustness" : "Pedile una estrategia o un cambio…";
     }
 
     private async Task DetectClaudeAsync()
     {
         var v = await ClaudeCodeBridge.VersionAsync();
-        _claudeStatus.Text = v != null ? $"Claude Code {v.Replace("(Claude Code)", "").Trim()} · tu suscripción" : "Claude Code no está instalado";
+        _claudeStatus.Text = v != null ? $"Claude Code {v.Replace("(Claude Code)", "").Trim()} · tu suscripción" : "Claude Code is not installed";
         _sendButton.IsEnabled = v != null;
         if (v == null)
-            AddNote(MaterialIconKind.AlertCircleOutline, $"No encontré Claude Code en esta {Os.Device}. Instalalo (claude.com/claude-code), iniciá sesión con tu cuenta y volvé a abrir Trading Hub.", Ui.Warn);
+            AddNote(MaterialIconKind.AlertCircleOutline, $"Claude Code was not found on this {Os.Device}. Install it from claude.com/claude-code, sign in, then reopen Trading Hub.", Ui.Warn);
     }
 
     private void ShowSuggestions()
@@ -132,19 +132,19 @@ internal sealed partial class StrategiesView
         if (_chat.Children.Count > 0) return;
         var intro = new TextBlock
         {
-            Text = "Describí la estrategia que querés y Claude la escribe acá: vas a ver el código aparecer en el editor y Trading Hub lo compila al terminar.",
+            Text = "Describe a strategy for Claude to write in the editor. Trading Hub compiles it after completion.",
             Classes = { "muted", "small" },
             TextWrapping = TextWrapping.Wrap,
         };
         var chips = new WrapPanel { ItemSpacing = 6, LineSpacing = 6 };
         foreach (var (s, lab) in new[]
                  {
-                     ("Investigá y optimizá la estrategia abierta: backtest, optimización, walk-forward y Monte Carlo, y armá el reporte con el veredicto", true),
-                     ("Revisá la cartera en vivo y proponé cambios de tamaño (subir a las que rinden, bajar a las que no)", true),
-                     ("Creá una estrategia que opere la ruptura del rango de los primeros 30 minutos", false),
-                     ("Explicame qué hace la estrategia abierta", false),
+                     ("Research and optimize the open strategy: backtest, optimization, walk-forward and Monte Carlo; produce a report with a verdict", true),
+                     ("Review the live portfolio and propose risk-size adjustments for approval", true),
+                     ("Create a strategy that trades a breakout of the first 30-minute opening range", false),
+                     ("Explain how the currently open strategy works", false),
                      ("Agregale un filtro para operar solo entre las 10 y las 17", false),
-                     ("Mejorá la gestión de riesgo con stop por ATR", false),
+                     ("Improve risk management with an ATR-based stop", false),
                  })
         {
             var content = lab
@@ -219,7 +219,7 @@ internal sealed partial class StrategiesView
         if (_current != null) context.Add($"Archivo abierto en el editor: {Path.GetFileName(_current.Path)}");
         context.Add($"Carpeta de indicadores (para indicadores, no estrategias): {AppPaths.UserIndicators}");
         var errors = _current?.LastCompile?.Diagnostics.Where(d => d.Severity == "error").Take(15).ToList();
-        if (errors is { Count: > 0 }) context.Add("Errores de compilación actuales:\n" + string.Join('\n', errors.Select(d => $"- Línea {d.Line}: {d.Message} ({d.Id})")));
+        if (errors is { Count: > 0 }) context.Add("Current compilation errors:\n" + string.Join('\n', errors.Select(d => $"- Line {d.Line}: {d.Message} ({d.Id})")));
         string prompt = context.Count > 0 ? $"[Contexto de Trading Hub]\n{string.Join("\n", context)}\n\n[Pedido]\n{text}" : text;
 
         _sendButton.IsVisible = false;
@@ -227,7 +227,7 @@ internal sealed partial class StrategiesView
         _editor.IsReadOnly = true;
         bool lab = _labToggle.IsChecked == true;
         _reportsBefore = Lab.ReportStore.List().Select(r => r.Path).ToHashSet();
-        AddNote(MaterialIconKind.ProgressClock, "Claude está trabajando…");
+        AddNote(MaterialIconKind.ProgressClock, "Claude is working…");
         await _claude.SendAsync(prompt, AppPaths.Strategies, ClaudeCodeBridge.StrategySystemPrompt + ClaudeCodeBridge.IndicatorSystemPrompt + (lab ? ClaudeCodeBridge.LabSystemPrompt : ""), lab,
             new[] { AppPaths.UserIndicators, Directory.CreateDirectory(Lab.LabServer.CapturesDir).FullName });
     }
@@ -245,8 +245,8 @@ internal sealed partial class StrategiesView
                 var img = new Image { Source = bmp, MaxWidth = 420, Stretch = Stretch.Uniform, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand) };
                 var path = f.FullName;
                 img.PointerReleased += (_, _) => TradingHub.App.Windows.Shell.Open(path);
-                ToolTip.SetTip(img, "Lo que miró Claude (tocá para verlo grande)");
-                _chat.Children.Add(Ui.V(6, Ui.H(8, Ui.Icon(MaterialIconKind.ChartBoxOutline, 15, Ui.Accent), new TextBlock { Text = "Lo que miró del gráfico", Classes = { "small" } }),
+                ToolTip.SetTip(img, "What Claude reviewed (select to enlarge)");
+                _chat.Children.Add(Ui.V(6, Ui.H(8, Ui.Icon(MaterialIconKind.ChartBoxOutline, 15, Ui.Accent), new TextBlock { Text = "Chart snapshot reviewed", Classes = { "small" } }),
                     new Border { Child = img, CornerRadius = new CornerRadius(8), ClipToBounds = true, BorderBrush = Ui.Line, BorderThickness = new Thickness(1), HorizontalAlignment = HorizontalAlignment.Left }));
             }
             catch (Exception ex)
@@ -266,23 +266,23 @@ internal sealed partial class StrategiesView
         var res = scripts.CompileAll();
         string names = string.Join(", ", changed.Select(Path.GetFileNameWithoutExtension));
         var errors = res?.Diagnostics.Where(d => d.Severity == "error" && changed.Any(f => string.IsNullOrEmpty(d.File) || Path.GetFullPath(d.File) == Path.GetFullPath(f))).ToList() ?? new();
-        var open = Ui.Button("Abrir en el editor de indicadores", MaterialIconKind.CodeBraces, () =>
+        var open = Ui.Button("Open in indicator editor", MaterialIconKind.CodeBraces, () =>
         {
             if (TopLevel.GetTopLevel(this) is Window w) new Windows.CodeEditorWindow(_svc, Windows.CodeKind.Indicator).Show(w);
         });
         open.Padding = new Thickness(10, 4);
         if (res?.Success == true)
             _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CheckCircle, 15, Ui.Up),
-                new TextBlock { Text = $"Indicador {names} compilado: ya está en el gráfico en Indicadores → «Mis indicadores»", Classes = { "small" }, Foreground = Ui.Up, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }), open));
+                new TextBlock { Text = $"Indicator {names} compiled: available under Indicators → My indicators", Classes = { "small" }, Foreground = Ui.Up, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }), open));
         else
         {
             string detail = string.Join("\n", (errors.Count > 0 ? errors : res?.Diagnostics.Where(d => d.Severity == "error").ToList() ?? new()).Take(12)
-                .Select(d => $"- {Path.GetFileName(d.File)} línea {d.Line}: {d.Message} ({d.Id})"));
-            var fix = Ui.Button("Pedirle que los arregle", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync($"Corregí los errores de compilación del indicador {names} (en la carpeta de indicadores):\n{detail}"), "primary");
+                .Select(d => $"- {Path.GetFileName(d.File)} line {d.Line}: {d.Message} ({d.Id})"));
+            var fix = Ui.Button("Pedirle que los arregle", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync($"Fix compilation errors in indicator {names} (under the indicators folder):\n{detail}"), "primary");
             fix.Padding = new Thickness(10, 4);
             int count = errors.Count > 0 ? errors.Count : res?.Diagnostics.Count(d => d.Severity == "error") ?? 0;
             _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CloseCircle, 15, Ui.Down),
-                new TextBlock { Text = $"El indicador {names} tiene {count} error(es) de compilación", Classes = { "small" }, Foreground = Ui.Down, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }), Ui.H(8, fix, open)));
+                new TextBlock { Text = $"Indicator {names} has {count} compilation error(s)", Classes = { "small" }, Foreground = Ui.Down, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }), Ui.H(8, fix, open)));
         }
     }
 
@@ -308,18 +308,18 @@ internal sealed partial class StrategiesView
                 "list_strategies" => (MaterialIconKind.RobotOutline, "Revisando las estrategias"),
                 "compile_strategy" => (MaterialIconKind.HammerWrench, "Compilando"),
                 "compile_indicator" => (MaterialIconKind.HammerWrench, "Compilando el indicador"),
-                "chart_snapshot" => (MaterialIconKind.ChartBoxOutline, "Mirando el gráfico"),
+                "chart_snapshot" => (MaterialIconKind.ChartBoxOutline, "Reviewing chart"),
                 "list_indicators" => (MaterialIconKind.ChartBellCurveCumulative, "Revisando tus indicadores"),
-                "list_data" => (MaterialIconKind.DatabaseOutline, "Mirando los datos guardados"),
-                "download_data" => (MaterialIconKind.Download, "Bajando datos"),
+                "list_data" => (MaterialIconKind.DatabaseOutline, "Reviewing saved data"),
+                "download_data" => (MaterialIconKind.Download, "Downloading data"),
                 "run_backtest" => (MaterialIconKind.PlayOutline, "Backtest"),
-                "run_optimization" => (MaterialIconKind.Tune, "Optimizando parámetros"),
+                "run_optimization" => (MaterialIconKind.Tune, "Optimizing parameters"),
                 "run_walk_forward" => (MaterialIconKind.ChartTimelineVariant, "Walk-forward"),
                 "list_runs" => (MaterialIconKind.History, "Revisando corridas anteriores"),
-                "analyze_portfolio" => (MaterialIconKind.ChartTimelineVariant, "Analizando el portafolio"),
+                "analyze_portfolio" => (MaterialIconKind.ChartTimelineVariant, "Analyzing portfolio"),
                 "suggest_portfolio" => (MaterialIconKind.ScaleBalance, "Buscando estrategias no correlacionadas"),
                 "live_portfolio" => (MaterialIconKind.Pulse, "Revisando la cartera en vivo"),
-                "propose_sizing" => (MaterialIconKind.ScaleBalance, "Dejando propuestas de tamaño (las aprobás vos)"),
+                "propose_sizing" => (MaterialIconKind.ScaleBalance, "Creating sizing proposals (requires your approval)"),
                 "save_report" => (MaterialIconKind.FileDocumentOutline, "Guardando el reporte"),
                 var other => (MaterialIconKind.FlaskOutline, other),
             };
@@ -340,7 +340,7 @@ internal sealed partial class StrategiesView
 
     private void RemoveWorkingNote()
     {
-        var note = _chat.Children.OfType<StackPanel>().LastOrDefault(p => p.Children.Count == 2 && p.Children[1] is TextBlock { Text: "Claude está trabajando…" });
+        var note = _chat.Children.OfType<StackPanel>().LastOrDefault(p => p.Children.Count == 2 && p.Children[1] is TextBlock { Text: "Claude is working…" });
         if (note != null) _chat.Children.Remove(note);
     }
 
@@ -358,7 +358,7 @@ internal sealed partial class StrategiesView
     private async Task OnClaudeFinishedAsync(ClaudeResult r)
     {
         _conv.SessionId = _claude.SessionId ?? _conv.SessionId;
-        if (r.IsError) _conv.Messages.Add(new ChatMessage { Role = "note", Text = r.NeedsLogin ? "Claude Code pidió iniciar sesión." : r.Text.Length > 400 ? r.Text[..400] + "…" : r.Text });
+        if (r.IsError) _conv.Messages.Add(new ChatMessage { Role = "note", Text = r.NeedsLogin ? "Claude Code requires sign-in." : r.Text.Length > 400 ? r.Text[..400] + "…" : r.Text });
         else if (!_gotReplyText && !string.IsNullOrWhiteSpace(r.Text)) _conv.Messages.Add(new ChatMessage { Role = "assistant", Text = r.Text });
         ChatHistory.Save(_conv);
         RemoveWorkingNote();
@@ -369,10 +369,10 @@ internal sealed partial class StrategiesView
         {
             if (r.NeedsLogin)
             {
-                var login = Ui.Button("Iniciar sesión en Claude Code", MaterialIconKind.Login, ClaudeCodeBridge.OpenLoginTerminal, "primary");
+                var login = Ui.Button("Sign in to Claude Code", MaterialIconKind.Login, ClaudeCodeBridge.OpenLoginTerminal, "primary");
                 var card = Ui.Card(Ui.V(8,
-                    new TextBlock { Text = "Claude Code necesita que inicies sesión", FontWeight = FontWeight.SemiBold },
-                    new TextBlock { Text = (Os.IsWindows ? "Se abre una ventana de comandos" : "Se abre la Terminal") + " con Claude Code: elegí tu cuenta de Claude (suscripción) y seguí los pasos en el navegador. Después volvé acá y repetí el pedido.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "Claude Code requires you to sign in", FontWeight = FontWeight.SemiBold },
+                    new TextBlock { Text = (Os.IsWindows ? "A terminal window will open" : "Se abre la Terminal") + " for Claude Code: select your subscription account and complete the browser sign-in. Return here and retry.", Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap },
                     login), 12);
                 _chat.Children.Add(card);
             }
@@ -402,7 +402,7 @@ internal sealed partial class StrategiesView
         int errors = res?.Diagnostics.Count(d => d.Severity == "error") ?? 0;
         if (res?.Success == true && _current?.Type != null)
         {
-            var test = Ui.Button("Probar en backtest", MaterialIconKind.PlayOutline, () =>
+            var test = Ui.Button("Test in backtest", MaterialIconKind.PlayOutline, () =>
             {
                 _tabs.Select("backtest");
                 ShowTab("backtest");
@@ -413,9 +413,9 @@ internal sealed partial class StrategiesView
         }
         else if (errors > 0)
         {
-            var fix = Ui.Button("Pedirle que los arregle", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync("Corregí los errores de compilación del archivo abierto."), "primary");
+            var fix = Ui.Button("Pedirle que los arregle", MaterialIconKind.AutoFix, () => _ = SendToClaudeAsync("Fix the compilation errors in the open file."), "primary");
             fix.Padding = new Thickness(10, 4);
-            _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CloseCircle, 15, Ui.Down), new TextBlock { Text = $"{errors} error(es) de compilación", Classes = { "small" }, Foreground = Ui.Down }), fix));
+            _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.CloseCircle, 15, Ui.Down), new TextBlock { Text = $"{errors} compilation error(s)", Classes = { "small" }, Foreground = Ui.Down }), fix));
         }
 
         // ¿creó o cambió indicadores? se compilan y se avisa si quedaron en «Mis indicadores» o qué falla
@@ -428,7 +428,7 @@ internal sealed partial class StrategiesView
         foreach (var rep in Lab.ReportStore.List().Where(x => !_reportsBefore.Contains(x.Path)).Reverse())
         {
             var path = rep.Path;
-            var open = Ui.Button("Ver reporte", MaterialIconKind.FileDocumentOutline, () => OpenReport(path), "primary");
+            var open = Ui.Button("View report", MaterialIconKind.FileDocumentOutline, () => OpenReport(path), "primary");
             open.Padding = new Thickness(10, 4);
             _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.FileChartOutline, 15, Ui.Accent), new TextBlock { Text = rep.Title, Classes = { "small" }, TextWrapping = TextWrapping.Wrap, MaxWidth = 260 }, VerdictPill(rep.Verdict)), open));
             BuildStrategyMenu();
@@ -444,7 +444,7 @@ internal sealed partial class StrategiesView
                 (main.Page("live") as LiveView)?.Select("proposals");
             }, "primary");
             review.Padding = new Thickness(10, 4);
-            _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.ScaleBalance, 15, Ui.Accent), new TextBlock { Text = "Claude dejó cambios de tamaño pendientes de tu aprobación", Classes = { "small" }, TextWrapping = TextWrapping.Wrap, MaxWidth = 300 }), review));
+            _chat.Children.Add(Ui.V(8, Ui.H(8, Ui.Icon(MaterialIconKind.ScaleBalance, 15, Ui.Accent), new TextBlock { Text = "Claude proposed size changes awaiting your approval", Classes = { "small" }, TextWrapping = TextWrapping.Wrap, MaxWidth = 300 }), review));
         }
         if (r.Seconds > 0) AddNote(MaterialIconKind.TimerOutline, r.Seconds >= 120 ? $"{r.Seconds / 60:0.#} min" : $"{r.Seconds:0} s");
         ScrollChatToEnd();
@@ -457,12 +457,12 @@ internal sealed partial class StrategiesView
         var list = new StackPanel { Spacing = 2, Width = 360 };
         var convs = ChatHistory.List();
         if (convs.Count == 0)
-            list.Children.Add(new TextBlock { Text = "Todavía no hay conversaciones guardadas.", Classes = { "muted", "small" }, Margin = new Thickness(8) });
+            list.Children.Add(new TextBlock { Text = "No saved conversations yet.", Classes = { "muted", "small" }, Margin = new Thickness(8) });
         var flyout = new Flyout { Content = new ScrollViewer { Content = list, MaxHeight = 460 }, Placement = PlacementMode.BottomEdgeAlignedRight };
         foreach (var c in convs.Take(60))
         {
             var conv = c;
-            var title = new TextBlock { Text = string.IsNullOrWhiteSpace(conv.Title) ? "(sin título)" : conv.Title, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = 12.5, FontWeight = ReferenceEquals(conv.Id, _conv.Id) || conv.Id == _conv.Id ? FontWeight.SemiBold : FontWeight.Normal };
+            var title = new TextBlock { Text = string.IsNullOrWhiteSpace(conv.Title) ? "(untitled)" : conv.Title, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = 12.5, FontWeight = ReferenceEquals(conv.Id, _conv.Id) || conv.Id == _conv.Id ? FontWeight.SemiBold : FontWeight.Normal };
             var meta = new TextBlock
             {
                 Text = $"{Ui.Ago(conv.UpdatedUtc)} · {conv.Messages.Count(m => m.Role == "user")} mensaje(s){(conv.Lab ? " · laboratorio" : "")}{(conv.Strategy != null ? " · " + conv.Strategy : "")}",
@@ -475,7 +475,7 @@ internal sealed partial class StrategiesView
                 flyout.Hide();
                 LoadConversation(conv);
             };
-            var delete = Ui.IconButton(MaterialIconKind.Close, "Borrar esta conversación del historial", () =>
+            var delete = Ui.IconButton(MaterialIconKind.Close, "Delete this conversation from history", () =>
             {
                 ChatHistory.Delete(conv.Id);
                 flyout.Hide();
@@ -507,8 +507,8 @@ internal sealed partial class StrategiesView
 
         _currentReply = null;
         AddNote(MaterialIconKind.History, conv.SessionId != null
-            ? "Conversación retomada: lo que escribas sigue desde acá, con todo lo que Claude ya sabía."
-            : "Conversación guardada (sin sesión de Claude): lo que escribas empieza una sesión nueva.");
+            ? "Conversation resumed: continue with the previous Claude session context."
+            : "Saved conversation loaded without a Claude session; your next prompt starts a new session.");
         ScrollChatToEnd();
     }
 
@@ -584,7 +584,7 @@ internal sealed partial class StrategiesView
         if (_claudeDetach != null)
         {
             _claudeDetach.Content = Ui.Icon(MaterialIconKind.OpenInNew, 17);
-            ToolTip.SetTip(_claudeDetach, "Sacar el chat a una ventana aparte");
+            ToolTip.SetTip(_claudeDetach, "Detach chat to another window");
         }
 
         if (w.IsVisible) w.Close();
@@ -596,6 +596,6 @@ internal sealed partial class StrategiesView
         _labToggle.IsChecked = true;
         _tabs.Select("code");
         ShowTab("code");
-        _ = SendToClaudeAsync("Analizá la cartera en vivo con live_portfolio (resultado, operaciones, drawdown y racha de cada estrategia) y, si corresponde, proponé cambios de tamaño con propose_sizing explicando el motivo de cada uno. No apliques nada: yo apruebo cada cambio en Trading Hub (En vivo → Propuestas).");
+        _ = SendToClaudeAsync("Analyze the live portfolio using live_portfolio (results, trades, drawdown, and recent streaks) and propose size adjustments where warranted con propose_sizing explicando el motivo de cada uno. No apliques nada: yo apruebo cada cambio en Trading Hub (En vivo → Propuestas).");
     }
 }

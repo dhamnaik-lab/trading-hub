@@ -96,7 +96,7 @@ internal sealed class FileSecretStore(string path) : ISecretStore
 
 public enum ConnectionKind
 {
-    [Display(Name = "Simulador")] Simulator,
+    [Display(Name = "Simulator")] Simulator,
     [Display(Name = "Binance Futures")] BinanceFutures,
     [Display(Name = "Binance Spot")] BinanceSpot,
     [Display(Name = "Bybit")] Bybit,
@@ -224,7 +224,7 @@ public sealed class ConnectionManager
         if (Profiles.Count == 0)
         {
             // ids iguales a los datos de mercado para que los espacios de trabajo viejos sigan andando
-            Profiles.Add(new ConnectionProfile { Id = SimulatedFeed.FeedId, Kind = ConnectionKind.Simulator, Name = "Simulador", HistoryHours = 6 });
+            Profiles.Add(new ConnectionProfile { Id = SimulatedFeed.FeedId, Kind = ConnectionKind.Simulator, Name = "Simulator", HistoryHours = 6 });
             Profiles.Add(new ConnectionProfile { Id = BinanceFeed.FuturesId, Kind = ConnectionKind.BinanceFutures, Name = "Binance Futures" });
             Profiles.Add(new ConnectionProfile { Id = BinanceFeed.SpotId, Kind = ConnectionKind.BinanceSpot, Name = "Binance Spot" });
             Profiles.Add(new ConnectionProfile { Id = BybitFeed.LinearId, Kind = ConnectionKind.Bybit, Name = "Bybit" });
@@ -317,7 +317,7 @@ public sealed class ConnectionManager
             ConnectionKind.CTrader => CTraderFeedOf(p),
             ConnectionKind.Oanda => new TradingHub.Feeds.Oanda.OandaFeed(OandaSettingsOf(p)),
             ConnectionKind.Alpaca => new TradingHub.Feeds.Alpaca.AlpacaFeed(AlpacaSettingsOf(p)),
-            ConnectionKind.Databento => throw new NotSupportedException("Databento no da datos en vivo: se usa desde Datos para bajar historia de futuros."),
+            ConnectionKind.Databento => throw new NotSupportedException("Databento does not provide live chart data here; use Data to download futures history."),
             _ => throw new NotSupportedException("Interactive Brokers todavía no da datos en Trading Hub (solo prueba de conexión)."),
         };
         _feeds[p.Id] = f;
@@ -424,7 +424,7 @@ public sealed class ConnectionManager
             switch (p.Kind)
             {
                 case ConnectionKind.Simulator:
-                    return (true, "El simulador no necesita conexión.");
+                    return (true, "Simulator requires no connection.");
                 case ConnectionKind.BinanceFutures:
                 case ConnectionKind.BinanceSpot:
                 {
@@ -468,7 +468,7 @@ public sealed class ConnectionManager
                     var day = DateOnly.FromDateTime(end.AddDays(-3));
                     while (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) day = day.AddDays(-1);
                     decimal cost = await db.CostAsync("NQ", day, day, ct);
-                    return (true, $"API key OK. Globex desde {start:dd/MM/yyyy} hasta {end:dd/MM/yyyy}. Un día de NQ tick a tick cuesta ≈ US$ {cost:0.00} de tus créditos.");
+                    return (true, $"API key OK. Globex coverage from {start:dd/MM/yyyy} to {end:dd/MM/yyyy}. One NQ tick day costs approximately US$ {cost:0.00} from your credits.");
                 }
             }
         }

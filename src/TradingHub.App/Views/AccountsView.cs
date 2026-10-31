@@ -80,8 +80,8 @@ public sealed class AccountsView : UserControl
             svc.Settings.Save();
             Refresh();
         };
-        _restart.Flyout = ConfirmFlyout("The simulated account returns to its starting balance and starts a new history (the previous history is saved separately).", "Reiniciar", RestartSim);
-        _simBar = Ui.H(10, Ui.Muted("Saldo inicial"), _startBalance, _restart, _restartHint);
+        _restart.Flyout = ConfirmFlyout("The simulated account returns to its starting balance and starts a new history (the previous history is saved separately).", "Reset", RestartSim);
+        _simBar = Ui.H(10, Ui.Muted("Starting balance"), _startBalance, _restart, _restartHint);
         _simBar.Margin = new Thickness(0, 0, 0, 12);
 
         Content = Build();
@@ -123,9 +123,9 @@ public sealed class AccountsView : UserControl
             _cards.Add((t, v, sub));
         }
 
-        _tabs.Items.Add(new TabItem { Header = "Posiciones", Content = Table(PositionColumns, new[] { "Contrato", "Lado", "Cantidad", "Avg. price", "PnL abierto", "Realizado hoy", "" }, new[] { 2, 3, 4, 5 }, _positions, _positionsEmpty) });
-        _tabs.Items.Add(new TabItem { Header = "Orders", Content = Table(OrderColumns, new[] { "Hora", "Contrato", "Lado", "Tipo", "Cant.", "Price", "Ejecutado", "Avg. price", "Estado", "" }, new[] { 4, 5, 6, 7 }, _orders, _ordersEmpty) });
-        _tabs.Items.Add(new TabItem { Header = "Ejecuciones", Content = BuildFills() });
+        _tabs.Items.Add(new TabItem { Header = "Positions", Content = Table(PositionColumns, new[] { "Contract", "Side", "Quantity", "Avg. price", "Open P&L", "Realized today", "" }, new[] { 2, 3, 4, 5 }, _positions, _positionsEmpty) });
+        _tabs.Items.Add(new TabItem { Header = "Orders", Content = Table(OrderColumns, new[] { "Time", "Contract", "Side", "Type", "Qty", "Price", "Filled", "Avg. price", "Status", "" }, new[] { 4, 5, 6, 7 }, _orders, _ordersEmpty) });
+        _tabs.Items.Add(new TabItem { Header = "Fills", Content = BuildFills() });
         _tabs.Items.Add(new TabItem { Header = "Trades", Content = BuildTrades() });
         _tabs.Items.Add(new TabItem { Header = "Statistics", Content = BuildStats() });
         _tabs.SelectionChanged += (_, _) => Refresh();
@@ -190,7 +190,7 @@ public sealed class AccountsView : UserControl
             c.Foreground = Ui.Text2;
             return g;
         });
-        return ListCard(FillColumns, new[] { "Hora", "Contrato", "Lado", "Cant.", "Price", "Commission" }, new[] { 3, 4, 5 }, _fills);
+        return ListCard(FillColumns, new[] { "Time", "Contract", "Side", "Qty", "Price", "Commission" }, new[] { 3, 4, 5 }, _fills);
     }
 
     private Control BuildTrades()
@@ -215,7 +215,7 @@ public sealed class AccountsView : UserControl
             r.Foreground = t.NetPnl >= 0 ? Ui.Up : Ui.Down;
             return g;
         });
-        return ListCard(TradeColumns, new[] { "Cierre", "Contrato", "Lado", "Cant.", "Entrada", "Salida", "Duration", "Resultado" }, new[] { 3, 4, 5, 6, 7 }, _trades);
+        return ListCard(TradeColumns, new[] { "Close time", "Contract", "Side", "Qty", "Entry", "Exit", "Duration", "Result" }, new[] { 3, 4, 5, 6, 7 }, _trades);
     }
 
     private static Control ListCard(string columns, string[] titles, int[] right, ListBox list)
@@ -431,16 +431,16 @@ public sealed class AccountsView : UserControl
         int active = s.Orders.Count(o => o.Active);
         int filledToday = s.Orders.Count(o => o.Filled > 0 && _svc.AccountCenter.IsToday(o.Time));
 
-        Card(0, "Saldo", s.Balance is { } bal ? Money(bal, false) : "—",
-            a.Kind == AccountKind.Sim ? $"started with {Money(s.StartBalance ?? 0, false)}" : s.Balance == null ? $"esperando a {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}…" : $"as reported by {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}");
-        Card(1, "Today's result", Money(s.DayPnl), $"realizado {Money(s.RealizedToday)} · abierto {Money(s.OpenPnl)}", Signed(s.DayPnl));
-        Card(2, "PnL abierto", Money(s.OpenPnl), open == 0 ? "no open positions" : $"{open} posición{(open > 1 ? "es" : "")} abierta{(open > 1 ? "s" : "")}", Signed(s.OpenPnl));
-        Card(3, "Realizado hoy", Money(s.RealizedToday), $"{s.TradesToday} trade{(s.TradesToday == 1 ? "" : "es")} cerrada{(s.TradesToday == 1 ? "" : "s")} hoy", Signed(s.RealizedToday));
+        Card(0, "Balance", s.Balance is { } bal ? Money(bal, false) : "—",
+            a.Kind == AccountKind.Sim ? $"started with {Money(s.StartBalance ?? 0, false)}" : s.Balance == null ? $"waiting for {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}…" : $"as reported by {(a.Kind == AccountKind.Tradovate ? "Tradovate" : "Rithmic")}");
+        Card(1, "Today's result", Money(s.DayPnl), $"realized {Money(s.RealizedToday)} · open {Money(s.OpenPnl)}", Signed(s.DayPnl));
+        Card(2, "Open P&L", Money(s.OpenPnl), open == 0 ? "no open positions" : $"{open} open position{(open == 1 ? "" : "s")}", Signed(s.OpenPnl));
+        Card(3, "Realized today", Money(s.RealizedToday), $"{s.TradesToday} trade{(s.TradesToday == 1 ? "" : "s")} closed today", Signed(s.RealizedToday));
         if (a.Kind == AccountKind.Sim)
-            Card(4, "Resultado total", Money(s.Analysis.RealizedNet), $"{s.Analysis.Trades.Count} trades since inception", Signed(s.Analysis.RealizedNet));
+            Card(4, "Total result", Money(s.Analysis.RealizedNet), $"{s.Analysis.Trades.Count} trades since inception", Signed(s.Analysis.RealizedNet));
         else
-            Card(4, "Available to trade", s.Available is { } av ? Money(av, false) : "—", s.MarginBalance is { } mb ? $"margen {Money(mb, false)}" : "buying power reported by Rithmic");
-        Card(5, "Active orders", active.ToString(), $"{filledToday} ejecutada{(filledToday == 1 ? "" : "s")} hoy");
+            Card(4, "Available to trade", s.Available is { } av ? Money(av, false) : "—", s.MarginBalance is { } mb ? $"margin {Money(mb, false)}" : "buying power reported by Rithmic");
+        Card(5, "Active orders", active.ToString(), $"{filledToday} filled today");
 
         _simBar.IsVisible = a.Kind == AccountKind.Sim;
         if (a.Kind == AccountKind.Sim)
@@ -596,7 +596,7 @@ public sealed class AccountsView : UserControl
         _statKpis.Children.Add(Kpi("Resultado neto", Money(m.NetProfit), $"{m.TotalTrades} trades", Signed(m.NetProfit)));
         _statKpis.Children.Add(Kpi("% ganadoras", m.TotalTrades > 0 ? $"{m.WinRate:0.#}%" : "—", $"{m.Winners} ganadoras · {m.Losers} perdedoras"));
         _statKpis.Children.Add(Kpi("Profit factor", m.TotalTrades > 0 ? (m.ProfitFactor >= 999 ? "∞" : m.ProfitFactor.ToString("0.00", Es)) : "—", "gross profit / gross loss"));
-        _statKpis.Children.Add(Kpi("Maximum drawdown", Money(-m.MaxDrawdown), capital > 0 ? $"{m.MaxDrawdownPercent:0.##}% del saldo" : "from peak", m.MaxDrawdown > 0 ? Ui.Down : null));
+        _statKpis.Children.Add(Kpi("Maximum drawdown", Money(-m.MaxDrawdown), capital > 0 ? $"{m.MaxDrawdownPercent:0.##}% of balance" : "from peak", m.MaxDrawdown > 0 ? Ui.Down : null));
         _statKpis.Children.Add(Kpi("Expectativa", Money(m.Expectancy), "expected result per trade", Signed(m.Expectancy)));
 
         var avgDuration = trades.Count > 0 ? TimeSpan.FromTicks((long)trades.Average(t => t.Duration.Ticks)) : TimeSpan.Zero;

@@ -380,7 +380,7 @@ public sealed class AppServices
     internal MarketConditions Markets { get; }
 
     private void OnRunnerStarted(TradingHub.Strategies.LiveStrategyRunner runner) => _ = Markets.SeedAsync(runner);
-    public Portfolio Portfolio { get; } = new() { AccountID = "SIM-1", Name = "Cuenta simulada", BeginBalance = 10_000m, Balance = 10_000m };
+    public Portfolio Portfolio { get; } = new() { AccountID = "SIM-1", Name = "Simulated account", BeginBalance = 10_000m, Balance = 10_000m };
 
     /// <summary>Ejecuciones guardadas de cada cuenta (sobreviven al cerrar Trading Hub).</summary>
     public AccountJournal Journal { get; } = new(AppPaths.Accounts);
@@ -495,7 +495,7 @@ public sealed class AppServices
     /// <summary>Cuentas con las que se puede operar este instrumento.</summary>
     public IEnumerable<AccountOption> AccountsFor(InstrumentData data)
     {
-        yield return new AccountOption("sim", "Cuenta simulada", false);
+        yield return new AccountOption("sim", "Simulated account", false);
         foreach (var p in Connections.Enabled.Where(p => p.SupportsTrading && p.MarketDataId == data.Instrument.FeedId && !string.IsNullOrWhiteSpace(p.ApiKey)))
         {
             if (p.Testnet) yield return new AccountOption(p.Id, $"{p.Name} (testnet)", false);
