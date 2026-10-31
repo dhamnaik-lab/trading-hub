@@ -537,7 +537,7 @@ public sealed class AccountsView : UserControl
             row.Side.Foreground = o.Buy ? Ui.Up : Ui.Down;
             row.Type.Text = o.Type;
             row.Qty.Text = Qty(o.Quantity);
-            row.Price.Text = o.Type == "Mercado" || o.Price == 0 ? "—" : Price(o.Price);
+            row.Price.Text = o.Type == "Market" || o.Price == 0 ? "—" : Price(o.Price);
             row.Filled.Text = Qty(o.Filled);
             row.Avg.Text = o.AvgFill > 0 ? Price(o.AvgFill) : "—";
             row.Status.Text = o.Status;
@@ -602,10 +602,10 @@ public sealed class AccountsView : UserControl
         var avgDuration = trades.Count > 0 ? TimeSpan.FromTicks((long)trades.Average(t => t.Duration.Ticks)) : TimeSpan.Zero;
         var rows = new (string, string)[]
         {
-            ("Resultado neto", Money(m.NetProfit)), ("Ganancia bruta", Money(m.GrossProfit)), ("Gross loss", Money(-m.GrossLoss)), ("Comisiones", Money(-m.Commission)),
+            ("Resultado neto", Money(m.NetProfit)), ("Gross profit", Money(m.GrossProfit)), ("Gross loss", Money(-m.GrossLoss)), ("Comisiones", Money(-m.Commission)),
             ("Trades", m.TotalTrades.ToString(Es)), ("Ganadoras / perdedoras", $"{m.Winners} / {m.Losers}"), ("% ganadoras", $"{m.WinRate:0.##}%"), ("Profit factor", m.ProfitFactor >= 999 ? "∞" : m.ProfitFactor.ToString("0.00", Es)),
-            ("Average per trade", Money(m.AverageTrade)), ("Ganancia promedio", Money(m.AverageWin)), ("Average loss", Money(m.AverageLoss)), ("Win/loss ratio", m.PayoffRatio.ToString("0.00", Es)),
-            ("Mayor ganancia", Money(m.LargestWin)), ("Largest loss", Money(m.LargestLoss)), ("Max. winning streak", m.MaxConsecutiveWins.ToString(Es)), ("Max. losing streak", m.MaxConsecutiveLosses.ToString(Es)),
+            ("Average per trade", Money(m.AverageTrade)), ("Average win", Money(m.AverageWin)), ("Average loss", Money(m.AverageLoss)), ("Win/loss ratio", m.PayoffRatio.ToString("0.00", Es)),
+            ("Largest win", Money(m.LargestWin)), ("Largest loss", Money(m.LargestLoss)), ("Max. winning streak", m.MaxConsecutiveWins.ToString(Es)), ("Max. losing streak", m.MaxConsecutiveLosses.ToString(Es)),
             ("Maximum drawdown", $"{Money(-m.MaxDrawdown)} ({m.MaxDrawdownPercent:0.##}%)"), ("Recovery factor", m.RecoveryFactor >= 999 ? "∞" : m.RecoveryFactor.ToString("0.00", Es)),
             ("Resultado largos", $"{Money(m.LongNetProfit)} ({trades.Count(t => t.IsLong)})"), ("Resultado cortos", $"{Money(m.ShortNetProfit)} ({trades.Count(t => !t.IsLong)})"),
             ("Average duration", trades.Count > 0 ? Duration(avgDuration) : "—"), ("Days traded", trades.Select(t => center.ToLocal(t.CloseTime).Date).Distinct().Count().ToString(Es)),
