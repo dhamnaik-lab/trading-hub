@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "tools/TradingHub.UiSnapshot/**"
+      - "src/TradingHub.App/Views/StrategiesView.Claude.cs"
       - ".github/workflows/english-doc-screenshots.yml"
 
 permissions:
