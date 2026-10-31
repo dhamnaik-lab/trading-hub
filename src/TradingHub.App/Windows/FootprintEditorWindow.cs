@@ -49,30 +49,13 @@ public sealed class FootprintEditorWindow : Window
         LoadIntoUi();
     }
 
-    // Built-in preset names are persisted in saved layouts. Translate their
-    // presentation only; selection and serialization continue using original names.
-    private static string BuiltinPresetLabel(string name) => name switch
-    {
-        "Bid x Ask (clásico)" => "Bid × Ask (classic)",
-        "Escalera de volumen + perfil" => "Volume ladder + profile",
-        "Escalera de delta + perfil de volumen" => "Delta ladder + volume profile",
-        "Doble escalera (bid | ask)" => "Double ladder (bid | ask)",
-        "Doble escalera de delta" => "Double delta ladder",
-        "Volumen (celdas)" => "Volume (cells)",
-        "Delta (celdas)" => "Delta (cells)",
-        "Histograma bid / ask" => "Bid / ask histogram",
-        "Perfil de volumen por vela" => "Per-candle volume profile",
-        "Bid x Ask + perfil" => "Bid × Ask + profile",
-        _ => name,
-    };
-
     private Control Build()
     {
         var root = new Grid { ColumnDefinitions = new ColumnDefinitions("340,14,*"), Margin = new Thickness(14) };
 
         // ---- columna izquierda: plantilla + columnas
         var left = new DockPanel();
-        foreach (var p in FootprintLayout.Presets) _presets.Items.Add(new ComboBoxItem { Content = BuiltinPresetLabel(p.Name), Tag = p });
+        foreach (var p in FootprintLayout.Presets) _presets.Items.Add(new ComboBoxItem { Content = FootprintLayout.DisplayPresetName(p.Name), Tag = p });
         foreach (var p in FootprintLayout.LoadUserTemplates()) _presets.Items.Add(new ComboBoxItem { Content = "★ " + p.Name, Tag = p });
         _presets.SelectionChanged += (_, _) =>
         {
@@ -102,7 +85,7 @@ public sealed class FootprintEditorWindow : Window
             Ui.IconButton(MaterialIconKind.DeleteOutline, "Remove column", RemoveSelected, 16));
         DockPanel.SetDock(moveTools, Dock.Right);
         listHeader.Children.Add(moveTools);
-        listHeader.Children.Add(Ui.V(2, Ui.H3("Columnas"), Ui.Faint("left to right within each candle")));
+        listHeader.Children.Add(Ui.V(2, Ui.H3("Columns"), Ui.Faint("left to right within each candle")));
         DockPanel.SetDock(listHeader, Dock.Top);
         left.Children.Add(listHeader);
 
@@ -120,11 +103,11 @@ public sealed class FootprintEditorWindow : Window
             addPanel.Children.Add(b);
         }
 
-        AddBtn("Escalera", MaterialIconKind.FormatListNumbered, () => new FootprintColumn { Kind = FootprintColumnKind.Ladder, Value = FootprintValue.Delta, Highlight = HighlightRule.StrongDelta });
+        AddBtn("Ladder", MaterialIconKind.FormatListNumbered, () => new FootprintColumn { Kind = FootprintColumnKind.Ladder, Value = FootprintValue.Delta, Highlight = HighlightRule.StrongDelta });
         AddBtn("Profile", MaterialIconKind.ChartGantt, () => new FootprintColumn { Kind = FootprintColumnKind.Profile, Value = FootprintValue.Volume });
-        AddBtn("Celdas", MaterialIconKind.ViewGridOutline, () => new FootprintColumn { Kind = FootprintColumnKind.Cells, Value = FootprintValue.BidAsk });
+        AddBtn("Cells", MaterialIconKind.ViewGridOutline, () => new FootprintColumn { Kind = FootprintColumnKind.Cells, Value = FootprintValue.BidAsk });
         AddBtn("Candle", MaterialIconKind.ChartBoxOutline, () => new FootprintColumn { Kind = FootprintColumnKind.Candle });
-        AddBtn("Espacio", MaterialIconKind.ArrowExpandHorizontal, () => new FootprintColumn { Kind = FootprintColumnKind.Spacer, Width = 0.2 });
+        AddBtn("Spacer", MaterialIconKind.ArrowExpandHorizontal, () => new FootprintColumn { Kind = FootprintColumnKind.Spacer, Width = 0.2 });
 
         var save = Ui.Button("Save as template", MaterialIconKind.StarOutline, () =>
         {
@@ -160,7 +143,7 @@ public sealed class FootprintEditorWindow : Window
         right.Children.Add(Ui.Card(colCard));
 
         var general = new DockPanel();
-        var gh = Ui.V(2, Ui.H2("Opciones generales"), Ui.Faint("Totales, POC, desbalances y escalas del footprint completo"));
+        var gh = Ui.V(2, Ui.H2("General options"), Ui.Faint("Totals, POC, imbalances and scaling for the full footprint"));
         gh.Margin = new Thickness(0, 0, 0, 10);
         DockPanel.SetDock(gh, Dock.Top);
         general.Children.Add(gh);
@@ -191,11 +174,11 @@ public sealed class FootprintEditorWindow : Window
 
     private static (string Title, string Detail) Describe(FootprintColumn c) => c.Kind switch
     {
-        FootprintColumnKind.Candle => ("Narrow candle", "cuerpo y mechas"),
-        FootprintColumnKind.Spacer => ("Espacio", $"ancho {c.Width:0.##}"),
-        FootprintColumnKind.Ladder => ("Escalera", PropertyGrid.EnumDisplay(c.Value) + (c.Highlight != HighlightRule.None ? " · resalta " + PropertyGrid.EnumDisplay(c.Highlight).ToLowerInvariant() : "")),
+        FootprintColumnKind.Candle => ("Narrow candle", "body and wicks"),
+        FootprintColumnKind.Spacer => ("Spacer", $"width {c.Width:0.##}"),
+        FootprintColumnKind.Ladder => ("Ladder", PropertyGrid.EnumDisplay(c.Value) + (c.Highlight != HighlightRule.None ? " · highlights " + PropertyGrid.EnumDisplay(c.Highlight).ToLowerInvariant() : "")),
         FootprintColumnKind.Profile => ("Profile", $"{PropertyGrid.EnumDisplay(c.Value)} · {PropertyGrid.EnumDisplay(c.Direction).ToLowerInvariant()}"),
-        _ => ("Celdas", $"{PropertyGrid.EnumDisplay(c.Value)} · {PropertyGrid.EnumDisplay(c.ColorScheme).ToLowerInvariant()}"),
+        _ => ("Cells", $"{PropertyGrid.EnumDisplay(c.Value)} · {PropertyGrid.EnumDisplay(c.ColorScheme).ToLowerInvariant()}"),
     };
 
     private static Control Row(FootprintColumn c, int index)
