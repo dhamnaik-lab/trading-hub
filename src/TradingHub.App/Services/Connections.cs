@@ -252,7 +252,7 @@ public sealed class ConnectionManager
         }
         catch (Exception ex)
         {
-            this.LogWarn("No se pudieron leer las conexiones: " + ex.Message);
+            this.LogWarn("Could not read connections: " + ex.Message);
         }
     }
 
@@ -304,7 +304,7 @@ public sealed class ConnectionManager
 
     public IMarketDataFeed GetFeed(string profileId)
     {
-        var p = Find(profileId) ?? throw new KeyNotFoundException($"No existe la conexión {profileId}");
+        var p = Find(profileId) ?? throw new KeyNotFoundException($"Connection {profileId} does not exist");
         if (_feeds.TryGetValue(p.Id, out var f)) return f;
         f = p.Kind switch
         {
@@ -318,7 +318,7 @@ public sealed class ConnectionManager
             ConnectionKind.Oanda => new TradingHub.Feeds.Oanda.OandaFeed(OandaSettingsOf(p)),
             ConnectionKind.Alpaca => new TradingHub.Feeds.Alpaca.AlpacaFeed(AlpacaSettingsOf(p)),
             ConnectionKind.Databento => throw new NotSupportedException("Databento does not provide live chart data here; use Data to download futures history."),
-            _ => throw new NotSupportedException("Interactive Brokers todavía no da datos en Trading Hub (solo prueba de conexión)."),
+            _ => throw new NotSupportedException("Interactive Brokers market data is not yet supported by Trading Hub (connection test only)."),
         };
         _feeds[p.Id] = f;
         return f;
@@ -437,14 +437,14 @@ public sealed class ConnectionManager
                 case ConnectionKind.Bybit:
                 {
                     var inst = await new BybitFeed().GetInstrumentsAsync(ct);
-                    return (true, $"{inst.Count} perpetuos disponibles (datos públicos).");
+                    return (true, $"{inst.Count} perpetual contracts available (public data).");
                 }
                 case ConnectionKind.Rithmic:
                 case ConnectionKind.AmpFutures:
                 {
                     var systems = await RithmicClient.ListSystemsAsync(p.RithmicUri, ct);
                     if (string.IsNullOrWhiteSpace(p.RithmicUser))
-                        return (true, $"Servidor OK: {systems.Count} sistemas disponibles. Completá usuario y contraseña para iniciar sesión.");
+                        return (true, $"Server available: {systems.Count} systems. Enter username and password to sign in.");
                     // con la misma sesión de los gráficos: un login aparte cortaría la que está andando
                     var (ok, message) = await ((RithmicFeed)GetFeed(p.Id)).TestAsync(ct);
                     return (ok, ok ? $"Conectado a {p.RithmicSystem}. {message}" : message);
@@ -477,7 +477,7 @@ public sealed class ConnectionManager
             return (false, ex.Message);
         }
 
-        return (false, "Tipo de conexión desconocido");
+        return (false, "Unknown connection type");
     }
 
     public void DisposeAll()

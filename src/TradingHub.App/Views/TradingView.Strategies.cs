@@ -223,7 +223,7 @@ public sealed partial class TradingView
                 account = _svc.AccountFor(data, cs.AccountId);
                 if (account.IsReal && TopLevel.GetTopLevel(chart.Window ?? (Control)this) is Window w &&
                     !await ConfirmDialog.ShowAsync(w, "Run on REAL account",
-                        $"'{file.DisplayName}' will trade {data.Instrument.Symbol} on {account.Name} with real-money orders and no per-order confirmation. Stop it from the chart leyenda del gráfico.",
+                        $"'{file.DisplayName}' will trade {data.Instrument.Symbol} on {account.Name} with real-money orders and no per-order confirmation. Stop it from the chart legend.",
                         "Run with real money", danger: true))
                 {
                     cs.Live = false;
@@ -465,7 +465,7 @@ public sealed partial class TradingView
     private string LiveStatus(ChartStrategy cs, LiveStrategyRunner runner)
     {
         decimal units = runner.UnitsFor(LiveCenter.QuantityOf(runner.StrategyInstance.GetParameters()));
-        string each = units > 0 ? $"{units.ToString("0.####", CultureInfo.GetCultureInfo("es-AR"))} {runner.ExecInstrument.Symbol} por orden" : "size is zero";
+        string each = units > 0 ? $"{units.ToString("0.####", CultureInfo.GetCultureInfo("es-AR"))} {runner.ExecInstrument.Symbol} per order" : "size is zero";
         return $"en vivo · {runner.Account.Name} · {each}";
     }
 

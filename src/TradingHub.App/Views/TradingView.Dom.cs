@@ -24,7 +24,7 @@ public sealed partial class TradingView
     private static string PanelName(string key) => key switch
     {
         "dom" => "DOM",
-        "tape" => "Cinta de operaciones",
+        "tape" => "Time & sales",
         _ => "Chart Trader",
     };
 
@@ -121,7 +121,7 @@ public sealed partial class TradingView
         UpdateDetachButton(key);
         ApplyPanelVisibility();
         w.Show(owner);
-        _status($"{PanelName(key)} en una ventana aparte: sigue al gráfico activo y, al cerrar la ventana, vuelve al panel derecho.");
+        _status($"{PanelName(key)} in a separate window: follows the active chart and returns to the right panel when closed.");
     }
 
     private void SaveWindowBounds(string key, Window w)

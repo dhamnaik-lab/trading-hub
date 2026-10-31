@@ -103,7 +103,7 @@ public sealed class IndicatorCatalog
         foreach (var dll in Directory.EnumerateFiles(folder, "*.dll"))
         {
             try { Scan(Assembly.LoadFrom(dll), source); }
-            catch (Exception ex) { this.LogWarn($"No se pudo cargar {Path.GetFileName(dll)}: {ex.Message}"); }
+            catch (Exception ex) { this.LogWarn($"Could not load {Path.GetFileName(dll)}: {ex.Message}"); }
         }
     }
 
@@ -362,11 +362,11 @@ public sealed class AppServices
         // los indicadores técnicos, si vienen en esta versión (la de código abierto no los trae)
         try
         {
-            Catalog.Scan(System.Reflection.Assembly.Load("TradingHub.Indicators.Technical"), "Técnicos");
+            Catalog.Scan(System.Reflection.Assembly.Load("TradingHub.Indicators.Technical"), "Technical");
         }
         catch (Exception ex)
         {
-            this.LogInfo($"Sin indicadores técnicos extra: {ex.Message}");
+            this.LogInfo($"No additional technical indicators: {ex.Message}");
         }
         Catalog.ScanFolder(Path.Combine(AppContext.BaseDirectory, "Indicators"), "Extra");
         Catalog.ScanFolder(Path.Combine(AppPaths.Root, "Indicators"), "Extra");
@@ -520,7 +520,7 @@ public sealed class AppServices
             var session = RithmicSessionFor(p);
             foreach (var a in session.Accounts)
             {
-                if (session.IsPractice) yield return new AccountOption(RithmicAccountId(p, a.AccountId), $"{a.AccountId} · Rithmic (práctica)", false);
+                if (session.IsPractice) yield return new AccountOption(RithmicAccountId(p, a.AccountId), $"{a.AccountId} · Rithmic (practice)", false);
                 else if (p.AllowRealOrders) yield return new AccountOption(RithmicAccountId(p, a.AccountId), $"{a.AccountId} · Rithmic — REAL", true);
             }
         }

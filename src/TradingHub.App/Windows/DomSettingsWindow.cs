@@ -38,11 +38,11 @@ internal sealed class DomSettingsWindow : Window
     private Control Build()
     {
         var left = Ui.V(12,
-            Ui.H2("Columnas"),
+            Ui.H2("Columns"),
             Ui.Faint("Select the columns to show, reorder them using the arrows, and adjust their relative widths.").Also(t => t.TextWrapping = Avalonia.Media.TextWrapping.Wrap),
             new ScrollViewer { Content = _columns, MaxHeight = 460 });
 
-        var right = Ui.V(12, Ui.H2("Aspecto y comportamiento"), _grid);
+        var right = Ui.V(12, Ui.H2("Appearance and behavior"), _grid);
         _grid.Height = 470;
 
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,24,*"), Margin = new Thickness(20, 18) };
@@ -50,7 +50,7 @@ internal sealed class DomSettingsWindow : Window
         Grid.SetColumn(right, 2);
         grid.Children.Add(right);
 
-        var reset = Ui.Button("Restablecer", MaterialIconKind.Restore, () =>
+        var reset = Ui.Button("Reset", MaterialIconKind.Restore, () =>
         {
             var d = new DomSettings();
             _settings.Columns = d.Columns;
@@ -59,7 +59,7 @@ internal sealed class DomSettingsWindow : Window
             FillColumns();
             _changed();
         });
-        var close = Ui.Button("Listo", MaterialIconKind.Check, Close, "primary");
+        var close = Ui.Button("Done", MaterialIconKind.Check, Close, "primary");
         var buttons = Ui.H(10, reset, close);
         buttons.HorizontalAlignment = HorizontalAlignment.Right;
         buttons.Margin = new Thickness(20, 0, 20, 18);

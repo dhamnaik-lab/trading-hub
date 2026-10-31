@@ -10,7 +10,7 @@ namespace TradingHub.App.Services;
 /// </summary>
 public sealed class UserScripts : IDisposable
 {
-    public const string Source = "Mis indicadores";
+    public const string Source = "My indicators";
     private readonly IndicatorCatalog _catalog;
     private readonly ScriptCompiler _compiler = new();
     private readonly FileSystemWatcher? _watcher;
@@ -39,7 +39,7 @@ public sealed class UserScripts : IDisposable
         }
         catch (Exception ex)
         {
-            this.LogWarn("No se pudo vigilar la carpeta de indicadores: " + ex.Message);
+            this.LogWarn("Unable to watch indicators folder: " + ex.Message);
         }
     }
 
@@ -75,7 +75,7 @@ public sealed class UserScripts : IDisposable
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // un archivo a medio guardar o que se movió: se reintenta con el próximo cambio de la carpeta
-            this.LogWarn("No se pudieron leer los indicadores propios: " + ex.Message);
+            this.LogWarn("Unable to read custom indicators: " + ex.Message);
             Restart();
             return LastResult;
         }
@@ -85,7 +85,7 @@ public sealed class UserScripts : IDisposable
         {
             _catalog.RemoveSource(Source);
             _catalog.Scan(res.Assembly, Source);
-            this.LogInfo($"Indicadores propios compilados ({files.Count} archivos, {res.Elapsed.TotalMilliseconds:0} ms)");
+            this.LogInfo($"Custom indicators compiled ({files.Count} files, {res.Elapsed.TotalMilliseconds:0} ms)");
         }
         else
         {
@@ -111,7 +111,7 @@ public sealed class UserScripts : IDisposable
         using TradingHub.Indicators;
 
         [DisplayName("Ejemplo: delta % por vela")]
-        [Category("Mis indicadores")]
+        [Category("My indicators")]
         public class EjemploDeltaPorcentual : Indicator
         {
             private readonly ValueDataSeries _serie = new("DeltaPct", "Delta %")
@@ -119,7 +119,7 @@ public sealed class UserScripts : IDisposable
                 VisualType = VisualMode.Histogram,
             };
 
-            [Display(Name = "Umbral para resaltar (%)", GroupName = "Configuración")]
+            [Display(Name = "Umbral para resaltar (%)", GroupName = "Settings")]
             public decimal Umbral { get; set; } = 30;
 
             public EjemploDeltaPorcentual()

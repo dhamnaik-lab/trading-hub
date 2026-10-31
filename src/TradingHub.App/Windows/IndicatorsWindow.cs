@@ -210,7 +210,7 @@ public sealed class IndicatorsWindow : Window
         }
         catch (Exception ex)
         {
-            _errorText.Text = $"No se pudo crear {info.Name}: {ex.InnerException?.Message ?? ex.Message}";
+            _errorText.Text = $"Could not create {info.Name}: {ex.InnerException?.Message ?? ex.Message}";
             _errorText.IsVisible = true;
         }
     }
@@ -229,10 +229,10 @@ public sealed class IndicatorsWindow : Window
         var save = new MenuItem { Header = "Save these settings as a template…", Icon = Ui.Icon(MaterialIconKind.ContentSaveOutline, 16) };
         save.Click += async (_, _) =>
         {
-            var name = await PromptDialog.ShowAsync(this, $"Plantilla de {ind.Name}", "Template name (saves all settings and colors)", def ?? ind.Name, "Save");
+            var name = await PromptDialog.ShowAsync(this, $"Template for {ind.Name}", "Template name (saves all settings and colors)", def ?? ind.Name, "Save");
             if (string.IsNullOrWhiteSpace(name)) return;
             Workspace.SaveIndicatorTemplate(ind, name);
-            _subtitle.Text = $"Plantilla «{name.Trim()}» guardada";
+            _subtitle.Text = $"Template '{name.Trim()}' saved";
         };
         flyout.Items.Add(save);
         if (names.Count == 0)
@@ -251,7 +251,7 @@ public sealed class IndicatorsWindow : Window
                     _grid.Target = null;
                     _grid.Target = ind;
                     _model.Invalidate();
-                    _subtitle.Text = $"Plantilla «{n}» aplicada";
+                    _subtitle.Text = $"Template '{n}' applied";
                 };
                 flyout.Items.Add(apply);
             }
@@ -288,7 +288,7 @@ public sealed class IndicatorsWindow : Window
                         _svc.Settings.Save();
                     }
 
-                    _subtitle.Text = $"Plantilla «{n}» borrada";
+                    _subtitle.Text = $"Template '{n}' deleted";
                 };
                 delete.Items.Add(mi);
             }

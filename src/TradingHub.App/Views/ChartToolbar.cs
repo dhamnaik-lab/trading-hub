@@ -308,9 +308,9 @@ internal sealed class ChartToolbar : UserControl
     {
         _syncing = true;
         _layoutBox.Items.Clear();
-        foreach (var p in FootprintLayout.Presets) _layoutBox.Items.Add(new ComboBoxItem { Content = p.Name, Tag = p });
+        foreach (var p in FootprintLayout.Presets) _layoutBox.Items.Add(new ComboBoxItem { Content = FootprintLayout.DisplayPresetName(p.Name), Tag = p });
         foreach (var p in FootprintLayout.LoadUserTemplates()) _layoutBox.Items.Add(new ComboBoxItem { Content = "★ " + p.Name, Tag = p });
-        _layoutBox.Items.Add(new ComboBoxItem { Content = "Editar columnas…", Tag = "edit" });
+        _layoutBox.Items.Add(new ComboBoxItem { Content = "Edit columns…", Tag = "edit" });
         _syncing = false;
         Sync();
     }
