@@ -63,12 +63,12 @@ public sealed class MainWindow : Window
         _pageDefs = new List<Page>
         {
             new("trading", "Trading", MaterialIconKind.ChartBoxOutline, () => Trading, new KeyGesture(Key.D1, Keys.Command)),
-            new("accounts", "Cuenta", MaterialIconKind.WalletOutline, () => new AccountsView(svc, SetStatus, this), new KeyGesture(Key.D5, Keys.Command)),
+            new("accounts", "Accounts", MaterialIconKind.WalletOutline, () => new AccountsView(svc, SetStatus, this), new KeyGesture(Key.D5, Keys.Command)),
             new("strategies", "Backtesting", MaterialIconKind.FlaskOutline, () => new StrategiesView(svc, SetStatus), new KeyGesture(Key.D2, Keys.Command)),
-            new("live", "En vivo", MaterialIconKind.AccessPoint, () => new LiveView(svc, SetStatus, this), new KeyGesture(Key.D7, Keys.Command)),
-            new("data", "Datos", MaterialIconKind.DatabaseOutline, () => new DataView(svc, SetStatus, this), new KeyGesture(Key.D3, Keys.Command)),
-            new("connections", "Conexiones", MaterialIconKind.LanConnect, () => new ConnectionsView(svc, SetStatus), new KeyGesture(Key.D4, Keys.Command)),
-            new("settings", "Ajustes", MaterialIconKind.CogOutline, () => new SettingsView(svc, SetStatus), new KeyGesture(Key.OemComma, Keys.Command)),
+            new("live", "Live", MaterialIconKind.AccessPoint, () => new LiveView(svc, SetStatus, this), new KeyGesture(Key.D7, Keys.Command)),
+            new("data", "Data", MaterialIconKind.DatabaseOutline, () => new DataView(svc, SetStatus, this), new KeyGesture(Key.D3, Keys.Command)),
+            new("connections", "Connections", MaterialIconKind.LanConnect, () => new ConnectionsView(svc, SetStatus), new KeyGesture(Key.D4, Keys.Command)),
+            new("settings", "Settings", MaterialIconKind.CogOutline, () => new SettingsView(svc, SetStatus), new KeyGesture(Key.OemComma, Keys.Command)),
         };
 
         Content = BuildLayout();
@@ -78,8 +78,8 @@ public sealed class MainWindow : Window
 
         _svc.Scripts = new UserScripts(_svc.Catalog);
         _svc.Scripts.Compiled += r => SetStatus(r.Success
-            ? $"Indicadores propios compilados en {r.Elapsed.TotalMilliseconds:0} ms"
-            : $"Error compilando indicadores propios: {r.Diagnostics.FirstOrDefault(d => d.Severity == "error")}");
+            ? $"Custom indicators compiled in {r.Elapsed.TotalMilliseconds:0} ms"
+            : $"Error compiling custom indicators: {r.Diagnostics.FirstOrDefault(d => d.Severity == "error")}");
         _svc.Scripts.CompileAll();
 
         Log.Entry += e =>
@@ -240,13 +240,13 @@ public sealed class MainWindow : Window
         };
 
         var conn = new Border { Child = Ui.H(8, _connDot, _connText), Classes = { "pill" }, Padding = new Thickness(11, 4), VerticalAlignment = VerticalAlignment.Center, Cursor = new Cursor(StandardCursorType.Hand) };
-        var reconnect = new MenuItem { Header = "Reconectar ahora" };
+        var reconnect = new MenuItem { Header = "Reconnect now" };
         reconnect.Click += (_, _) =>
         {
             _svc.Hub.ReconnectAll();
-            SetStatus("Reconectando… lo que se perdió durante el corte se rellena solo.");
+            SetStatus("Reconnecting… missing market data will be recovered automatically.");
         };
-        var toConnections = new MenuItem { Header = "Conexiones…" };
+        var toConnections = new MenuItem { Header = "Connections…" };
         toConnections.Click += (_, _) => Navigate("connections");
         var connMenu = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedRight };
         connMenu.Items.Add(reconnect);
@@ -256,17 +256,17 @@ public sealed class MainWindow : Window
             connMenu.ShowAt(conn);
             e.Handled = true;
         };
-        ToolTip.SetTip(conn, "Conexión del gráfico activo (clic: reconectar o ir a Conexiones)");
+        ToolTip.SetTip(conn, "Active chart connection (click to reconnect or open Connections)");
         // el resultado de la simulada lleva a la sección Cuenta
         var pnl = new Border { Child = _pnlText, Background = Brushes.Transparent, Cursor = new Cursor(StandardCursorType.Hand), VerticalAlignment = VerticalAlignment.Center };
-        ToolTip.SetTip(pnl, "Ver la cuenta: saldo, órdenes, operaciones y estadísticas");
+        ToolTip.SetTip(pnl, "View account: balance, orders, trades and statistics");
         pnl.PointerPressed += (_, _) => Navigate("accounts");
         // modo claro / oscuro
         var themeButton = new Button { Classes = { "icon" }, VerticalAlignment = VerticalAlignment.Center };
         void ThemeIcon()
         {
             themeButton.Content = Ui.Icon(AppTheme.IsLight ? MaterialIconKind.WeatherNight : MaterialIconKind.WhiteBalanceSunny, 16);
-            ToolTip.SetTip(themeButton, AppTheme.IsLight ? "Pasar a modo oscuro" : "Pasar a modo claro");
+            ToolTip.SetTip(themeButton, AppTheme.IsLight ? "Switch to dark mode" : "Switch to light mode");
         }
 
         ThemeIcon();
@@ -344,7 +344,7 @@ public sealed class MainWindow : Window
             catch (Exception ex)
             {
                 CrashLog.Write(ex);
-                page = new TextBlock { Text = "No se pudo abrir la página: " + ex.Message, Margin = new Thickness(24) };
+                page = new TextBlock { Text = "Unable to open page: " + ex.Message, Margin = new Thickness(24) };
             }
 
             _pages[id] = page;
@@ -364,31 +364,31 @@ public sealed class MainWindow : Window
     {
         var menu = new NativeMenu();
 
-        var file = new NativeMenuItem("Archivo") { Menu = new NativeMenu() };
-        file.Menu.Add(Item("Nuevo gráfico", () =>
+        var file = new NativeMenuItem("File") { Menu = new NativeMenu() };
+        file.Menu.Add(Item("New chart", () =>
         {
             Navigate("trading");
             _ = Trading.NewChartAsync();
         }, new KeyGesture(Key.T, Keys.Command)));
-        file.Menu.Add(Item("Cerrar gráfico", Trading.CloseActiveTab, new KeyGesture(Key.W, Keys.Command)));
-        file.Menu.Add(Item("Buscar instrumento…", () =>
+        file.Menu.Add(Item("Close chart", Trading.CloseActiveTab, new KeyGesture(Key.W, Keys.Command)));
+        file.Menu.Add(Item("Find instrument…", () =>
         {
             Navigate("trading");
             Trading.Picker.Open();
         }, new KeyGesture(Key.K, Keys.Command)));
         file.Menu.Add(new NativeMenuItemSeparator());
-        file.Menu.Add(Item("Guardar espacio de trabajo", () =>
+        file.Menu.Add(Item("Save workspace", () =>
         {
             Workspace.Save(Trading);
-            SetStatus("Espacio de trabajo guardado");
+            SetStatus("Workspace saved");
         }, new KeyGesture(Key.S, Keys.Command)));
-        file.Menu.Add(Item("Abrir carpeta de datos", () => Shell.OpenFolder(AppPaths.Root)));
+        file.Menu.Add(Item("Open data folder", () => Shell.OpenFolder(AppPaths.Root)));
         menu.Add(file);
 
-        var chart = new NativeMenuItem("Gráfico") { Menu = new NativeMenu() };
-        chart.Menu.Add(Item("Indicadores…", Trading.OpenIndicators, new KeyGesture(Key.I, Keys.Command)));
-        chart.Menu.Add(Item("Editar footprint…", Trading.OpenFootprintEditor, new KeyGesture(Key.F, Keys.Command | KeyModifiers.Shift)));
-        chart.Menu.Add(Item("Escala automática", () =>
+        var chart = new NativeMenuItem("Chart") { Menu = new NativeMenu() };
+        chart.Menu.Add(Item("Indicators…", Trading.OpenIndicators, new KeyGesture(Key.I, Keys.Command)));
+        chart.Menu.Add(Item("Edit footprint…", Trading.OpenFootprintEditor, new KeyGesture(Key.F, Keys.Command | KeyModifiers.Shift)));
+        chart.Menu.Add(Item("Auto scale", () =>
         {
             if (Trading.ActiveTab?.Model is { } m)
             {
@@ -396,7 +396,7 @@ public sealed class MainWindow : Window
                 m.Invalidate();
             }
         }, new KeyGesture(Key.A, Keys.Command | KeyModifiers.Alt)));
-        chart.Menu.Add(Item("Ir al último precio", () =>
+        chart.Menu.Add(Item("Go to latest price", () =>
         {
             if (Trading.ActiveTab?.Model is { } m)
             {
@@ -405,7 +405,7 @@ public sealed class MainWindow : Window
             }
         }, new KeyGesture(Key.End, Keys.Command)));
         chart.Menu.Add(new NativeMenuItemSeparator());
-        var layouts = new NativeMenuItem("Diseño") { Menu = new NativeMenu() };
+        var layouts = new NativeMenuItem("Layout") { Menu = new NativeMenu() };
         foreach (var (layout, label, _) in TradingView.Layouts)
             layouts.Menu.Add(Item(label, () =>
             {
@@ -413,17 +413,17 @@ public sealed class MainWindow : Window
                 _ = Trading.SetLayoutAsync(layout);
             }));
         chart.Menu.Add(layouts);
-        chart.Menu.Add(Item("Sacar gráfico a una ventana", () =>
+        chart.Menu.Add(Item("Detach chart to window", () =>
         {
             Navigate("trading");
             Trading.DetachActive();
         }, new KeyGesture(Key.D, Keys.Command | KeyModifiers.Shift)));
         chart.Menu.Add(new NativeMenuItemSeparator());
-        var panels = new NativeMenuItem("Paneles") { Menu = new NativeMenu() };
-        foreach (var (key, label) in new[] { ("side", "Panel derecho"), ("ticket", "Ticket"), ("dom", "DOM"), ("tape", "Cinta de operaciones") })
-            panels.Menu.Add(Item($"Mostrar u ocultar: {label}", () => Trading.TogglePanel(key)));
+        var panels = new NativeMenuItem("Panels") { Menu = new NativeMenu() };
+        foreach (var (key, label) in new[] { ("side", "Right panel"), ("ticket", "Ticket"), ("dom", "DOM"), ("tape", "Time & Sales") })
+            panels.Menu.Add(Item($"Show or hide: {label}", () => Trading.TogglePanel(key)));
         chart.Menu.Add(panels);
-        chart.Menu.Add(Item("Configurar DOM…", () =>
+        chart.Menu.Add(Item("Configure DOM…", () =>
         {
             Navigate("trading");
             Trading.ShowDomSettings();
@@ -434,14 +434,14 @@ public sealed class MainWindow : Window
         foreach (var p in _pageDefs) go.Menu.Add(Item(p.Title, () => Navigate(p.Id), p.Gesture));
         menu.Add(go);
 
-        var code = new NativeMenuItem("Código") { Menu = new NativeMenu() };
-        code.Menu.Add(Item("Editor de indicadores…", () => new CodeEditorWindow(_svc, CodeKind.Indicator).Show(this), new KeyGesture(Key.E, Keys.Command | KeyModifiers.Shift)));
-        code.Menu.Add(Item("Abrir carpeta de indicadores", () => Shell.OpenFolder(AppPaths.UserIndicators)));
-        code.Menu.Add(Item("Recompilar indicadores", () => _svc.Scripts?.CompileAll()));
+        var code = new NativeMenuItem("Code") { Menu = new NativeMenu() };
+        code.Menu.Add(Item("Indicator editor…", () => new CodeEditorWindow(_svc, CodeKind.Indicator).Show(this), new KeyGesture(Key.E, Keys.Command | KeyModifiers.Shift)));
+        code.Menu.Add(Item("Open indicators folder", () => Shell.OpenFolder(AppPaths.UserIndicators)));
+        code.Menu.Add(Item("Recompile indicators", () => _svc.Scripts?.CompileAll()));
         code.Menu.Add(new NativeMenuItemSeparator());
-        code.Menu.Add(Item("Backtesting de estrategias…", () => Navigate("strategies")));
-        code.Menu.Add(Item("Estrategias en vivo…", () => Navigate("live")));
-        code.Menu.Add(Item("Abrir carpeta de estrategias", () => Shell.OpenFolder(AppPaths.Strategies)));
+        code.Menu.Add(Item("Strategy backtesting…", () => Navigate("strategies")));
+        code.Menu.Add(Item("Live strategies…", () => Navigate("live")));
+        code.Menu.Add(Item("Open strategies folder", () => Shell.OpenFolder(AppPaths.Strategies)));
         menu.Add(code);
 
         NativeMenu.SetMenu(this, menu);
@@ -499,7 +499,7 @@ public sealed class MainWindow : Window
             if (_lastTickAt != default && (now - _lastTickAt).TotalSeconds > 20)
             {
                 _svc.Hub.ReconnectAll();
-                SetStatus($"Volvió después de {(now - _lastTickAt).TotalMinutes:0} min en pausa: reconectando y rellenando lo que faltó.");
+                SetStatus($"Resumed after {(now - _lastTickAt).TotalMinutes:0} min idle: reconnecting and recovering missing data.");
             }
 
             _lastTickAt = now;
@@ -559,52 +559,52 @@ public sealed class MainWindow : Window
                 var tz = m.Settings.TimeZone;
                 var open = FuturesSessions.NextGlobexOpen(DateTime.UtcNow);
                 var openLocal = TimeZoneInfo.ConvertTimeFromUtc(open, tz);
-                state = open > DateTime.UtcNow ? $"mercado cerrado · abre {Day(openLocal, tz)} {openLocal:HH:mm}" : "mercado cerrado";
+                state = open > DateTime.UtcNow ? $"market closed · opens {Day(openLocal, tz)} {openLocal:HH:mm}" : "market closed";
                 tip = d.ClosedAt is { } last
-                    ? $"Última operación: {Day(TimeZoneInfo.ConvertTimeFromUtc(last, tz), tz)} {TimeZoneInfo.ConvertTimeFromUtc(last, tz):HH:mm}. La conexión sigue activa."
-                    : "La conexión sigue activa; los datos vuelven solos cuando abre el mercado.";
+                    ? $"Last trade: {Day(TimeZoneInfo.ConvertTimeFromUtc(last, tz), tz)} {TimeZoneInfo.ConvertTimeFromUtc(last, tz):HH:mm}. Connection remains active."
+                    : "Connection remains active; data will resume when the market opens.";
                 _connDot.Fill = Ui.Text2;
             }
             else if (d.Status == FeedStatus.Connected && d.Feed.IsLive && d.LastDataAt.Year > 2000 && quiet.TotalSeconds > 60)
             {
-                state = $"sin datos hace {(quiet.TotalMinutes < 60 ? $"{quiet.TotalMinutes:0} min" : $"{quiet.TotalHours:0} h")}";
+                state = $"no data for {(quiet.TotalMinutes < 60 ? $"{quiet.TotalMinutes:0} min" : $"{quiet.TotalHours:0} h")}";
                 _connDot.Fill = Ui.Warn;
             }
             else if (d.Status == FeedStatus.Reconnecting && d.StatusMessage is { } rm
                      && System.Text.RegularExpressions.Regex.Match(rm, @"intento (\d+)") is { Success: true } attempt)
             {
-                state = $"reconectando… (intento {attempt.Groups[1].Value})";
+                state = $"reconnecting… (attempt {attempt.Groups[1].Value})";
             }
 
             _connText.Text = $"{feedName} · {state}";
             ToolTip.SetTip(_connText, tip ?? d.StatusMessage);
             _infoText.Text = d.IsLoadingHistory || d.IsExtending
-                ? $"Cargando historia {d.HistoryProgress * 100:0}%"
-                : $"{d.Trades.Count:N0} operaciones · {m.Series.Count:N0} velas · desde {TimeZoneInfo.ConvertTimeFromUtc(d.HistoryFrom, m.Settings.TimeZone):dd/MM HH:mm}";
+                ? $"Loading history {d.HistoryProgress * 100:0}%"
+                : $"{d.Trades.Count:N0} trades · {m.Series.Count:N0} candles · since {TimeZoneInfo.ConvertTimeFromUtc(d.HistoryFrom, m.Settings.TimeZone):dd/MM HH:mm}";
         }
 
         // resultado del día y saldo de la cuenta simulada (guardados: no vuelven a cero al cerrar Trading Hub)
         var (day, balance) = _svc.AccountCenter.SimSummary();
         _pnlText.Foreground = day >= 0 ? Ui.Up : Ui.Down;
-        _pnlText.Text = $"Simulada  {day:+0.00;-0.00;0.00}  ·  {balance:N2}";
+        _pnlText.Text = $"Simulated  {day:+0.00;-0.00;0.00}  ·  {balance:N2}";
         Trading.UpdatePosition();
     }
 
     private static string Day(DateTime local, TimeZoneInfo tz)
     {
         var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz).Date;
-        if (local.Date == today) return "hoy";
-        if (local.Date == today.AddDays(1)) return "mañana";
-        return local.ToString("ddd", new System.Globalization.CultureInfo("es-AR")).TrimEnd('.');
+        if (local.Date == today) return "today";
+        if (local.Date == today.AddDays(1)) return "tomorrow";
+        return local.ToString("ddd", new System.Globalization.CultureInfo("en-US")).TrimEnd('.');
     }
 
     private static string StatusName(FeedStatus s) => s switch
     {
-        FeedStatus.Connected => "conectado",
-        FeedStatus.Connecting => "conectando…",
-        FeedStatus.Reconnecting => "reconectando…",
+        FeedStatus.Connected => "connected",
+        FeedStatus.Connecting => "connecting…",
+        FeedStatus.Reconnecting => "reconnecting…",
         FeedStatus.Error => "error",
-        _ => "desconectado",
+        _ => "disconnected",
     };
 }
 
