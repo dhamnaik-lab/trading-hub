@@ -18,7 +18,7 @@ Original project created by [**@ralphtradesz**](https://x.com/ralphtradesz). Thi
 
 </div>
 
-> **Fork status:** The Markdown documentation is available in English, while application UI localization, report text and screenshot replacement remain in progress. A fully English, runtime-verified application release has **not** been published or confirmed. The original project's [Windows installers](https://github.com/ralphtradesz/trading-hub/releases) are **upstream builds**, not builds of this English fork.
+> **Fork status:** The Markdown documentation is available in English, while application UI localization, report text and screenshot replacement remain in progress. No fully English, manually runtime-verified application release has been published or confirmed. The original project's [Windows installers](https://github.com/ralphtradesz/trading-hub/releases) are **upstream builds**, not builds of this English fork.
 
 ## Overview
 
@@ -74,16 +74,16 @@ Claude Code integration uses your own signed-in Claude Code CLI session, not a T
 
 ## Screenshots
 
-These are inherited upstream screenshots and may still contain Spanish UI labels until updated English screenshots are available.
+Phase 9 regenerates these documentation images from this fork on an isolated Windows headless runner, using synthetic data and a fake broker. They illustrate the UI only; screenshots do not validate real-order execution, manual usability, or complete English coverage. Review the binary changes in the Phase 9 pull request.
 
 | | |
 |---|---|
 | ![Footprint chart](docs/img/footprint.png) | ![Trading from a chart](docs/img/operar.png) |
 | Footprint with delta, POC, and large trades | Chart Trader, DOM, and time and sales |
 | ![Claude strategy assistant](docs/img/claude.png) | ![Backtesting](docs/img/backtest.png) |
-| C# strategy assistant | Market-regime backtesting |
+| Synthetic Claude conversation (the CI runner has no Claude CLI) | Backtesting configuration and filters |
 | ![Recorded data](docs/img/datos.png) | ![Light theme](docs/img/claro.png) |
-| Historical ticks and Databento | Light and dark themes |
+| Data download and import controls | Light and dark themes |
 
 ## Installation
 
@@ -103,6 +103,8 @@ cd trading-hub
 ```
 
 The build script publishes Windows installers into `dist`. An installer produced from this fork must be built from the updated source; installing an upstream release will **not** include the fork's English changes.
+
+For the current CI installer evidence, explicit manual acceptance gates and SHA-256 verification, see [English fork release verification](docs/release-verification.md). CI artifacts are **not** a published GitHub Release.
 
 **macOS (Apple Silicon, macOS 12+):** Use the repository's build script:
 

@@ -1,0 +1,89 @@
+name: English fork documentation screenshots
+
+on:
+  pull_request:
+    paths:
+      - "tools/TradingHub.UiSnapshot/**"
+      - "src/TradingHub.App/Views/StrategiesView.Claude.cs"
+      - ".github/workflows/english-doc-screenshots.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  docs-screenshots:
+    name: Rebuild seven documentation PNGs using isolated synthetic data
+    # Never write to main, upstream, or a PR originating in another repository.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feat/english-localization-phase9' }}
+    runs-on: windows-latest
+    timeout-minutes: 40
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      TRADINGHUB_SLEEP_GUARD: off
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Capture synthetic English desktop scenes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $out = Join-Path $env:RUNNER_TEMP 'phase9-doc-screenshots'
+          New-Item -ItemType Directory -Path $out -Force | Out-Null
+          # No user credentials; the snapshot runner uses fake Rithmic and
+          # isolated disposable settings, histories and scripts.
+          dotnet run --project tools/TradingHub.UiSnapshot --configuration Release -- $out 2 trading data trading+brackets strategies+claudefloat strategies+backtest theme footprint --size 1600x950
+          if ($LASTEXITCODE -ne 0) { throw "Headless snapshot run failed ($LASTEXITCODE)" }
+          $images = [ordered]@{
+            'trading.png'   = 'trading.png'
+            'datos.png'     = 'data.png'
+            'operar.png'    = 'trading_brackets.png'
+            'claude.png'    = 'strategies_claudefloat_window.png'
+            'backtest.png'  = 'strategies_backtest.png'
+            'claro.png'     = 'theme_light.png'
+            'footprint.png' = 'footprint_colores.png'
+          }
+          foreach ($dest in $images.Keys) {
+            $source = Join-Path $out $images[$dest]
+            if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw "Screenshot missing: $source" }
+            $item = Get-Item -LiteralPath $source
+            if ($item.Length -lt 15000) { throw "Screenshot unexpectedly small: $source" }
+            $stream = [System.IO.File]::OpenRead($source)
+            try {
+              $signature = [byte[]]::new(8)
+              if ($stream.Read($signature, 0, 8) -ne 8 -or
+                  [Convert]::ToHexString($signature) -ne '89504E470D0A1A0A') {
+                throw "Screenshot is not PNG: $source"
+              }
+            } finally { $stream.Dispose() }
+            Copy-Item -LiteralPath $source -Destination (Join-Path 'docs/img' $dest) -Force
+            Write-Host "$dest : $($item.Length) bytes"
+          }
+      - name: Upload source PNGs for visual PR review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-english-doc-screenshots
+          path: ${{ runner.temp }}/phase9-doc-screenshots/*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Commit generated images only to the internal feature branch
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- docs/img/trading.png docs/img/datos.png docs/img/operar.png docs/img/claude.png docs/img/backtest.png docs/img/claro.png docs/img/footprint.png
+          $changed = git diff --cached --name-only
+          if (-not $changed) {
+            Write-Host 'All seven generated screenshots match the current branch.'
+            exit 0
+          }
+          git commit -m "docs: replace seven upstream screenshots with isolated English fork captures"
+          if ($LASTEXITCODE -ne 0) { throw 'Screenshot commit failed' }
+          git push origin "HEAD:refs/heads/feat/english-localization-phase9"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not push screenshot commit to feature branch' }

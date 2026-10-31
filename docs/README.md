@@ -2,7 +2,7 @@
 
 Trading Hub is a desktop platform for charting, market data, trading, strategy research, and C# indicators. The original project was created by [@ralphtradesz](https://x.com/ralphtradesz); this documentation is for the [English-language fork](../README.md).
 
-> **Translation status:** All 19 Markdown files have been translated into English. Original identifiers and the remaining application UI may still contain Spanish. The English documentation requires ongoing technical validation. Their existing filenames are retained so links do not break. For Windows, always check that installation instructions refer to a build of **this fork**, not an upstream release.
+> **Translation status:** The original Markdown guides have been translated into English. Original identifiers and the remaining application UI may still contain Spanish. The English documentation requires ongoing technical validation. Their existing filenames are retained so links do not break. For Windows, always check that installation instructions refer to a build of **this fork**, not an upstream release.
 
 ## Getting started
 
@@ -33,8 +33,9 @@ Trading Hub is a desktop platform for charting, market data, trading, strategy r
 - [Privacy and security](privacidad.md) — Local data, credentials, network access, and safe testing.
 - [Development](desarrollo.md) — Source structure, build steps, tests, and UI snapshots.
 - [Windows porting notes](../PORTAR_A_WINDOWS.md) — Historical porting plan and platform-specific implementation details.
+- [English fork release verification](release-verification.md) — Installer SHA-256 manifest, CI checks, manual Windows smoke test and publishing gates.
 - [Back to the main README](../README.md).
 
 ## English localization work
 
-The application still has untranslated hardcoded UI strings, even though the Markdown guides have been translated. Generated reports, the installer, and inherited screenshots may also contain Spanish. If contributing translations, preserve code behavior and identifiers, verify all relative Markdown links after changing headings, and check trade-related warnings with particular care. Do not change broker order routing or risk settings as part of translation alone.
+The application still has untranslated hardcoded UI strings, even though the Markdown guides have been translated. Generated reports and deeper dialogs may still contain Spanish. Phase 9 uses isolated synthetic screenshots and tests the Windows installer without real accounts. If contributing translations, preserve code behavior and identifiers, verify all relative Markdown links after changing headings, and check trade-related warnings with particular care. Do not change broker order routing or risk settings as part of translation alone.
