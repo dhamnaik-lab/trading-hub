@@ -128,11 +128,11 @@ public sealed class DomRenderer
     /// <summary>Rótulos de cada columna, del más largo al más corto.</summary>
     public static string[] HeaderLabels(DomColumn c) => c switch
     {
-        DomColumn.BuyOrders or DomColumn.SellOrders => new[] { "Órdenes", "Órd.", "Ó" },
+        DomColumn.BuyOrders or DomColumn.SellOrders => new[] { "Orders", "Ord.", "Ó" },
         DomColumn.Bid => new[] { "Bid", "B" },
-        DomColumn.Price => new[] { "Precio", "Prec.", "$" },
+        DomColumn.Price => new[] { "Price", "Prec.", "$" },
         DomColumn.Ask => new[] { "Ask", "A" },
-        DomColumn.Volume => new[] { "Volumen", "Vol.", "V" },
+        DomColumn.Volume => new[] { "Volume", "Vol.", "V" },
         DomColumn.Delta => new[] { "Delta", "Δ" },
         DomColumn.TradedBid => new[] { "Vol. bid", "V.bid", "Vb" },
         DomColumn.TradedAsk => new[] { "Vol. ask", "V.ask", "Va" },
@@ -514,7 +514,7 @@ public sealed class DomRenderer
         if (right || cancelModifier)
         {
             broker.CancelAt(price);
-            return $"Órdenes canceladas en {dom.Instrument.FormatPrice(price)}";
+            return $"Orders cancelled at {dom.Instrument.FormatPrice(price)}";
         }
 
         switch (col)
