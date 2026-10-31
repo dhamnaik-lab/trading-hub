@@ -121,17 +121,17 @@ internal sealed class ChartTraderPanel : UserControl
 
         decimal Q() => _chart.Quantity > 0 ? _chart.Quantity : 0;
         var grid = Pairs(
-            (Trade("Comprar MKT", null, "buy", "Buy market", () => _ = _host.TradeAsync(_chart, OrderTypes.Market, OrderDirections.Buy, 0, Q())),
-             Trade("Vender MKT", null, "sell", "Sell market", () => _ = _host.TradeAsync(_chart, OrderTypes.Market, OrderDirections.Sell, 0, Q()))),
-            (Trade("Comprar Ask", _buyAsk, "buy-soft", "Buy limit at ask (marketable, with a price cap)", () => AtBook(OrderDirections.Buy, ask: true)),
-             Trade("Vender Ask", _sellAsk, "sell-soft", "Sell limit at ask (rests on the ask)", () => AtBook(OrderDirections.Sell, ask: true))),
-            (Trade("Comprar Bid", _buyBid, "buy-soft", "Buy limit at bid (rests on the bid)", () => AtBook(OrderDirections.Buy, ask: false)),
-             Trade("Vender Bid", _sellBid, "sell-soft", "Sell limit at bid (marketable, with a price floor)", () => AtBook(OrderDirections.Sell, ask: false))),
-            (Trade("Canc. compras", null, "", "Cancel buy orders", () => CancelSide(OrderDirections.Buy)),
-             Trade("Canc. ventas", null, "", "Cancel sell orders", () => CancelSide(OrderDirections.Sell))),
-            (Trade("Cancelar todo", null, "", "Cancel all orders", () => _ = _host.AccountActionAsync(_chart, a => a.CancelAll(), "Orders cancelled")),
-             Trade("Revertir", null, "", "Reverse position", () => _ = _host.AccountActionAsync(_chart, a => a.Reverse(), "Position reversed"))));
-        var be = Trade("Breakeven", null, "", "Mueve el stop al precio de entrada", () => _ = _host.BracketActionAsync(_chart, b => b.MoveStopToBreakeven(), "Mover el stop a breakeven"));
+            (Trade("Buy MKT", null, "buy", "Buy market", () => _ = _host.TradeAsync(_chart, OrderTypes.Market, OrderDirections.Buy, 0, Q())),
+             Trade("Sell MKT", null, "sell", "Sell market", () => _ = _host.TradeAsync(_chart, OrderTypes.Market, OrderDirections.Sell, 0, Q()))),
+            (Trade("Buy Ask", _buyAsk, "buy-soft", "Buy limit at ask (marketable, with a price cap)", () => AtBook(OrderDirections.Buy, ask: true)),
+             Trade("Sell Ask", _sellAsk, "sell-soft", "Sell limit at ask (rests on the ask)", () => AtBook(OrderDirections.Sell, ask: true))),
+            (Trade("Buy Bid", _buyBid, "buy-soft", "Buy limit at bid (rests on the bid)", () => AtBook(OrderDirections.Buy, ask: false)),
+             Trade("Sell Bid", _sellBid, "sell-soft", "Sell limit at bid (marketable, with a price floor)", () => AtBook(OrderDirections.Sell, ask: false))),
+            (Trade("Cancel buys", null, "", "Cancel buy orders", () => CancelSide(OrderDirections.Buy)),
+             Trade("Cancel sells", null, "", "Cancel sell orders", () => CancelSide(OrderDirections.Sell))),
+            (Trade("Cancel all", null, "", "Cancel all orders", () => _ = _host.AccountActionAsync(_chart, a => a.CancelAll(), "Orders cancelled")),
+             Trade("Reverse", null, "", "Reverse position", () => _ = _host.AccountActionAsync(_chart, a => a.Reverse(), "Position reversed"))));
+        var be = Trade("Breakeven", null, "", "Move stop to entry", () => _ = _host.BracketActionAsync(_chart, b => b.MoveStopToBreakeven(), "Move stop to breakeven"));
         // parciales: cierran una parte a mercado; el stop y los objetivos se ajustan solos
         var partials = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,4,*,4,*") };
         partials.Children.Add(new TextBlock { Text = "Close", Classes = { "muted", "small" }, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
@@ -155,7 +155,7 @@ internal sealed class ChartTraderPanel : UserControl
         DockPanel.SetDock(_brackets, Dock.Right);
         slHead.Children.Add(_brackets);
         slHead.Children.Add(new TextBlock { Text = "Automatic SL / TP", VerticalAlignment = VerticalAlignment.Center, FontSize = 12 });
-        ToolTip.SetTip(slHead, "Al entrar se ponen solos el stop y el objetivo (en ticks desde la entrada), en OCO");
+        ToolTip.SetTip(slHead, "On entry, automatically attach stop and targets (ticks from entry) with OCO protection");
         Control TicksRow(string label, IBrush color, NumericUpDown box)
         {
             var g = new Grid { ColumnDefinitions = new ColumnDefinitions("26,*,Auto") };
@@ -169,7 +169,7 @@ internal sealed class ChartTraderPanel : UserControl
         }
 
         var slRow = TicksRow("SL", Ui.Down, _sl);
-        var addTarget = new Button { Content = "+ objetivo", Padding = new Thickness(6, 2), MinHeight = 24, FontSize = 11 };
+        var addTarget = new Button { Content = "+ target", Padding = new Thickness(6, 2), MinHeight = 24, FontSize = 11 };
         ToolTip.SetTip(addTarget, "Up to three partial targets: each closes a percentage of the position");
         addTarget.Click += (_, _) => EditTemplate(t =>
         {
@@ -196,7 +196,7 @@ internal sealed class ChartTraderPanel : UserControl
         body.Children.Add(Label("Cross trading"));
         body.Children.Add(_cross);
         body.Children.Add(_target);
-        body.Children.Add(Label("Cantidad"));
+        body.Children.Add(Label("Quantity"));
         body.Children.Add(_qty);
         body.Children.Add(_presets);
         body.Children.Add(grid);
