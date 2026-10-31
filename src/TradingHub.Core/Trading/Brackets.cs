@@ -269,7 +269,7 @@ public sealed class BracketManager : IDisposable
             _stops.Add(Account.Exit(OrderTypes.Stop, ExitDirection, Math.Abs(v), price, "SL"));
         }
 
-        return $"Stop loss en {Inst.FormatPrice(price)} ({FormatMoney(PnLAt(price))})";
+        return $"Stop loss at {Inst.FormatPrice(price)} ({FormatMoney(PnLAt(price))})";
     });
 
     /// <summary>
@@ -307,7 +307,7 @@ public sealed class BracketManager : IDisposable
 
         if (qty <= 0) return "Target quantity would be zero.";
         _targets.Add(Account.Exit(OrderTypes.Limit, ExitDirection, qty, price, "TP"));
-        return $"Objetivo de {Fmt(qty)} en {Inst.FormatPrice(price)} ({FormatMoney(PnLAt(price, qty))})";
+        return $"Target of {Fmt(qty)} at {Inst.FormatPrice(price)} ({FormatMoney(PnLAt(price, qty))})";
     });
 
     /// <summary>Mueve una orden: stop, objetivo, entrada con brackets o cualquier otra.</summary>
@@ -322,7 +322,7 @@ public sealed class BracketManager : IDisposable
             var tracked = list.First(s => Same(s, order));
             var live = Live(tracked) ?? order;
             Swap(list, tracked, Account.Replace(live, price, live.Unfilled));
-            return $"{(role == BracketRole.StopLoss ? "Stop" : "Objetivo")} movido a {Inst.FormatPrice(price)}";
+            return $"{(role == BracketRole.StopLoss ? "Stop" : "Target")} moved to {Inst.FormatPrice(price)}";
         }
 
         var pb = _pending.FirstOrDefault(p => Same(p.Entry, order));
