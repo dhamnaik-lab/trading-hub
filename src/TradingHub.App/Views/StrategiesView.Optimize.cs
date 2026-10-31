@@ -27,7 +27,7 @@ internal sealed partial class StrategiesView
     // walk-forward
     private readonly NumericUpDown _isDays = new() { Value = 14, Minimum = 1, Maximum = 365, Increment = 1, FormatString = "0" };
     private readonly NumericUpDown _osDays = new() { Value = 7, Minimum = 1, Maximum = 365, Increment = 1, FormatString = "0" };
-    private readonly ToggleSwitch _anchored = new() { OnContent = "Anclada (IS crece desde el inicio)", OffContent = "Rolling (fixed IS window)" };
+    private readonly ToggleSwitch _anchored = new() { OnContent = "Anchored (IS grows from beginning)", OffContent = "Rolling (fixed IS window)" };
     private readonly ComboBox _search = new() { HorizontalAlignment = HorizontalAlignment.Stretch };
     private readonly TextBlock _wfoPreview = new() { Classes = { "muted", "small" }, TextWrapping = TextWrapping.Wrap };
     private readonly WrapPanel _wfoKpis = new() { ItemSpacing = 10, LineSpacing = 10 };
@@ -430,7 +430,7 @@ internal sealed partial class StrategiesView
             Ui.H(8, Ui.Icon(MaterialIconKind.ChartTimelineVariantShimmer, 17, Ui.Accent), Ui.H2("Ventanas")),
             new TextBlock
             {
-                Text = "Optimiza en una ventana (dentro de muestra) y prueba los mejores parámetros en los días siguientes, que la optimización no vio (fuera de muestra). Después avanza y repite. Usa los rangos de Optimización.",
+                Text = "Optimize parameters on an in-sample window, evaluate the selection on subsequent unseen out-of-sample days, then advance the window. Uses ranges configured in Optimization.",
                 Classes = { "muted", "small" },
                 TextWrapping = TextWrapping.Wrap,
             },
@@ -600,7 +600,7 @@ internal sealed partial class StrategiesView
     {
         var m = res.OutSampleMetrics;
         _wfoKpis.Children.Clear();
-        _wfoKpis.Children.Add(Kpi("Fuera de muestra", Money(m.NetProfit), $"{m.TotalTrades} trades · PF {m.ProfitFactor:0.00}", m.NetProfit >= 0 ? Ui.Up : Ui.Down));
+        _wfoKpis.Children.Add(Kpi("Out of sample", Money(m.NetProfit), $"{m.TotalTrades} trades · PF {m.ProfitFactor:0.00}", m.NetProfit >= 0 ? Ui.Up : Ui.Down));
         _wfoKpis.Children.Add(Kpi("Eficiencia WF", $"{res.WalkForwardEfficiency * 100:0}%", "out-of-sample / in-sample daily profit · above 50% is a heuristic, not a guarantee", res.WalkForwardEfficiency >= 0.5 ? Ui.Up : res.WalkForwardEfficiency >= 0 ? Ui.Warn : Ui.Down));
         _wfoKpis.Children.Add(Kpi("Ventanas ganadoras", $"{res.ProfitableWindowsPercent:0}%", $"{res.Windows.Count(w => w.OutSample.NetProfit > 0)} de {res.Windows.Count}", res.ProfitableWindowsPercent >= 60 ? Ui.Up : Ui.Warn));
         _wfoKpis.Children.Add(Kpi("Drawdown fuera", Money(-m.MaxDrawdown), $"{m.MaxDrawdownPercent:0.##}%", Ui.Down));
