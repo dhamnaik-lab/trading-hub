@@ -57,7 +57,7 @@ internal sealed class LiveLaunchWindow : Window
         var catalog = svc.Strategies;
         if (catalog.Files.Count == 0) catalog.Refresh();
         foreach (var f in catalog.Files.OrderBy(f => f.DisplayName))
-            _strategy.Items.Add(new ComboBoxItem { Content = f.DisplayName + (f.LastCompile?.Success == false ? " (con errores)" : ""), Tag = f });
+            _strategy.Items.Add(new ComboBoxItem { Content = f.DisplayName + (f.LastCompile?.Success == false ? " (with errors)" : ""), Tag = f });
         foreach (var p in new[] { "M1", "M2", "M3", "M5", "M10", "M15", "M30", "H1", "H4" }) _period.Items.Add(p);
         _period.SelectedItem = "M5";
 
@@ -101,9 +101,9 @@ internal sealed class LiveLaunchWindow : Window
         body.Children.Add(Section("Parameters", _params, Note("Uses the most recent parameter settings from Backtesting.")));
         body.Children.Add(Section("Market condition", _conditions,
             Note("Opens new positions only when the selected market trend and volatility conditions match, based on completed bars. You can change these conditions from Live without restarting.")));
-        body.Children.Add(Section("Riesgo", riskGrid, _closeOnLimit,
+        body.Children.Add(Section("Risk", riskGrid, _closeOnLimit,
             Note("Daily loss limit: blocks new entries until the next session. Drawdown limit: stops the strategy. Exits reduce the positions opened, even if you change the size multiplier.")));
-        body.Children.Add(Section("Portafolio", _portfolio));
+        body.Children.Add(Section("Portfolio", _portfolio));
 
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(22, 10, 22, 16) };
         actions.Children.Add(cancel);
