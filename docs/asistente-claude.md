@@ -1,124 +1,95 @@
-[← Volver al índice](README.md)
+[← Back to documentation](README.md)
 
-# Claude en Trading Hub
+# Claude in Trading Hub
 
-Trading Hub usa **Claude Code**, la CLI de Claude, con tu propia sesión y tu suscripción de Claude: no hay claves de
-API ni cuentas aparte, y lo que hace se descuenta de tu límite de uso de Claude Code. Sin Claude Code la plataforma
-funciona igual; solo te quedás sin el asistente, el laboratorio y el agente de riesgo.
+Trading Hub integrates with your installed **Claude Code CLI** and its authenticated session. No separate Trading Hub account is required. Claude-based functionality consumes your available Claude Code usage entitlement; without Claude Code, the rest of the platform can still run.
 
-| Dónde | Qué hace |
+| Location | What Claude does |
 |---|---|
-| **Backtesting → Código**, panel de Claude | Escribe, explica y corrige estrategias e indicadores |
-| El mismo panel con **Laboratorio** | Además corre backtests, optimizaciones, walk-forward y Monte Carlo, y deja un reporte con veredicto |
-| **En vivo → Portafolios** | El agente de riesgo de cada portafolio (ver [En vivo](en-vivo.md#el-agente-de-riesgo)) |
-| **En vivo → Propuestas** | «Pedir análisis a Claude»: el laboratorio revisa la cartera en vivo y propone tamaños |
+| **Backtesting → Code**, assistant panel | Draft, explain, and correct C# strategies and indicators |
+| **Laboratory** mode in the same panel | Run backtests, optimization, walk-forward, Monte Carlo, and produce reports |
+| **Live → Portfolios** | Review strategy/portfolio risk and propose sizing adjustments |
+| **Live → Proposals** | Analyze the running portfolio through the laboratory |
 
-## Cómo encuentra Claude Code
+See [Live strategies](en-vivo.md#claude-risk-agent).
 
-Trading Hub busca el ejecutable `claude` en `/usr/local/bin`, `/opt/homebrew/bin`, `~/.claude/local`, `~/.local/bin`,
-`~/.npm-global/bin`, en cada carpeta de tu `PATH` y en la copia que trae la app de escritorio de Claude
-(`~/Library/Application Support/Claude/claude-code/…`). Si encuentra varias, usa la de versión más nueva. Con la
-variable `TRADINGHUB_CLAUDE_CLI` podés indicarle otra ruta. Cómo instalarlo está en
-[Instalación](instalacion.md#claude-code-optional).
+## Finding Claude Code
 
-- El panel de Claude muestra arriba «Claude Code *versión* · tu suscripción», o avisa si no lo encontró.
-- Si Claude Code pide iniciar sesión, aparece **Iniciar sesión en Claude Code**: abre la Terminal con `claude /login`
-  para que entres con tu cuenta. Después repetís el pedido.
-- Si tu versión es vieja para el modelo, el agente de riesgo lo avisa: actualizala (la app de Claude se actualiza sola,
-  o con `claude update`).
+On macOS, the application searches common installation folders such as `/usr/local/bin`, `/opt/homebrew/bin`, `~/.claude/local`, `~/.local/bin`, and `~/.npm-global/bin`, plus your `PATH` and Claude desktop app's CLI files. On Windows, it searches common executable and npm paths as supported by the application.
 
-## Modelo, esfuerzo y permisos
+Set `TRADINGHUB_CLAUDE_CLI` to select a specific CLI binary. For installation and authorization see [Installation](instalacion.md#claude-code-optional).
 
-- El asistente y el laboratorio usan **Opus 5.5** (`claude-opus-5-5`) con esfuerzo **xhigh** («Extra»). Si tu Claude
-  Code no conoce la opción de esfuerzo, se omite. El agente de riesgo arranca igual y se cambia por portafolio (Opus
-  5.5, Sonnet 5.5, Haiku 5.5 o Fable 5.1; esfuerzo Bajo, Medio, Alto, Extra o Máximo).
-- Se corre sin ventana (`claude -p`), dentro de la carpeta de estrategias, con permiso para editar archivos ahí, en la
-  carpeta de indicadores y en la de capturas del laboratorio. Solo tiene herramientas de archivos (`Read`, `Write`,
-  `Edit`, `MultiEdit`, `Glob`, `Grep`): sin terminal ni web.
-- No carga tus otros servidores MCP (`--strict-mcp-config`): en modo laboratorio, solo el de Trading Hub. Tampoco hereda
-  variables `CLAUDE*` o `ANTHROPIC*` de otra sesión: usa tu inicio de sesión normal.
-- El agente de riesgo corre más restringido: sin herramientas, sin tu configuración ni tus hooks cuando tu versión lo
-  permite, y sin guardar la sesión. Solo recibe los números del portafolio y devuelve una propuesta.
+- The assistant panel displays the detected Claude Code version or an unavailable-CLI message.
+- If login is needed, use the panel's **Sign in to Claude Code** action, or launch `claude` and follow its login flow.
+- If a particular model or feature requires a newer CLI, update using your provider's current recommended installation method.
 
-## El asistente de estrategias
+## Model, effort, and permissions
 
-1. Abrí **Backtesting → Código**. El panel de Claude está a la derecha del editor; con el botón de la ventana lo sacás
-   a una ventana aparte (y lo volvés a acoplar).
-2. Escribí el pedido y tocá **Enviar** (⌘Enter). Hay sugerencias para empezar: crear una ruptura del rango de los
-   primeros 30 minutos, explicar la estrategia abierta, agregar un filtro horario, poner un stop por ATR…
-3. Mientras trabaja ves lo que escribe y lo que toca («Leyendo», «Escribiendo» o «Editando», con el archivo); el editor
-   queda en solo lectura y lo que cambia en el archivo abierto aparece en vivo. **Detener** lo corta.
-4. Al terminar: si creó una estrategia nueva, se abre sola; Trading Hub la compila y ofrece **Probar en backtest** o,
-   con errores, **Pedirle que los arregle**. Si tocó indicadores, los compila y te dice si ya están en «Mis indicadores»
-   o qué falla.
+The original source documentation referenced Claude Opus 5.5 and an extra-high reasoning effort for the assistant, with configurable models and effort for the risk agent. **Models, labels, entitlements, and CLI flags change over time**; treat these as historical defaults and inspect the running app's current options rather than assuming a model remains available.
 
-Con cada pedido Trading Hub le pasa el archivo abierto, la carpeta de indicadores y los errores de compilación del
-momento. Sus instrucciones traen la API completa de estrategias y de indicadores (la de [Estrategias](estrategias.md)
-y la de [Indicadores](indicadores.md)) y estas reglas: código C# que compile sin paquetes externos, sin archivos, red,
-hilos ni `Random` sin semilla, comentarios cortos en español y, al final, 2 a 5 líneas de explicación.
+The assistant is launched as an external `claude -p` process from a user strategy directory. It is configured with file-reading/editing tools for strategy, indicator, and laboratory capture folders, but without ordinary terminal/web tools. Laboratory mode uses a restricted MCP configuration and enables only the Trading Hub laboratory server.
 
-Las conversaciones se guardan en `~/Library/Application Support/Trading Hub/Chats`. Con el botón de historial retomás
-una donde quedó (Claude sigue con todo lo que ya sabía); **Nueva conversación** empieza de cero.
+The portfolio risk agent is more restricted: it receives selected portfolio statistics and returns suggestions without tools to submit orders. Never send API secrets or broker credentials in prompts.
 
-## El laboratorio
+## Strategy assistant
 
-Con **Laboratorio** activado, Claude Code recibe las herramientas de Trading Hub como un servidor MCP: el mismo
-ejecutable de la app abierto con `--mcp`, sin ventanas, que habla JSON-RPC por la entrada y la salida estándar. La
-configuración queda en `~/Library/Application Support/Trading Hub/claude-lab-mcp.json` (servidor `tradinghub`). Solo se
-habilitan estas herramientas, y cada una puede tardar hasta una hora (una optimización larga):
+1. Open **Backtesting → Code** and the Claude panel on the right. The panel can be detached into its own window.
+2. Enter a request and press **Send** (Ctrl/⌘+Enter). Example requests: generate a 30-minute opening-range breakout, explain a selected strategy, add a session-time filter, or implement an ATR-based stop.
+3. During the run, the UI shows file read/write/edit activity; the source editor becomes read-only and reflects updates. **Stop** cancels the active request.
+4. When Claude finishes, the edited/new strategy is compiled. If it succeeds, you can **Test in Backtest**; otherwise use **Ask to fix errors** and inspect compiler diagnostics.
 
-| Herramienta | Qué hace |
+The prompt can include the selected strategy source, indicator folder, compilation errors, and the internal indicator/strategy APIs. Expected code is standalone C# without new external dependencies, file/network/thread access, or nondeterministic random behavior. Prefer short explanatory comments in English in this fork.
+
+Conversations are stored under the app's local `Chats` directory. **New conversation** starts a clean session; the history controls can reopen previous sessions.
+
+## Laboratory mode
+
+When **Laboratory** is enabled, Trading Hub exposes its local model-context tools as an MCP server by launching the application with `--mcp`. The server communicates using JSON-RPC on standard input/output. Its configuration is stored as `claude-lab-mcp.json` in the local app data folder and the server name is `tradinghub`.
+
+Supported tools in the documented implementation include:
+
+| Tool | Purpose |
 |---|---|
-| `list_strategies` | Lista las estrategias con su compilación, sus parámetros (con los rangos de `[Optimize]`) y su calentamiento: los indicadores de `OnInit` y las velas que tardan en estar listos |
-| `compile_strategy` | Compila una estrategia y devuelve los errores (línea y mensaje), los parámetros y el calentamiento |
-| `chart_snapshot` | Corre la estrategia en un rango y guarda una imagen del gráfico con sus entradas, salidas y dibujos, más las velas, operaciones y registro en hora local |
-| `list_indicators` · `compile_indicator` | Lista tus indicadores propios y compila uno, con sus errores |
-| `list_data` | Los datos tick a tick guardados por instrumento (los únicos que usan los backtests) |
-| `download_data` | Baja días completos de los archivos públicos de Binance Futures, Binance Spot y Bybit (hasta 62 días por pedido) |
-| `run_backtest` | Backtest tick a tick con comisiones y deslizamiento; opcionalmente con Monte Carlo |
-| `run_optimization` | Optimización en grilla (hasta 5.000 combinaciones por defecto); devuelve las mejores, el % de combinaciones que ganan y la recomendada por meseta |
-| `run_walk_forward` | Walk-forward inteligente (grilla o bayesiana, meseta, PBO y caminos CPCV); también puede solo estimar cuánto va a tardar |
-| `list_runs` | Las corridas guardadas de una estrategia |
-| `analyze_portfolio` · `suggest_portfolio` | Combina corridas en un portafolio con su correlación, o busca la combinación poco correlacionada que más mejora el Sharpe |
-| `live_portfolio` | La cartera en vivo, solo lectura: cada estrategia con su tamaño, posición, resultado, profit factor y drawdown |
-| `propose_sizing` | Deja propuestas de tamaño pendientes; no aplica nada |
-| `save_report` | Arma y guarda el informe profesional |
+| `list_strategies` | Strategy list, compile state, parameters, optimize ranges, warm-up |
+| `compile_strategy` | Compile, return diagnostics, parameter and warm-up details |
+| `chart_snapshot` | Run over a range and save a chart snapshot with entries, exits, and drawings |
+| `list_indicators`, `compile_indicator` | Inspect and compile custom indicators |
+| `list_data` | Inspect saved tick coverage for backtesting |
+| `download_data` | Download Binance Futures/Spot and Bybit public daily archives (up to 62 days per request) |
+| `run_backtest` | Tick backtesting with modeled commission and slippage, optionally Monte Carlo |
+| `run_optimization` | Grid search with a default ceiling of 5,000 combinations; show top/plateau candidates |
+| `run_walk_forward` | Walk-forward optimization, plateau selection, PBO and CPCV; can estimate workload |
+| `list_runs` | Read saved strategy test runs |
+| `analyze_portfolio`, `suggest_portfolio` | Analyze correlation and candidate portfolio combinations |
+| `live_portfolio` | Read-only metrics and positions for live strategies |
+| `propose_sizing` | Create pending sizing proposals; does not apply them |
+| `save_report` | Generate and save structured research reports |
 
-Todo lo que corre queda en el historial de la estrategia con la nota «Laboratorio de Claude», igual que si lo corrieras
-vos. Sus instrucciones le marcan un método: revisar la estrategia y los datos (y bajar 30 a 90 días si es cripto),
-backtest base, optimización con rangos razonables y al menos 30 operaciones por combinación, walk-forward con la
-ventana de optimización 3 a 4 veces la de prueba, Monte Carlo sobre lo validado, mejorar el código si tiene fallas
-claras (comparando siempre con la versión anterior), dar un veredicto y terminar con `save_report`. No puede inventar
-números: todo lo que escribe tiene que salir de una herramienta. Los veredictos son:
+Individual tool operations may run for extended periods, especially optimization. The source's laboratory policy directs the assistant to inspect data, establish a baseline, optimize within sensible ranges, validate walk-forward, review Monte Carlo drawdowns, compare source revisions, and call `save_report` with evidence-backed conclusions. It must not invent trading results.
 
-| Veredicto | Cuándo |
+Documented verdict categories are:
+
+| Verdict | Interpretation |
 |---|---|
-| **ganadora** | Gana fuera de muestra, eficiencia walk-forward ≥ 0,5, profit factor fuera de muestra ≥ 1,2, al menos 30 operaciones, drawdown p95 de Monte Carlo razonable y ventanas estables |
-| **prometedora** | Resultados positivos pero con poca muestra o algo de inestabilidad |
-| **perdedora** | Pierde fuera de muestra o solo gana sobreajustada |
-| **descartada** | No compila, no opera o la idea no tiene sentido con esos datos |
+| **Winner** | Positive out-of-sample results with sufficient trades, robust walk-forward efficiency, acceptable drawdowns and stable windows |
+| **Promising** | Positive indications but limited samples or unstable segments |
+| **Loser** | Poor OOS performance or gains explainable by overfitting |
+| **Rejected** | Cannot compile, does not trade, or lacks a viable evidence basis |
 
-Para la cartera en vivo usa `live_portfolio` y `propose_sizing`: más tamaño (hasta ×3) a las que rinden, menos o pausa
-a las que se degradan, siempre con un motivo y sin sacar conclusiones con menos de unas 10 operaciones. Las propuestas
-esperan tu aprobación en **En vivo → Propuestas**.
+For the original project's *Winner* threshold, the documentation describes WF efficiency ≥ 0.5, OOS profit factor ≥ 1.2, at least 30 OOS trades, and reasonable Monte Carlo 95th-percentile drawdown. These are heuristics, not profit guarantees.
 
-## Reportes
+All laboratory test runs are recorded in strategy history. A live risk analysis uses `live_portfolio` and can create proposed adjustments through `propose_sizing`, but proposed live changes wait for review in **Live → Proposals**.
 
-`save_report` le pide a Trading Hub que arme el informe con todas las métricas, tablas y gráficos de las corridas
-(resumen ejecutivo, estrategia, datos y supuestos, rendimiento, mensual, análisis de operaciones, drawdowns,
-optimización con la sensibilidad de cada parámetro, walk-forward, Monte Carlo, portafolio y glosario). Claude aporta el
-veredicto, el resumen, el análisis, los riesgos y los próximos pasos.
+## Reports
 
-- Se guardan en `~/Documents/Trading Hub/Estrategias/Reportes`: un `.md` por informe y una carpeta `…_archivos` con los
-  gráficos.
-- Se ven en **Backtesting → Reportes**, como una hoja. **Exportar PDF / HTML** arma un HTML con los gráficos adentro y
-  lo abre en el navegador, desde donde lo imprimís o lo guardás como PDF; **Mostrar en Finder** abre la carpeta.
-- El veredicto también aparece al lado de cada estrategia en el menú de estrategias.
-- Sin Claude, **Informe** en el Historial o en el Portafolio arma el mismo informe, sin el análisis escrito.
+`save_report` builds a report with executive summary, strategy source/data assumptions, performance tables, monthly results, trades, drawdowns, parameter sensitivity, walk-forward, Monte Carlo, portfolios, and a glossary. Claude contributes the judgment, analysis, risks, and next actions.
 
-## Qué le llega a Claude
+- Reports are stored in the user strategy folder's `Reportes` subdirectory as Markdown files and chart-image folders.
+- The **Backtesting → Reports** page displays reports and can export an HTML document for browser printing or saving as PDF.
+- Report labels generated by the current application may still be Spanish even when this documentation is English. See translation status in the [main README](../README.md).
 
-Lo que escribís, los archivos que lee (tus estrategias e indicadores) y lo que devuelven las herramientas (métricas,
-operaciones, resúmenes de datos, imágenes del gráfico y, si se lo pedís, el estado de la cartera en vivo) viajan a
-Anthropic a través de tu Claude Code, con tu cuenta. Las claves de tus conexiones están en el Llavero y ninguna
-herramienta las expone. Más en [Privacidad](privacidad.md).
+## Privacy and safety
+
+Claude prompts, source code, trade logs, portfolio statistics, and tool results that it receives may be processed outside your machine by Anthropic. Consult [Privacy and security](privacidad.md) and the provider's data policies.
+
+Never include passwords, access tokens, or secret API keys in Claude conversations. Laboratory tests must not use live order endpoints; any portfolio change with real-money impact requires deliberate human review.
