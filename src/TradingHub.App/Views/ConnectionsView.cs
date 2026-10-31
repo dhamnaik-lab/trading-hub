@@ -837,7 +837,7 @@ internal sealed class ConnectionsView : UserControl, IPage
             Ui.H2("Databento"),
             Note(MaterialIconKind.InformationOutline, "CME futures historical tick data (NQ, ES, MNQ, MES, CL, GC and others), subject to dataset coverage and usage-based pricing. Check current credits and fees with Databento."),
             Ui.Field("API key", key),
-            Ui.H(16, Link("Create account (trial credits may be available)", "https://databento.com/signup"), Link("Precios", "https://databento.com/pricing")),
+            Ui.H(16, Link("Create account (trial credits may be available)", "https://databento.com/signup"), Link("Pricing", "https://databento.com/pricing")),
             Note(MaterialIconKind.ShieldCheckOutline, "Use Data → CME futures with Databento. Trading Hub estimates cost before requesting confirmation; downloads are stored separately. Backtesting supports Databento, Rithmic, or combined history where available."));
     }
 
