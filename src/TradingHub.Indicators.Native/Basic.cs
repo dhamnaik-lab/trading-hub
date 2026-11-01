@@ -282,7 +282,6 @@ public class CumulativeDeltaCandles : Indicator
     private readonly CandleDataSeries _cvd = new("CVD", "Delta acumulado") { DrawCandleBorder = false };
     private readonly ValueDataSeries _value = new("Value", "Valor") { VisualType = VisualMode.OnlyValueOnAxis, Color = Color.FromArgb(255, 200, 200, 210) };
     private bool _resetDaily;
-    private decimal _base;
 
     public CumulativeDeltaCandles() : base(true)
     {
@@ -294,7 +293,6 @@ public class CumulativeDeltaCandles : Indicator
     [Display(Name = "Reset each session", GroupName = "Calculation", Order = 10)]
     public bool ResetDaily { get => _resetDaily; set { _resetDaily = value; RecalculateValues(); } }
 
-    protected override void OnRecalculate() => _base = 0;
 
     protected override void OnCalculate(int bar, decimal value)
     {
